@@ -1,0 +1,33 @@
+aaa:
+  a: 34
+  b: jsdf
+  c:
+  - sdf
+  - fsdf
+  - sdfsd
+bbb:
+- c: 34
+  d: xdcz
+  ddd:
+    e: 10
+    f: sdf
+- c: 35
+  d: xdcz
+  ddd:
+    e: 11
+    f: sdf
+- c: 36
+  d: xdcz
+  ddd:
+    e: 12
+    f: sdf
+- c: 37
+  d: xdcz
+  ddd:
+    e: 13
+    f: sdf
+- c: 38
+  d: xdcz
+  ddd:
+    e: 14
+    f: sdf
