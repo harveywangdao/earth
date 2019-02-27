@@ -90,21 +90,35 @@ func main() {
 		return
 	}
 
-	ciphertext, err := ECC_Encrypt(pubKey, []byte(message))
+	ciphertext1, err := ECC_Encrypt(pubKey, []byte(message))
 	if err != nil {
 		log.Println(err)
 		return
 	}
 
-	plaintext, err := ECC_Decrypt(privKey, ciphertext)
+	ciphertext2, err := ECC_Encrypt(pubKey, []byte(message))
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	plaintext1, err := ECC_Decrypt(privKey, ciphertext1)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	plaintext2, err := ECC_Decrypt(privKey, ciphertext2)
 	if err != nil {
 		log.Println(err)
 		return
 	}
 
 	fmt.Println("message =", message)
-	fmt.Println("Encrypt message =", ciphertext)
-	fmt.Println("Decrypt message =", string(plaintext))
+	fmt.Println("Encrypt message1 =", ciphertext1)
+	fmt.Println("Encrypt message2 =", ciphertext2)
+	fmt.Println("Decrypt message1 =", string(plaintext1))
+	fmt.Println("Decrypt message2 =", string(plaintext2))
 
 	message = "Hello, ECC_Sign"
 	sig, err := ECC_Sign(privKey, []byte("Hello, ECC_Sign"))
