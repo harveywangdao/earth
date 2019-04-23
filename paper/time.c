@@ -9,6 +9,7 @@
 #include <errno.h>
 #include <time.h>
 #include <sys/time.h>
+#include <sys/times.h>
 
 int main(int argc, char const *argv[])
 {
@@ -58,6 +59,14 @@ int main(int argc, char const *argv[])
   t2 = time(NULL);
 
   printf("difftime : %f\n", difftime(t1, t2));
+
+  struct tms startms, stoptms;
+
+  clock_t tms1 = times(&startms);
+  printf("tms1 = %ld %ld %ld %ld %ld\n", tms1, startms.tms_utime, startms.tms_stime, startms.tms_cutime, startms.tms_cstime);
+  sleep(2);
+  clock_t tms2 = times(&stoptms);
+  printf("tms2 = %ld %ld %ld %ld %ld\n", tms2, stoptms.tms_utime, stoptms.tms_stime, stoptms.tms_cutime, stoptms.tms_cstime);
 
   return 0;
 }
