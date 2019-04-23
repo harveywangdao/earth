@@ -231,6 +231,66 @@ void do5()
 	}
 }
 
+void do6()
+{
+	pid_t pid;
+	pid = fork();
+	if (pid == -1)
+	{
+		printf("vfork fail\n");
+		return;
+	}
+	else if (pid == 0)
+	{
+		printf("son start, pid = %d, ppid = %d\n", getpid(), getppid());
+		
+		char *un = getlogin();
+		if (un == NULL)
+		{
+			printf("getlogin fail\n");
+		}
+		else
+		{
+			printf("son getlogin:%s\n", un);
+		}
+
+		printf("son getuid:%d\n", getuid());
+		printf("son geteuid:%d\n", geteuid());
+		printf("son getgid:%d\n", getgid());
+		printf("son getegid:%d\n", getegid());
+
+		printf("son end, pid = %d, ppid = %d\n", getpid(), getppid());
+		exit(0);
+	}
+	else
+	{
+		char *un = getlogin();
+		if (un == NULL)
+		{
+			printf("getlogin fail\n");
+		}
+		else
+		{
+			printf("getlogin:%s\n", un);
+		}
+
+		printf("getuid:%d\n", getuid());
+		printf("geteuid:%d\n", geteuid());
+		printf("getgid:%d\n", getgid());
+		printf("getegid:%d\n", getegid());
+		
+		int status = 0;
+		int ret = waitpid(pid, &status, 0);
+		if (ret == -1)
+		{
+			printf("son ret = %d, status = %d\n", ret, status);
+			return;
+		}
+
+		printf("son ret = %d, status = %d\n", ret, status);
+	}
+}
+
 int main(int argc, char const *argv[])
 {
 	pid_t pid, ppid;
@@ -244,7 +304,8 @@ int main(int argc, char const *argv[])
 	//do2();
 	//do3();
 	//do4();
-	do5();
+	//do5();
+	do6();
 
 	//printf("Main process Goodbye\n");
 	return 0;
