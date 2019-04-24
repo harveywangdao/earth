@@ -7,8 +7,11 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <errno.h>
+#include <time.h>
+#include <sys/time.h>
+#include <sys/times.h>
 
-int main(int argc, char const *argv[])
+int do1()
 {
   int fd = open("file.txt", O_RDWR|O_APPEND|O_CREAT, 0666);
   if (fd == -1)
@@ -81,9 +84,9 @@ int main(int argc, char const *argv[])
   }
   printf("3 read %d:%s\n", nb, buf);
 
-  int ret = fsync(fd);
   //int ret = fdatasync(fd);
   //sync();
+  int ret = fsync(fd);
   if (ret == -1)
   {
     perror("fsync fail");
@@ -117,11 +120,112 @@ int main(int argc, char const *argv[])
   if (nb == -1)
   {
     perror("read fail");
-    return -1;
+    //return -1;
   }
   printf("4 read %d:%s\n", nb, buf);
 
+  struct stat st;
+  ret = fstat(fd2, &st);
+  if (ret == -1)
+  {
+    perror("fstat fail");
+    return -1;
+  }
+  printf("mode = %d, size = %ld, mtime = %ld\n", st.st_mode, st.st_size, st.st_mtime);
+
   close(fd2);
 
+  ret = unlink("file.txt");
+  if (ret == -1)
+  {
+    perror("unlink fail");
+  }
+
+  ret = remove("file2.txt");
+  if (ret == -1)
+  {
+    perror("remove fail");
+  }
+
   return 0;
+}
+
+void do2()
+{
+  int fd = creat("file3.txt", 0666);
+  if (fd == -1)
+  {
+    perror("creat fail");
+    return;
+  }
+
+  char buf[512];
+  char *word = "file sys";
+  memcpy(buf, word, strlen(word)+1);
+
+  int nb = write(fd, buf, strlen(buf)+1);
+  if (nb == -1)
+  {
+    perror("write fail");
+    return;
+  }
+
+  int ret = fcntl(fd, F_GETFL, 0);
+  if (ret == -1)
+  {
+    perror("fcntl fail");
+    return;
+  }
+
+  switch (ret & O_ACCMODE)
+  {
+    case O_RDONLY:
+      printf("O_RDONLY\n");
+      break;
+
+    case O_WRONLY:
+      printf("O_WRONLY\n");
+      break;
+
+    case O_RDWR:
+      printf("O_RDWR\n");
+      break;
+
+    default:
+      printf("O_UNKNOWN\n");
+      break;
+  }
+
+  int val = ret;
+  val |= O_SYNC;
+  ret = fcntl(fd, F_SETFL, val);
+  if (ret == -1)
+  {
+    perror("fcntl fail");
+    return;
+  }
+
+  char *word2 = "O_SYNC";
+  memcpy(buf, word2, strlen(word2)+1);
+
+  nb = write(fd, buf, strlen(buf)+1);
+  if (nb == -1)
+  {
+    perror("write fail");
+    return;
+  }
+
+  close(fd);
+  remove("file3.txt");
+}
+
+void do3()
+{
+  //ioctl();
+}
+
+int main(int argc, char const *argv[])
+{
+  //do1();
+  do2();
 }
