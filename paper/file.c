@@ -224,8 +224,281 @@ void do3()
   //ioctl();
 }
 
+void do4()
+{
+  int fd = open("file.txt", O_RDWR|O_CREAT|O_TRUNC, 0666);
+  if (fd == -1)
+  {
+    perror("open fail");
+    return;
+  }
+
+  char buf[512];
+  char *str = "11112222";
+  memcpy(buf, str, strlen(str)+1);
+
+  lseek(fd, 0, SEEK_SET);
+  int nb = write(fd, buf, strlen(buf)+1);
+  if (nb == -1)
+  {
+    perror("write fail");
+    return;
+  }
+
+  int fd2 = dup(fd);
+  if (fd2 == -1)
+  {
+    perror("dup fail");
+    return;
+  }
+  
+  lseek(fd, 0, SEEK_SET);
+  lseek(fd2, 0, SEEK_SET);
+
+  memset(buf, 0, sizeof(buf));
+  nb = read(fd, buf, 4);
+  if (nb == -1)
+  {
+    perror("read fail");
+    return;
+  }
+  printf("1 read %d:%s\n", nb, buf);
+
+  memset(buf, 0, sizeof(buf));
+  nb = read(fd2, buf, 4);
+  if (nb == -1)
+  {
+    perror("read fail");
+    return;
+  }
+  printf("2 read %d:%s\n", nb, buf);
+
+  close(fd);
+  close(fd2);
+  remove("file.txt");
+}
+
+void do5()
+{
+  int fd = open("file.txt", O_RDWR|O_CREAT|O_TRUNC, 0666);
+  if (fd == -1)
+  {
+    perror("open fail");
+    return;
+  }
+
+  char buf[512];
+  char *str = "11112222";
+  memcpy(buf, str, strlen(str)+1);
+
+  lseek(fd, 0, SEEK_SET);
+  int nb = write(fd, buf, strlen(buf)+1);
+  if (nb == -1)
+  {
+    perror("write fail");
+    return;
+  }
+
+  pid_t pid;
+  pid = fork();
+  if (pid == -1)
+  {
+    printf("fork fail\n");
+    return;
+  }
+  else if (pid == 0)
+  {
+    printf("son start, pid = %d, ppid = %d\n", getpid(), getppid());
+    
+    lseek(fd, 0, SEEK_SET);
+    memset(buf, 0, sizeof(buf));
+    nb = read(fd, buf, 4);
+    if (nb == -1)
+    {
+      perror("read fail");
+    }
+    printf("son read %d:%s\n", nb, buf);
+    
+    close(fd);
+    int ret = remove("file.txt");
+    if (ret == -1)
+    {
+      perror("remove fail");
+    }
+    printf("ret = %d\n", ret);
+
+    printf("son end, pid = %d, ppid = %d\n", getpid(), getppid());
+    exit(0);
+  }
+  else
+  {
+    lseek(fd, 0, SEEK_SET);
+    memset(buf, 0, sizeof(buf));
+    nb = read(fd, buf, 4);
+    if (nb == -1)
+    {
+      perror("read fail");
+      //return;
+    }
+    printf("read %d:%s\n", nb, buf);
+
+    close(fd);
+    int ret = remove("file.txt");
+    if (ret == -1)
+    {
+      perror("remove fail");
+    }
+    printf("ret = %d\n", ret);
+
+    int status = 0;
+    ret = waitpid(pid, &status, 0);
+    if (ret == -1)
+    {
+      printf("son ret = %d, status = %d\n", ret, status);
+      return;
+    }
+
+    printf("son ret = %d, status = %d\n", ret, status);
+  }
+}
+
+void readlock(int fd)
+{
+  struct flock lock;
+  lock.l_type = F_RDLCK;
+  lock.l_whence = SEEK_SET;
+  lock.l_start = 0;
+  lock.l_len = 0;
+
+  //ret = fcntl(fd, F_SETLKW, &lock);
+  int ret = fcntl(fd, F_SETLK, &lock);
+  if (ret == -1)
+  {
+    perror("readlock fail");
+    return;
+  }
+
+  return;
+}
+
+void writelock(int fd)
+{
+  struct flock lock;
+  lock.l_type = F_WRLCK;
+  lock.l_whence = SEEK_SET;
+  lock.l_start = 0;
+  lock.l_len = 0;
+
+  //ret = fcntl(fd, F_SETLKW, &lock);
+  int ret = fcntl(fd, F_SETLK, &lock);
+  if (ret == -1)
+  {
+    perror("writelock fail");
+    return;
+  }
+
+  return;
+}
+
+void unlock(int fd)
+{
+  struct flock lock;
+  lock.l_type = F_UNLCK;
+  lock.l_whence = SEEK_SET;
+  lock.l_start = 0;
+  lock.l_len = 0;
+
+  //ret = fcntl(fd, F_SETLKW, &lock);
+  int ret = fcntl(fd, F_SETLK, &lock);
+  if (ret == -1)
+  {
+    perror("unlock fail");
+    return;
+  }
+
+  return;
+}
+
+void getlock(int fd, int type)
+{
+  struct flock lock;
+  lock.l_type = type;
+  lock.l_whence = SEEK_SET;
+  lock.l_start = 0;
+  lock.l_len = 0;
+  lock.l_pid = 0;
+
+  int ret = fcntl(fd, F_GETLK, &lock);
+  if (ret == -1)
+  {
+    perror("getlock fail");
+    //return;
+  }
+
+  printf("%d %d %ld %ld %d\n", lock.l_type, lock.l_whence, lock.l_start, lock.l_len, lock.l_pid);
+
+  return;
+}
+
+void do6()
+{
+  int ret;
+  int fd = open("file.txt", O_RDWR|O_CREAT|O_TRUNC, 0666);
+  if (fd == -1)
+  {
+    perror("open fail");
+    return;
+  }
+
+  char buf[512];
+  char *str = "11112222";
+  memcpy(buf, str, strlen(str)+1);
+
+  lseek(fd, 0, SEEK_SET);
+  int nb = write(fd, buf, strlen(buf)+1);
+  if (nb == -1)
+  {
+    perror("write fail");
+    return;
+  }
+
+  //printf("F_RDLCK = %d, F_WRLCK = %d, F_UNLCK = %d\n", F_RDLCK, F_WRLCK, F_UNLCK);
+
+  //readlock(fd);
+  //getlock(fd, F_RDLCK);
+  //getlock(fd, F_WRLCK);
+  getlock(fd, F_UNLCK);
+  
+  //unlock(fd);
+  //getlock(fd, F_UNLCK);
+
+  //getlock(fd);
+  //writelock(fd);
+  //getlock(fd);
+
+  lseek(fd, 0, SEEK_SET);
+  memset(buf, 0, sizeof(buf));
+  nb = read(fd, buf, 4);
+  if (nb == -1)
+  {
+    perror("read fail");
+  }
+  printf("read %d:%s\n", nb, buf);
+
+  close(fd);
+  ret = remove("file.txt");
+  if (ret == -1)
+  {
+    perror("remove fail");
+  }
+}
+
 int main(int argc, char const *argv[])
 {
   //do1();
-  do2();
+  //do2();
+  //do3();
+  //do4();
+  //do5();
+  do6();
 }
