@@ -370,8 +370,8 @@ void readlock(int fd)
   lock.l_start = 0;
   lock.l_len = 0;
 
-  //ret = fcntl(fd, F_SETLKW, &lock);
-  int ret = fcntl(fd, F_SETLK, &lock);
+  int ret = fcntl(fd, F_SETLKW, &lock);
+  //int ret = fcntl(fd, F_SETLK, &lock);
   if (ret == -1)
   {
     perror("readlock fail");
@@ -389,8 +389,8 @@ void writelock(int fd)
   lock.l_start = 0;
   lock.l_len = 0;
 
-  //ret = fcntl(fd, F_SETLKW, &lock);
-  int ret = fcntl(fd, F_SETLK, &lock);
+  int ret = fcntl(fd, F_SETLKW, &lock);
+  //int ret = fcntl(fd, F_SETLK, &lock);
   if (ret == -1)
   {
     perror("writelock fail");
@@ -442,6 +442,7 @@ void getlock(int fd, int type)
 
 void do6()
 {
+  //printf("F_RDLCK = %d, F_WRLCK = %d, F_UNLCK = %d\n", F_RDLCK, F_WRLCK, F_UNLCK);
   int ret;
   int fd = open("file.txt", O_RDWR|O_CREAT|O_TRUNC, 0666);
   if (fd == -1)
@@ -454,7 +455,6 @@ void do6()
   char *str = "11112222";
   memcpy(buf, str, strlen(str)+1);
 
-  lseek(fd, 0, SEEK_SET);
   int nb = write(fd, buf, strlen(buf)+1);
   if (nb == -1)
   {
@@ -462,34 +462,104 @@ void do6()
     return;
   }
 
-  //printf("F_RDLCK = %d, F_WRLCK = %d, F_UNLCK = %d\n", F_RDLCK, F_WRLCK, F_UNLCK);
+  ftruncate(fd, 0);
 
-  //readlock(fd);
-  //getlock(fd, F_RDLCK);
-  //getlock(fd, F_WRLCK);
-  getlock(fd, F_UNLCK);
-  
-  //unlock(fd);
-  //getlock(fd, F_UNLCK);
-
-  //getlock(fd);
-  //writelock(fd);
-  //getlock(fd);
-
-  lseek(fd, 0, SEEK_SET);
-  memset(buf, 0, sizeof(buf));
-  nb = read(fd, buf, 4);
-  if (nb == -1)
+  pid_t pid;
+  pid = fork();
+  if (pid == -1)
   {
-    perror("read fail");
+    printf("fork fail\n");
+    return;
   }
-  printf("read %d:%s\n", nb, buf);
-
-  close(fd);
-  ret = remove("file.txt");
-  if (ret == -1)
+  else if (pid == 0)
   {
-    perror("remove fail");
+    printf("son start, pid = %d, ppid = %d\n", getpid(), getppid());
+
+    char tempstr[1];
+    for (char i = 0; i < 10; ++i)
+    {
+      writelock(fd);
+
+      lseek(fd, 0, SEEK_END);
+      tempstr[0] = 'A' + i;
+      nb = write(fd, tempstr, 1);
+      if (nb == -1)
+      {
+        perror("write fail");
+      }
+
+      unlock(fd);
+
+      readlock(fd);
+
+      lseek(fd, 0, SEEK_SET);
+      memset(buf, 0, sizeof(buf));
+      nb = read(fd, buf, 20);
+      if (nb == -1)
+      {
+        perror("read fail");
+      }
+      printf("son read %d:%s\n", nb, buf);
+
+      unlock(fd);
+    }
+
+    close(fd);
+
+    printf("son end, pid = %d, ppid = %d\n", getpid(), getppid());
+
+    exit(0);
+  }
+  else
+  {
+    //getlock(fd, F_RDLCK);
+    //getlock(fd, F_WRLCK);
+
+    char tempstr[1];
+    for (char i = 0; i < 10; ++i)
+    {
+      writelock(fd);
+
+      lseek(fd, 0, SEEK_END);
+      tempstr[0] = 'a' + i;
+      nb = write(fd, tempstr, 1);
+      if (nb == -1)
+      {
+        perror("write fail");
+      }
+
+      unlock(fd);
+
+      readlock(fd);
+
+      lseek(fd, 0, SEEK_SET);
+      memset(buf, 0, sizeof(buf));
+      nb = read(fd, buf, 20);
+      if (nb == -1)
+      {
+        perror("read fail");
+      }
+      printf("read %d:%s\n", nb, buf);
+
+      unlock(fd);
+    }
+
+    close(fd);
+    ret = remove("file.txt");
+    if (ret == -1)
+    {
+      perror("remove fail");
+    }
+
+    int status = 0;
+    int ret = waitpid(pid, &status, 0);
+    if (ret == -1)
+    {
+      printf("son ret = %d, status = %d\n", ret, status);
+      return;
+    }
+
+    printf("son ret = %d, status = %d\n", ret, status);
   }
 }
 
