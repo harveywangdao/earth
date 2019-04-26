@@ -38,8 +38,6 @@ fwide
 setbuf
 setvbuf
 
-fflush
-
 freopen
 fdopen
 
@@ -146,6 +144,7 @@ void do2()
 	fgetpos(fp, &pt);
 	printf("after fsetpos fgetpos:%ld\n", pt.__pos);
 
+	fflush(fp);
 	fclose(fp);
 	remove("file.txt");
 }
@@ -166,11 +165,36 @@ void do3()
 	puts("01234567\n89");
 }
 
+void do4()
+{
+	printf("input char:");
+	int ch = getchar();//include '\n'
+	printf("getchar:%c\n", ch);
+
+	//fflush(stdin);//useless in linux
+	while((ch = getchar()) != EOF)
+	{
+		printf("getchar:%c\n", ch);
+	}
+
+	printf("getchar end\n");
+}
+
+void do5()
+{
+	printf("111222");
+	fflush(stdout);
+	sleep(2);
+	printf("111222\n");
+}
+
 int main(int argc, char const *argv[])
 {
 	//do1();
-	do2();
+	//do2();
 	//do3();
+	//do4();
+	do5();
 
 	return 0;
 }
