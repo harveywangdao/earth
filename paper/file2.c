@@ -188,13 +188,81 @@ void do5()
 	printf("111222\n");
 }
 
+void do6()
+{
+	//stdout
+	FILE *outfp = freopen("out.txt", "w+", stdout);
+	if (outfp == NULL)
+	{
+		printf("freopen fail\n");
+		return;
+	}
+
+	printf("testfreopen\n");
+	fclose(outfp);
+
+	freopen("/dev/tty", "w", stdout);
+
+	FILE *fp = fopen("out.txt", "r");
+	if (fp == NULL)
+	{
+		printf("fopen fail\n");
+		return;
+	}
+
+	char buf[32];
+	char *p = fgets(buf, sizeof(buf), fp);
+	if (p == NULL)
+	{
+		printf("fgets fail\n");
+		return;
+	}
+	printf("fgets buf:%s\n", buf);
+	fclose(fp);
+
+	//stdin
+	FILE *infp = freopen("out.txt", "r", stdin);
+	if (infp == NULL)
+	{
+		printf("freopen fail\n");
+		return;
+	}
+
+	memset(buf, 0, sizeof(buf));
+	scanf("%s", buf);
+	printf("scanf:%s\n", buf);
+
+	int ch;
+	while((ch = getchar()) != EOF)
+	{
+		printf("getchar:%c\n", ch);
+	}
+
+	fclose(infp);
+
+	freopen("/dev/tty", "r", stdin);
+
+	printf("input char:");
+	ch = getchar();
+	printf("getchar:%c\n", ch);
+
+	remove("out.txt");
+}
+
+void do7()
+{
+
+}
+
 int main(int argc, char const *argv[])
 {
 	//do1();
 	//do2();
 	//do3();
 	//do4();
-	do5();
+	//do5();
+	do6();
+	do7();
 
 	return 0;
 }
