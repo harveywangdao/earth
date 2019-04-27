@@ -30,24 +30,32 @@ void do1()
 	}
 
 	fclose(pf);
+
+	char *ppstr = NULL;
+	size_t sz = 0;
+	FILE *strpf = open_memstream(&ppstr, &sz);
+	if (strpf == NULL)
+	{
+		perror("open_memstream fail");
+		return;
+	}
+
+	fflush(strpf);
+	printf("open_memstream:%ld:%p:%s\n", sz, ppstr, ppstr);
+
+	fputs("ABCDEFGH", strpf);
+	fflush(strpf);
+	printf("open_memstream:%ld:%p:%s\n", sz, ppstr, ppstr);
+
+	fputs("12345678", strpf);
+	fflush(strpf);
+	printf("open_memstream:%ld:%p:%s\n", sz, ppstr, ppstr);
+
+	fclose(strpf);
+
+	free(ppstr);
+	printf("open_memstream:%ld:%p:%s\n", sz, ppstr, ppstr);
 }
-
-/*
-fwide
-
-setbuf
-setvbuf
-
-ferror
-feof
-clearerr
-
-
-
-
-open_memstream
-open_wmemstream
-*/
 
 void do2()
 {
@@ -438,6 +446,91 @@ void do10()
 	unlink(tpl);
 }
 
+void do11()
+{
+	FILE *fp = fopen("file.txt", "w+");
+	if (fp == NULL)
+	{
+		printf("fopen fail\n");
+		return;
+	}
+
+	fprintf(fp, "%s", "123456");
+
+	rewind(fp);
+	while(!feof(fp))
+	{
+		printf("getc:%d\n", getc(fp));
+	}
+
+	printf("feof:%d\n", feof(fp));
+	clearerr(fp);
+	printf("feof:%d\n", feof(fp));
+
+	while(!feof(fp))
+	{
+		printf("getc:%d\n", getc(fp));
+	}
+
+	printf("feof:%d\n", feof(fp));
+	printf("ferror:%d\n", ferror(fp));
+
+	fclose(fp);
+	remove("file.txt");
+}
+
+void do12()
+{
+	FILE *fp = fopen("file.txt", "w+");
+	if (fp == NULL)
+	{
+		printf("fopen fail\n");
+		return;
+	}
+
+	//setbuf(fp, NULL);//no buffer
+	char buf[BUFSIZ];
+	setbuf(fp, buf);
+	
+	fprintf(fp, "%s", "123456");
+
+	printf("buf:%ld:%s\n", sizeof(buf), buf);
+
+	rewind(fp);
+	int ch;
+	while((ch=getc(fp)) && !feof(fp))
+	{
+		printf("getc:%c\n", ch);
+	}
+
+	fclose(fp);
+	remove("file.txt");
+
+	FILE *fp2 = fopen("file2.txt", "w+");
+	if (fp2 == NULL)
+	{
+		printf("fopen fail\n");
+		return;
+	}
+
+	char buf2[128];
+
+	setvbuf(fp2, buf2, _IOFBF, sizeof(buf2));
+	
+	fprintf(fp2, "%s", "ABCDEFGH");
+
+	printf("buf2:%ld:%s\n", sizeof(buf2), buf2);
+
+	rewind(fp2);
+	while((ch=getc(fp2)) && !feof(fp2))
+	{
+		printf("getc:%c\n", ch);
+	}
+
+	fclose(fp2);
+	remove("file2.txt");
+}
+
 int main(int argc, char const *argv[])
 {
 	//do1();
@@ -449,7 +542,9 @@ int main(int argc, char const *argv[])
 	//do7();
 	//do8();
 	//do9();
-	do10();
+	//do10();
+	//do11();
+	do12();
 
 	return 0;
 }
