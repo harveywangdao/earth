@@ -38,27 +38,13 @@ fwide
 setbuf
 setvbuf
 
-freopen
-fdopen
-
-fprintf
-fscanf
-
-fread
-fwrite
-
 ferror
 feof
 clearerr
 
-ungetc
 
-fileno
 
-tmpnam
-tmpfile
 
-fmemopen
 open_memstream
 open_wmemstream
 */
@@ -251,7 +237,205 @@ void do6()
 
 void do7()
 {
+	int fd = open("file.txt", O_RDWR|O_CREAT|O_TRUNC, 0666);
+	if (fd == -1)
+	{
+	  perror("open fail");
+	  return;
+	}
 
+	char *str = "test fdopen";
+	int nb = write(fd, str, strlen(str));
+	if (nb == -1)
+	{
+	  perror("write fail");
+	  return;
+	}
+
+	FILE *fp = fdopen(fd, "r");
+	if (fp == NULL)
+	{
+		printf("fdopen fail\n");
+		return;
+	}
+
+	rewind(fp);
+	char buf[32];
+	char *p = fgets(buf, sizeof(buf), fp);
+	if (p == NULL)
+	{
+		printf("fgets fail\n");
+		return;
+	}
+	printf("fgets buf:%s\n", buf);
+
+	fclose(fp);
+  close(fd);
+
+  remove("file.txt");
+}
+
+void do8()
+{
+	FILE *fp = fopen("file.txt", "w+");
+	if (fp == NULL)
+	{
+		printf("fopen fail\n");
+		return;
+	}
+
+	fprintf(fp, "%s", "fprintftest123");
+	
+	rewind(fp);
+	char buf[32]={0};
+	fscanf(fp, "%s", buf);
+	printf("fscanf:%s\n", buf);
+
+	rewind(fp);
+	char *str = "fwrite test";
+	int n = fwrite(str, sizeof(str[0]), strlen(str), fp);
+	printf("fwrite n:%d\n", n);
+
+	rewind(fp);
+	n = fread(buf, sizeof(buf[0]), sizeof(buf)-1, fp);
+	buf[n] = '\0';
+	printf("fread n:%d:%s\n", n, buf);
+
+	int fd = fileno(fp);
+	lseek(fd, 0, SEEK_SET);
+	str = "fileno";
+	int nb = write(fd, str, strlen(str));
+	if (nb == -1)
+	{
+	  perror("write fail");
+	  return;
+	}
+
+	lseek(fd, 0, SEEK_SET);
+	memset(buf, 0, sizeof(buf));
+	nb = read(fd, buf, sizeof(buf));
+	if (nb == -1)
+	{
+	  perror("read fail");
+	  return;
+	}
+	printf("read %d:%s\n", nb, buf);
+
+	fclose(fp);
+	remove("file.txt");
+}
+
+void do9()
+{
+	FILE *fp = fopen("file.txt", "w+");
+	if (fp == NULL)
+	{
+		printf("fopen fail\n");
+		return;
+	}
+
+	fprintf(fp, "%s", "123456");
+
+	rewind(fp);
+	int ch = getc(fp);
+	if (ch == EOF)
+	{
+		printf("getc EOF\n");
+	}
+	else
+	{
+		printf("getc:%c\n", ch);
+	}
+
+	ch = ungetc('A', fp);
+	if (ch == EOF)
+	{
+		printf("ungetc EOF\n");
+	}
+	else
+	{
+		printf("ungetc:%c\n", ch);
+	}
+	ungetc('B', fp);
+	ungetc('C', fp);
+	ungetc('D', fp);
+
+	while((ch = getc(fp)) != EOF)
+	{
+		printf("getc:%c\n", ch);
+	}
+
+	rewind(fp);
+	char buf[32]={0};
+	int n = fread(buf, sizeof(buf[0]), sizeof(buf)-1, fp);
+	buf[n] = '\0';
+	printf("fread n:%d:%s\n", n, buf);
+
+	fclose(fp);
+	remove("file.txt");
+}
+
+void do10()
+{
+	char name[L_tmpnam];
+
+	for (int i = 0; i < 3; ++i)
+	{
+		tmpnam(name);//tmpnam is dangerous
+		printf("tmpnam:%s\n", name);
+	}
+
+	char *p = tempnam("/home/thomas/golang/src/earth/paper", "aaa_");//tempnam is dangerous
+	printf("tempnam:%s\n", p);
+
+	FILE *fp = tmpfile();
+	fprintf(fp, "%s", "123456");
+
+	rewind(fp);
+	char buf[32]={0};
+	int n = fread(buf, sizeof(buf[0]), sizeof(buf)-1, fp);
+	buf[n] = '\0';
+	printf("fread n:%d:%s\n", n, buf);
+	fclose(fp);
+
+	char dir[] = "helloa_XXXXXX";
+	p = mkdtemp(dir);
+	if (p == NULL)
+	{
+		perror("mkdtemp fail");
+		return;
+	}
+	printf("%s\n%s\n", dir, p);
+
+	remove(dir);
+
+	char tpl[] = "hellos_XXXXXX";
+	int fd = mkstemp(tpl);
+	if (fd == -1)
+	{
+		perror("mkstemp fail\n");
+		return;
+	}
+
+	char *str = "mkstemp test";
+	int nb = write(fd, str, strlen(str));
+	if (nb == -1)
+	{
+	  perror("write fail");
+	  return;
+	}
+	
+	lseek(fd, 0, SEEK_SET);
+	memset(buf, 0, sizeof(buf));
+	nb = read(fd, buf, sizeof(buf));
+	if (nb == -1)
+	{
+	  perror("read fail");
+	  return;
+	}
+	printf("read %d:%s\n", nb, buf);
+	close(fd);
+	unlink(tpl);
 }
 
 int main(int argc, char const *argv[])
@@ -261,8 +445,11 @@ int main(int argc, char const *argv[])
 	//do3();
 	//do4();
 	//do5();
-	do6();
-	do7();
+	//do6();
+	//do7();
+	//do8();
+	//do9();
+	do10();
 
 	return 0;
 }
