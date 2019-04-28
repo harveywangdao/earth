@@ -68,5 +68,18 @@ int main(int argc, char const *argv[])
   clock_t tms2 = times(&stoptms);
   printf("tms2 = %ld %ld %ld %ld %ld\n", tms2, stoptms.tms_utime, stoptms.tms_stime, stoptms.tms_cutime, stoptms.tms_cstime);
 
+  struct timespec tsc;
+  clock_gettime(CLOCK_REALTIME, &tsc);
+  printf("CLOCK_REALTIME:%ld %ld\n", tsc.tv_sec, tsc.tv_nsec);
+  sleep(1);
+  clock_gettime(CLOCK_REALTIME, &tsc);
+  printf("CLOCK_REALTIME:%ld %ld\n", tsc.tv_sec, tsc.tv_nsec);
+
+  clock_gettime(CLOCK_MONOTONIC, &tsc);
+  printf("CLOCK_MONOTONIC:%ld %ld\n", tsc.tv_sec, tsc.tv_nsec);
+  sleep(1);
+  clock_gettime(CLOCK_MONOTONIC, &tsc);
+  printf("CLOCK_MONOTONIC:%ld %ld\n", tsc.tv_sec, tsc.tv_nsec);
+
   return 0;
 }
