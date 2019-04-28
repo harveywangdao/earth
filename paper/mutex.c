@@ -3,32 +3,56 @@
 #include <unistd.h>
 #include <sched.h>
 #include <semaphore.h>
+#include <stdlib.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <errno.h>
 
 //gcc -o app mutex.c -lpthread
 
-int count;
+int count = 0;
+int count2 = 3;
 pthread_mutex_t mutex;
 int running = 1;
 
-void *producer(void *arg)
+void *task1(void *arg)
 {
   while(running)
   {
     pthread_mutex_lock(&mutex);
     count++;
-    printf("producer count:%d\n", count);
+    count2++;
+    printf("task1 count:%d;count2:%d\n", count, count2);
+
+    if (count2 - count != 3)
+    {
+      printf("task1 mutex fail\n");
+      exit(1);
+    }
+
     pthread_mutex_unlock(&mutex);
     usleep(4);
   }
 }
 
-void *consumer(void *arg)
+void *task2(void *arg)
 {
   while(running)
   {
     pthread_mutex_lock(&mutex);
     count--;
-    printf("consumer count:%d\n", count);
+    count2--;
+    printf("task2 count:%d;count2:%d\n", count, count2);
+
+    if (count2 - count != 3)
+    {
+      printf("task2 mutex fail\n");
+      exit(1);
+    }
+
     pthread_mutex_unlock(&mutex);
     usleep(1);
   }
@@ -52,14 +76,14 @@ void do1()
 
   pthread_mutex_init(&mutex, NULL);
 
-  ret = pthread_create(&pt1, NULL, (void*)producer, NULL);
+  ret = pthread_create(&pt1, NULL, (void*)task1, NULL);
   if (ret != 0)
   {
     printf("create thread fail\n");
     return;
   }
 
-  ret = pthread_create(&pt2, NULL, (void*)consumer, NULL);
+  ret = pthread_create(&pt2, NULL, (void*)task2, NULL);
   if (ret != 0)
   {
     printf("create thread fail\n");
