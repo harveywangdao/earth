@@ -3,8 +3,10 @@
 #include <unistd.h>
 #include <sched.h>
 #include <semaphore.h>
+#include <sched.h>
 
 //gcc -o app thread.c -lpthread
+//int sched_yield(void);
 
 static int run = 1;
 static int retvalue;
