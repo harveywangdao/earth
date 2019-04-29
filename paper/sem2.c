@@ -9,6 +9,10 @@
 #include <errno.h>
 #include <semaphore.h>
 #include <limits.h>
+#include <sys/ipc.h>
+#include <sys/msg.h>
+#include <sys/sem.h>
+#include <sys/shm.h>
 
 // gcc -o app sem2.c -lpthread
 
@@ -30,8 +34,9 @@
 
 void do1()
 {
+  int value = 0;
   int ret;
-  /*ret = sem_unlink("/ipc_sem_cup");
+/*  ret = sem_unlink("/ipc_sem_cup");
   if (ret == -1)
   {
     printf("sem_unlink fail\n");
@@ -46,6 +51,9 @@ void do1()
     return;
   }
 
+  sem_getvalue(sem, &value);
+  printf("1 value:%d\n", value);
+
   ret = sem_wait(sem);
   if (ret == -1)
   {
@@ -53,12 +61,18 @@ void do1()
     return;
   }
 
+  sem_getvalue(sem, &value);
+  printf("2 value:%d\n", value);
+
   ret = sem_trywait(sem);
   if (ret == -1)
   {
     printf("sem_trywait fail\n");
     return;
   }
+
+  sem_getvalue(sem, &value);
+  printf("3 value:%d\n", value);
 
   struct timespec tsc;
   tsc.tv_sec = 1;
@@ -69,6 +83,9 @@ void do1()
     printf("sem_timedwait fail\n");
     return;
   }
+  
+  sem_getvalue(sem, &value);
+  printf("4 value:%d\n", value);
 
   ret = sem_post(sem);
   if (ret == -1)
@@ -76,6 +93,9 @@ void do1()
     printf("sem_post fail\n");
     return;
   }
+
+  sem_getvalue(sem, &value);
+  printf("5 value:%d\n", value);
 
   ret = sem_close(sem);
   if (ret == -1)
@@ -95,24 +115,45 @@ void do1()
 void do2()
 {
   int ret;
-  sem_t sem_origin;
-  sem_t *sem = &sem_origin;
-  ret = sem_init(sem, 1, 5);
+  sem_t sem;
+  int value;
+
+  ret = sem_init(&sem, 0, 5);
   if (ret == -1)
   {
     printf("sem_init fail\n");
     return;
   }
 
-  int sem_value;
-  ret = sem_getvalue(sem, &sem_value);
+  ret = sem_getvalue(&sem, &value);
   if (ret == -1)
   {
     printf("sem_getvalue fail\n");
     return;
   }
+  printf("1 value:%d\n", value);
 
-  ret = sem_destroy(sem);
+  ret = sem_wait(&sem);
+  if (ret == -1)
+  {
+    printf("sem_wait fail\n");
+    return;
+  }
+
+  sem_getvalue(&sem, &value);
+  printf("2 value:%d\n", value);
+
+  ret = sem_post(&sem);
+  if (ret == -1)
+  {
+    printf("sem_post fail\n");
+    return;
+  }
+
+  sem_getvalue(&sem, &value);
+  printf("3 value:%d\n", value);
+
+  ret = sem_destroy(&sem);
   if (ret == -1)
   {
     printf("sem_destroy fail\n");
@@ -214,17 +255,44 @@ void do3()
   }
 }
 
+#define IPC_PATH "/home/thomas/golang/src/github.com/harveywangdao/earth/paper/sem2.c"
+
 void do4()
 {
+  key_t key;
+  key = ftok(IPC_PATH, 'd');
+  if (key == -1)
+  {
+    printf("ftok fail\n");
+    return;
+  }
+
+  int flag = IPC_CREAT | IPC_EXCL;
+  int shmid = shmget(key, 512, flag | 0666);
+  if (shmid == -1)
+  {
+    perror("shmget fail\n");
+    return;
+  }
+
+  char *addr = shmat(shmid, 0, 0);
+  if (addr == (char*)(-1))
+  {
+    perror("shmat fail\n");
+    return;
+  }
+
   int ret;
-  sem_t sem_origin;
-  sem_t *sem = &sem_origin;
-  ret = sem_init(sem, 1, 1);
+  sem_t sem;
+  ret = sem_init(&sem, 1, 1);
   if (ret == -1)
   {
     printf("sem_init fail\n");
     return;
   }
+
+  printf("sizeof(sem_t):%ld\n", sizeof(sem));
+  memcpy(addr, &sem, sizeof(sem));
 
   pid_t pid;
   pid = fork();
@@ -237,65 +305,100 @@ void do4()
   {
     printf("son start, pid = %d, ppid = %d\n", getpid(), getppid());
 
+    sem_t *son_sem = (sem_t*)addr;
+
     int value = 0;
-    sem_getvalue(sem, &value);
+    sem_getvalue(son_sem, &value);
     printf("son sem value:%d\n", value);
 
-    sem_wait(sem);
+    sem_wait(son_sem);
 
     printf("son sleep start\n");
     sleep(2);
     printf("son sleep end\n");
 
-    sem_getvalue(sem, &value);
+    sem_getvalue(son_sem, &value);
     printf("son sem value:%d\n", value);
 
-    sem_post(sem);
+    sem_post(son_sem);
 
-    sem_getvalue(sem, &value);
+    sem_getvalue(son_sem, &value);
     printf("son sem value:%d\n", value);
 
-    ret = sem_destroy(sem);
+    ret = sem_destroy(son_sem);
     if (ret == -1)
     {
       printf("sem_destroy fail\n");
       exit(0);
     }
 
+    ret = shmdt(addr);
+    if (ret == -1)
+    {
+      perror("shmdt fail\n");
+      exit(1);
+    }
+
+    /*ret = shmctl(shmid, IPC_RMID, NULL);
+    if (ret == -1)
+    {
+      perror("shmctl fail\n");
+      exit(1);
+    }*/
+
     printf("son end, pid = %d, ppid = %d\n", getpid(), getppid());
     exit(0);
   }
   else
   {
+    sleep(1);
+
+    sem_t *fa_sem = (sem_t*)addr;
+
+    sem_post(fa_sem);
     int value = 0;
-    sem_getvalue(sem, &value);
+    sem_getvalue(fa_sem, &value);
     printf("sem value:%d\n", value);
 
-    sem_wait(sem);
+    sem_wait(fa_sem);
 
     printf("sleep start\n");
     sleep(2);
     printf("sleep end\n");
 
-    sem_getvalue(sem, &value);
+    sem_getvalue(fa_sem, &value);
     printf("sem value:%d\n", value);
 
-    ret = sem_trywait(sem);
+    ret = sem_trywait(fa_sem);
     if (ret == -1)
     {
       printf("sem_trywait fail\n");
     }
 
-    sem_post(sem);
+    sem_post(fa_sem);
 
-    sem_getvalue(sem, &value);
+    sem_getvalue(fa_sem, &value);
     printf("sem value:%d\n", value);
 
-    ret = sem_destroy(sem);
+    ret = sem_destroy(fa_sem);
     if (ret == -1)
     {
       printf("sem_destroy fail\n");
       //return;
+    }
+
+    ret = shmdt(addr);
+    if (ret == -1)
+    {
+      perror("shmdt fail\n");
+      exit(1);
+    }
+
+    ret = shmctl(shmid, IPC_RMID, NULL);
+    if (ret == -1)
+    {
+      perror("shmctl fail\n");
+      exit(1);
     }
 
     int status = 0;
@@ -320,8 +423,8 @@ int main(int argc, char const *argv[])
   //do1();
   //do2();
   //do3();
-  //do4();
-  do5();
+  do4();
+  //do5();
 
   return 0;
 }
