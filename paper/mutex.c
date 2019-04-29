@@ -13,6 +13,13 @@
 
 //gcc -o app mutex.c -lpthread
 
+/*
+1.同一个线程加锁解锁                                 ok
+2.同进程内的多线程间，一个线程加锁，另一个线程解锁      ok
+3.亲缘进程间，一个进程加锁，另一个进程解锁
+4.无关进程间，一个进程加锁，另一个进程解锁
+*/
+
 int count = 0;
 int count2 = 3;
 pthread_mutex_t mutex;
@@ -100,9 +107,63 @@ void do1()
   pthread_mutex_destroy(&mutex);
 }
 
+void *taska(void *arg)
+{
+  while(running)
+  {
+    printf("taska pthread_mutex_lock start\n");
+    pthread_mutex_lock(&mutex);
+    printf("taska pthread_mutex_lock end\n");
+  }
+}
+
+void *taskb(void *arg)
+{
+  while(running)
+  {
+    sleep(2);
+    printf("taskb pthread_mutex_unlock start\n");
+    pthread_mutex_unlock(&mutex);
+    printf("taskb pthread_mutex_unlock end\n");
+  }
+}
+
+void do2()
+{
+  pthread_t pt1;
+  pthread_t pt2;
+  int ret = -1;
+
+  pthread_mutex_init(&mutex, NULL);
+
+  ret = pthread_create(&pt1, NULL, (void*)taska, NULL);
+  if (ret != 0)
+  {
+    printf("create thread fail\n");
+    return;
+  }
+
+  ret = pthread_create(&pt2, NULL, (void*)taskb, NULL);
+  if (ret != 0)
+  {
+    printf("create thread fail\n");
+    return;
+  }
+
+  sleep(10);
+
+  running = 0;
+
+  pthread_join(pt1, NULL);
+  pthread_join(pt2, NULL);
+
+  pthread_mutex_destroy(&mutex);
+}
+
 int main(int argc, char const *argv[])
 {
-	do1();
+  //do1();
+	do2();
 
 	return 0;
 }
