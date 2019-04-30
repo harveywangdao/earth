@@ -1,0 +1,49 @@
+{{template "header"}}
+      <title>Add Topic Page</title>
+  </head>
+
+  <body>
+      <div class="navbar navbar-default navbar-fixed-top">
+          <div class="container">
+            {{template "navbar" .}}
+          </div>
+      </div>
+      <br>
+      <br>
+      <br>
+      <div class="container">
+        <h1>Add Topic</h1>
+        <form method="post" action="/topic/" enctype="multipart/form-data">
+          <div class="form-group">
+            <label>Topic Title:</label>
+            <input type="text" name="title" class="form-control">
+          </div>
+
+          <div class="form-group">
+            <label>Topic Category:</label>
+            <input type="text" name="topiccategory" class="form-control">
+          </div>
+
+          <div class="form-group">
+            <label>Topic Labels:</label>
+            <input type="text" name="topiclabel" class="form-control">
+          </div>
+
+          <div class="form-group">
+            <label>Topic Content:</label>
+            <textarea name="content" cols="30" rows="10" class="form-control"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>Topic Attachment: (<a href="/attachment/{{.Topic.Attachment}}">{{.Topic.Attachment}}</a>)</label>
+            <input type="file" name="attachment" class="form-control">
+          </div>
+
+          <button type="submit" class="btn btn-default">Add Topic</button>
+        </form>
+      </div>
+
+      <script type="text/javascript" src="/static/js/jquery-3.2.1.min.js" ></script>
+      <script type="text/javascript" src="/static/js/bootstrap.min.js" ></script>
+  </body>
+</html>
