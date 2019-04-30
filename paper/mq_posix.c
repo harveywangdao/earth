@@ -101,6 +101,8 @@ void do1()
       exit(0);
     }
 
+    sleep(2);
+    
     char *str = "hello mq";
     ret = mq_send(fd, str, strlen(str)+1, 1);//MQ_PRIO_MAX
     if (ret == -1)
@@ -121,10 +123,9 @@ void do1()
   }
   else
   {
-    sleep(2);
-
     char buf[32];
     unsigned int prio = 1;
+    printf("mq_receive wait\n");
     ret = mq_receive(fd, buf, sizeof(buf), &prio);//MQ_PRIO_MAX
     if (ret == -1)
     {
@@ -132,7 +133,7 @@ void do1()
       return;
     }
 
-    printf("buf:%s\n", buf);
+    printf("mq_receive buf:%s\n", buf);
 
     ret = mq_close(fd);
     if (ret == -1)
