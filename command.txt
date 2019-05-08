@@ -1,0 +1,1767 @@
+1.groupadd
+  sudo groupadd groupname
+  sudo groupdel groupname
+  sudo useradd ¨Cd /usr/sam -m sam
+  sudo userdel sam
+  passwd
+  
+2.samba
+  sudo apt-get update
+  sudo apt-get install samba samba-common
+  sudo mkdir /home/share
+  sudo chmod 777 /home/share
+  sudo vim /etc/samba/smb.conf
+  security = user
+  [myshare]
+    comment = my share directory
+    path = /home/share
+    browseable = yes
+    writable = yes
+  sudo useradd smbuser
+  sudo smbpasswd -a smbuser
+  sudo service smbd restart
+
+  sudo smbpasswd -x username
+  
+3.sudo gedit /etc/default/apport
+  sudo rm -rf /var/crash
+  sudo sed -i 's/enabled=1/enabled=0/g' /etc/default/apport
+  sudo df -hl
+  sudo du -sh dir
+  sudo du -ah --max-depth=1
+  sudo fdisk -l
+  
+4.apt-get update
+  apt-get install packagename
+  apt-get install packagename --reinstall
+  apt-get -f install
+  apt-get remove packagename
+  apt-get remove --purge packagename
+  apt-get autoremove packagename
+  apt-get autoremove --purge packagname
+  dpkg --force-all --purge packagename
+  apt-get autoclean
+  apt-get clean 
+  apt-get upgrade
+  apt-get dist-upgrade
+  apt-cache search package
+  apt-cache show package
+  apt-cache depends package
+  apt-cache rdepends package
+  apt-get build-dep package
+  apt-get source package
+  apt-get clean && sudo apt-get autoclean
+  apt-get install --reinstall ca-certificates
+
+  lsb_release -a
+  do-release-upgrade
+  
+5.zip -r xxx.zip dir
+  unzip xxx.zip
+  tar -cvf xxx.tar dir
+  tar -xvf xxx.tar
+  tar -jcvf xxx.tar.bz2 dir
+  tar -jxvf xxx.tar.bz2 -C des_dir
+  tar -zcvf xxx.tar.gz dir
+  tar -zxvf xxx.tar.gz -C des_dir
+  xz -z xxx.tar.xz
+  xz -d xxx.tar.xz
+  tar -xvJf
+  
+6.ifconfig eth0 up
+  ifconfig eth0 down
+  
+  ifconfig eth0 192.168.120.56 netmask 255.255.255.0 broadcast 192.168.120.255
+  
+  
+7.sudo su
+  vim /etc/network/interfaces
+  # interfaces(5) file used by ifup(8) and ifdown(8)auto loiface lo inet loopback
+  # The primary network interface
+  auto eth0
+  iface eth0 inet static
+  address 192.168.195.129
+  netmask 255.255.255.0
+  gateway 192.168.195.1
+  network 192.168.195.0
+  broadcast 192.168.195.255
+  
+  vim /etc/resolv.conf
+  nameserver 192.168.0.1
+  nameserver 8.8.8.8
+  
+  vim /etc/resolvconf/resolv.conf.d/base
+  nameserver 192.168.0.1
+  nameserver 8.8.8.8
+  
+  /etc/init.d/networking restart
+    
+  ifdown eth0
+  ifup eth0
+  
+  
+8.golang-beego
+	go get github.com/beego/bee
+	go get github.com/astaxie/beego
+  //golang.org/x/net/context
+  mkdir -p golang.org/x
+  git clone https://github.com/golang/net.git
+  go get github.com/mattn/go-sqlite3
+  go get github.com/Unknwon/com
+	go get -u github.com/beego/bee
+	go get -u github.com/astaxie/beego
+	bee fix
+	
+	bee new projectname
+	bee run
+	localhost:8080
+
+9.SSL/TLS
+  go run $GOROOT/src/crypto/tls/generate_cert.go --host 127.0.0.1
+
+
+10.PostgreSQL
+  sudo /etc/init.d/postgresql start
+  sudo /etc/init.d/postgresql stop
+
+  sudo su - postgres
+  psql
+  \password postgres
+
+  CREATE USER dbuser WITH PASSWORD 'password';
+  CREATE DATABASE exampledb OWNER dbuser;
+  GRANT ALL PRIVILEGES ON DATABASE exampledb to dbuser;
+
+  \q
+
+  psql -U dbuser -d exampledb -h 127.0.0.1 -p 5432
+
+
+  CREATE TABLE user_tbl(name VARCHAR(20), signup_date DATE);
+  INSERT INTO user_tbl(name, signup_date) VALUES('ÕÅÈý', '2013-12-22');
+  SELECT * FROM user_tbl;
+  UPDATE user_tbl set name = 'ÀîËÄ' WHERE name = 'ÕÅÈý';
+  DELETE FROM user_tbl WHERE name = 'ÀîËÄ' ;
+  ALTER TABLE user_tbl ADD email VARCHAR(40);
+  ALTER TABLE user_tbl ALTER COLUMN signup_date SET NOT NULL;
+  ALTER TABLE user_tbl RENAME COLUMN signup_date TO signup;
+  ALTER TABLE user_tbl DROP COLUMN email;
+  ALTER TABLE user_tbl RENAME TO backup_tbl;
+  DROP TABLE IF EXISTS backup_tbl;
+
+11.Redis
+  sudo apt-get install redis-server
+  ps -aux|grep redis
+  netstat -nlt|grep 6379
+  sudo /etc/init.d/redis-server status
+  sudo /etc/init.d/redis-server restart
+  sudo /etc/init.d/redis-server start
+  sudo /etc/init.d/redis-server stop
+
+  sudo vi /etc/redis/redis.conf
+  requirepass redisredis
+  #bind 127.0.0.1
+  sudo /etc/init.d/redis-server restart
+
+  redis-cli -a 180498
+  redis-cli -h host -p port -a password
+
+  set key1 "hello"
+  get key1
+
+  set key2 1
+  INCR key2
+
+  LPUSH key3 a
+  LPUSH key3 b
+  LRANGE key3 0 3
+
+  HSET key4 name "John Smith"
+  HSET key4 email "abc@gmail.com"
+  HGET key4 name
+  HGETALL key4
+
+  del key1
+
+12.MongoDB
+  sudo apt-get install mongodb
+
+  service mongodb start
+  service mongodb restart
+  service mongodb stop
+
+  sudo vim /etc/mongodb.conf
+
+  pgrep mongo -l
+  sudo apt-get --purge remove mongodb mongodb-clients mongodb-server
+
+  show dbs
+  show collections
+  show users
+  use yourDB
+  db.help()
+  db.yourCollection.help()
+  db.createCollection('teacher')
+  db.student.insert({_id:1, sname: 'zhangsan', sage: 20})
+  db.student.save({_id:1, sname: 'zhangsan', sage: 22})
+  db.student.find()
+  db.student.find({sname: 'lisi'})
+  db.student.update({sname: 'lisi'}, {$set: {sage: 30}}, false, true)
+  db.student.remove({sname: 'chenliu'})
+
+  mongod --dbpath "D:\mongo\data\db" --logpath "D:\mongo\data\log\mongodb.log" --install --serviceName "mongodb"
+  NET START mongodb
+  NET stop mongodb
+  
+13.Docker
+  sudo apt-get update
+  sudo apt-get install \
+      apt-transport-https \
+      ca-certificates \
+      curl \
+      software-properties-common
+
+  curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+  sudo apt-key fingerprint 0EBFCD88
+
+  sudo add-apt-repository \
+     "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
+     $(lsb_release -cs) \
+     stable"
+
+  sudo apt-get update
+  sudo apt-get install docker-ce
+  sudo docker run hello-world
+
+  wget -qO- https://get.docker.com/ | sh
+  curl -sSL https://get.docker.com/ | sh
+
+  sudo usermod -aG docker thomas
+
+  docker version
+  docker run hello-world
+
+  docker search tutorial
+  docker pull learn/tutorial
+  docker run learn/tutorial echo "hello word"
+
+  docker run learn/tutorial apt-get install -y ping
+  docker ps -l
+  docker commit id learn/ping
+  docker run lean/ping ping www.baidu.com
+  docker inspect id/NAME
+
+  docker images
+  docker push learn/ping
+
+  sudo service docker start
+
+  docker run ubuntu:16.04 /bin/echo "Hello world"
+  docker run -i -t ubuntu:16.04 /bin/bash
+  docker run -d ubuntu:16.04 /bin/sh -c "while true; do echo hello world; sleep 1; done"
+  docker logs id/NAME
+  docker stop id/NAME
+  docker start id/NAME
+  docker restart id/NAME
+  docker rm id/NAME
+
+  docker run -d -P training/webapp python app.py
+  docker run -d -p 5000:5000 training/webapp python app.py
+  docker run -d -p 127.0.0.1:5000:5000/udp training/webapp python app.py
+  docker port id/NAME
+  docker logs -f id/NAME
+
+  Dockerfile
+  docker build -t runoob/centos:6.7 .
+  docker tag id runoob/centos:dev
+
+  docker rmi -f runoob/ubuntu:v4
+
+14.scrapy
+  scrapy startproject jdspider
+  scrapy genspider jd jd.com
+  scrapy crawl jd -o xxx.json
+
+
+15.nginx
+  sudo apt-get install nginx
+
+  sudo apt-get install build-essential libtool libpcre3 libpcre3-dev zlib1g-dev openssl
+  tar -zxvf nginx-1.14.0.tar.gz
+  cd nginx-1.14.0
+  ./configure --prefix=/usr/local/nginx --with-stream
+  make
+  sudo make install
+  sudo ln -s /usr/local/nginx/sbin/nginx /usr/bin/nginx
+  vim /etc/init.d/nginx
+  sudo update-rc.d nginx defaults
+  sudo service nginx start
+
+  nginx -s stop
+  nginx -s reload
+  nginx -s reopen
+
+  ps -ax | grep nginx
+
+  sudo service nginx start
+  sudo service nginx stop
+  sudo service nginx restart
+  /etc/init.d/nginx start/stop/restart
+
+  dpkg --get-selections|grep nginx
+  sudo apt-get --purge remove nginx
+  sudo apt-get --purge remove nginx-common
+  sudo apt-get --purge remove nginx-core
+  ps -ef |grep nginx
+
+  sudo vim /usr/local/nginx/conf/nginx.conf
+  sudo nginx -s reload
+
+16.git
+  sudo apt-get install git
+  
+  git config --global user.name "thomas"
+  git config --global user.email "1272777053@qq.com"
+  
+  git config --list
+  
+  git clone https://github.com/harveywangdao/helloworld.git
+  
+  git add .
+  
+  git commit -m "changes log"
+  
+  git status
+  
+  git pull
+  git push
+    
+  git push -u origin master
+
+  ssh-keygen -t rsa
+
+  git init --bare bigpen.git
+  git clone thomas@119.23.8.126:/home/thomas/doc/tech/bigpen.git
+
+17.golang
+  liteIDE goland
+
+  sudo tar -zxvf go1.6.2.linux-amd64.tar.gz -C /usr/local/
+  sudo vim  /etc/profile
+  export GOROOT=/usr/local/go
+  //export GOBIN=$GOROOT/bin
+  export PATH=$PATH:$GOROOT/bin
+  export GOPATH=$HOME/goproj
+  export PATH=$PATH:$GOPATH/bin
+  source /etc/profile
+  go version
+  
+18.FTP:
+  sudo apt-get install vsftpd
+  sudo vim /etc/vsftpd.conf
+  sudo service vsftpd restart
+
+19.ssh
+  sudo apt-get install openssh-server openssh-client
+  sudo ps -e |grep ssh
+  sudo service ssh start
+  
+  /etc/init.d/ssh start
+  sudo/etc/init.d/ssh restart
+  
+  /etc/ssh/sshd_config
+
+20.JDK:
+  http://www.oracle.com/technetwork/java/javase/downloads/index.html
+  sudo mkdir /usr/local/java
+  sudo tar -xzvf jdk-8u91-linux-x64.tar.gz -C /usr/local/java/
+  #sudo vim /etc/profile
+  #source /etc/profile
+  sudo vim ~/.bashrc
+  export JAVA_HOME=/usr/local/java/jdk1.8.0_91
+  export JRE_HOME=$JAVA_HOME/jre
+  export CLASSPATH=.:$JAVA_HOME/lib:$JRE_HOME/lib
+  export PATH=$PATH:$JAVA_HOME/bin:$JRE_HOME/bin
+  
+21.gcc/g++:
+  sudo apt-get install build-essential
+
+22.vim:
+  sudo apt-get install vim-gtk
+  sudo vim /etc/vim/vimrc
+  set nu                       // ÔÚ×ó²àÐÐºÅ
+  set tabstop=4                  //tab ³¤¶ÈÉèÖÃÎª 4
+  set nobackup               //¸²¸ÇÎÄ¼þÊ±²»±¸·Ý
+  set cursorline               //Í»³öÏÔÊ¾µ±Ç°ÐÐ
+  set ruler                       //ÔÚÓÒÏÂ½ÇÏÔÊ¾¹â±êÎ»ÖÃµÄ×´Ì¬ÐÐ
+  set autoindent             //×Ô¶¯Ëõ½ø
+
+23.vmware tools:
+  sudo tar zxf VMwareTools-xxx.tar.gz
+  cd /vmware-tools-distrib
+  sudo ./vmware-install.pl
+
+24.python:
+  PyCharm
+  xz -d Python-3.5.1.tar.xz
+  tar -C /home/harvey/src/ -xvf Python-3.5.1.tar
+  ./configure
+  sudo make
+  sudo make install
+  
+  /usr/local/lib/python3.5/
+  /usr/local/bin/python3.5
+  
+  sudo rm /usr/bin/python
+  sudo ln -s /usr/bin/python3.5 /usr/bin/python
+
+  Python 2.7.6
+  Python 3.4.3
+  Python 3.5.3
+
+  sudo apt-get install python-software-properties
+  sudo apt-get install software-properties-common
+  sudo add-apt-repository ppa:fkrull/deadsnakes
+  sudo apt-get update
+  sudo apt-get install python3.5
+  sudo ln -s /usr/bin/python3.5 /usr/bin/python
+
+  sudo python -m pip install --upgrade pip
+  
+25.Django:
+  django-admin.py startproject myproject
+  python manage.py runserver 0.0.0.0:8000
+  
+  python manage.py startapp myapp
+  
+  myproject/myproject/settings.py
+
+  INSTALLED_APPS = [
+      'django.contrib.admin',
+      'django.contrib.auth',
+      'django.contrib.contenttypes',
+      'django.contrib.sessions',
+      'django.contrib.messages',
+      'django.contrib.staticfiles',
+      'myapp',
+  ]
+
+  python manage.py makemigrations
+  python manage.py migrate
+
+  python manage.py createsuperuser
+
+  Django 1.9.5 Python2.7
+  pip 1.5.4
+  Django 1.11.6
+
+  sudo apt-get install python-pip  #python2.x
+  sudo apt-get install python3-pip #python3.x
+  sudo pip3 install packagename    #python3.x
+  sudo pip install Django
+  sudo pip install --upgrade pip
+  
+  django-admin.py startproject project-name
+  python manage.py startapp app-name
+  python manage.py makemigrations
+  python manage.py migrate
+  
+  python manage.py runserver
+  python manage.py runserver 8001
+  python manage.py runserver 0.0.0.0:8000
+  python manage.py flush
+  python manage.py createsuperuser
+  python manage.py changepassword username
+  python manage.py dumpdata appname > appname.json
+  python manage.py loaddata appname.json
+  python manage.py shell
+  
+  python manage.py dbshell
+
+26.MySQL:
+  mysql_upgrade -u root -p --force
+  show global variables like 'port';
+  
+  wget https://dev.mysql.com/get/mysql-apt-config_0.8.8-1_all.deb
+  sudo dpkg -i mysql-apt-config_0.8.8-1_all.deb
+  sudo apt-get update
+  sudo apt-get install mysql-server
+  sudo mysql_upgrade -u root -p
+  sudo service mysql restart
+  mysqlcheck -u root -p --all-databases
+
+  sudo apt-get install mysql-client
+  sudo apt-get install libmysqlclient-dev
+  
+  sudo apt-get install libapache2-mod-auth-mysql
+  sudo apt-get install python-mysqldb    #python2.x
+  
+  sudo netstat -tap | grep mysql
+  mysql -u root -p
+  mysql -h198.168.122.122 -u root -p 123456
+  exit
+  mysqladmin -u root -p 123456 password new123456
+  
+  sudo /etc/init.d/mysql start
+  sudo /etc/init.d/mysql stop
+  sudo /etc/init.d/mysql restart
+
+  bind-address = 0.0.0.0
+  GRANT ALL PRIVILEGES ON *.* TO'root'@'%' IDENTIFIED BY '180498' WITH GRANT OPTION;
+  flush privileges;
+
+  show variables like '%max_connections%';
+  set global max_connections=1000;
+  show status like 'Threads%';
+  show processlist;
+  
+  show databases;
+  set names utf8;
+  create database db001;
+  drop database db001;
+  drop database if exists db001;
+  use db001;
+  show tables;
+  grant select,insert,update,delete on *.* to [email=test1@¡±%]test1@¡±%[/email]¡± Identified by ¡°abc¡±;
+  grant select,insert,update,delete on mydb.* to [email=test2@localhost]test2@localhost[/email] identified by ¡°abc¡±;
+  grant select,insert,update,delete on mydb.* to [email=test2@localhost]test2@localhost[/email] identified by ¡°¡±;
+  
+  select version();
+  select now();
+  SELECT DAYOFMONTH(CURRENT_DATE);
+  SELECT MONTH(CURRENT_DATE);
+  SELECT YEAR(CURRENT_DATE);
+  SELECT "welecome to my blog!";
+  select ((4 * 4) / 10 ) + 25;
+  
+  create table MyTable(
+    id int(4) not null primary key auto_increment,
+    name char(20) not null,
+    sex int(4) not null default '0',
+    degree double(16,2)
+  );
+  drop table MyTable;
+  
+  insert into MyTable values(1,'Tom',96.45),(2,'Joan',82.99), (2,'Wang', 96.59);
+  select * from MyTable;
+  select * from MyTable order by id limit 0,2;
+  delete from MyTable where id=1;
+  update MyTable set name='Mary' where id=1;
+  alter table MyTable add passtest int(4) default '0';
+  rename table MyTable to MyTable1;
+
+27.apache:
+  sudo apt-get install apache2
+  
+  sudo apt-get install libapache2-mod-python
+  sudo apt-get install libapache2-mod-wsgi
+  
+  http://127.0.0.1
+  
+  ls /etc/apache2
+  
+  sudo /etc/init.d/apache2 start
+  sudo /etc/init.d/apache2 restart
+  sudo /etc/init.d/apache2 stop
+  
+  /var/www/html
+  sudo vim /etc/apache2/apache2.conf
+  sudo vim /etc/apache2/sites-available/000-default.conf
+  sudo cp /var/www/html/index.html /var/www/
+
+  
+  //sudo apt-get --purge remove apache2-common
+  sudo apt-get --purge remove apache2
+  sudo find /etc -name "*apache*" |xargs  rm -rf
+  sudo rm -rf /var/www
+  //sudo rm -rf /etc/libapache2-mod-jk
+  dpkg -l |grep apache2|awk '{print $2}'|xargs dpkg -P
+
+28.ZooKeeper
+  tar -xzvf zookeeper-3.4.10.tar.gz -C /home/thomas/server/
+  conf/zoo_sample.cfg --> conf/zoo.cfg
+
+  vim zoo.cfg
+  dataDir=/home/thomas/server/zookeeper-3.4.10/data
+  dataLogDir=/home/thomas/server/zookeeper-3.4.10/logs
+  server.1=localhost:2888:3888
+
+  data/myid -->1
+
+  sudo vim /etc/profile
+  export ZOOKEEPER_HOME=/home/thomas/server/zookeeper-3.4.10
+  export PATH=$PATH:$ZOOKEEPER_HOME/bin
+  source /etc/profile
+
+  zkServer.sh start
+  zkCli.sh -server localhost:2181
+  zkServer.sh status
+  zkServer.sh stop
+
+  create /mynode
+  get /mynode
+  rmr /mynode
+
+  zkserver
+  zkserver status
+  zkserver stop
+  zkcli -server localhost:2181
+
+29.kafka
+  tar -xzvf kafka_2.12-1.0.0.tgz -C /home/thomas/server/
+  #bin/zookeeper-server-start.sh config/zookeeper.properties
+  bin/kafka-server-start.sh config/server.properties
+  bin/kafka-server-stop.sh config/server.properties
+
+  bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic test
+  bin/kafka-topics.sh --list --zookeeper localhost:2181
+  bin/kafka-console-producer.sh --broker-list localhost:9092 --topic test
+  bin/kafka-console-consumer.sh --zookeeper localhost:2181 --topic test --from-beginning 2>/dev/null
+
+  bin/kafka-topics.sh --describe --zookeeper localhost:2181 --topic test
+
+  bin/kafka-console-producer.sh --broker-list localhost:9092 --topic my-replicated-topic
+  bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --from-beginning --topic my-replicated-topic
+
+  vim server.properties
+  vim zookeeper.properties
+  vim producer.properties
+  vim consumer.properties
+
+
+  cd E:\golang\src\hcxy\iov\iov_server
+  cd E:\golang\src\hcxy\iov\iov_client
+
+  bin\windows\kafka-server-start.bat config\server.properties
+  bin\windows\kafka-server-stop.bat config\server.properties
+
+  bin\windows\kafka-topics.bat --create --zookeeper localhost:2181 --replication-factor 1 --partitions 10 --topic TspToIov
+  bin\windows\kafka-topics.bat --list --zookeeper localhost:2181
+  bin\windows\kafka-console-producer.bat --broker-list localhost:9092 --topic TspToIov
+  bin\windows\kafka-console-consumer.bat --zookeeper localhost:2181 --topic TspToIov --from-beginning 2>/dev/null
+
+
+30.netstat
+  netstat -a
+  netstat -ap
+  sudo netstat -apn | grep 3306
+  ps -aux | grep pid
+  lsof -i:3306
+
+31.protobuf
+  git clone https://github.com/google/protobuf.git
+  ./autogen.sh
+  ./configure
+  make
+  sudo make install
+  protoc -I=$SRC_DIR --cpp_out=$DST_DIR /path/to/file.proto
+
+  sudo ldconfig 
+  #sudo vim /etc/ld.so.conf
+
+  go get -u github.com/golang/protobuf/protoc-gen-go
+  go get -u github.com/golang/protobuf/proto
+  protoc --go_out=. *.proto
+  protoc --go_out=plugins=grpc,import_path=mypackage:. *.proto
+  protoc --go_out=plugins=grpc:. *.proto
+
+  #go get -u google.golang.org/grpc
+  go get -u github.com/grpc/grpc-go
+
+32.node.js
+  curl -sL https://deb.nodesource.com/setup_10.x | sudo -E bash -
+  sudo apt-get install -y nodejs
+
+  curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
+  sudo apt-get install -y nodejs
+  
+  sudo npm install -g cnpm --registry=https://registry.npm.taobao.org
+  sudo cnpm install vue
+  sudo cnpm install --global vue-cli
+
+  vue init webpack my-project
+  cnpm install
+  cnpm run dev
+
+  npm cache clean --force
+  npm config set registry http://registry.npmjs.org
+  npm config set registry https://registry.npm.taobao.org
+  npm config list
+  npm config get registry
+  npm config get prefix
+
+  sudo npm uninstall -g cnpm
+  sudo npm install cnpm -g
+  sudo npm install -g cnpm --registry=https://registry.npm.taobao.org
+
+  npm config list
+  npm config ls
+  npm config ls -l
+
+  npm config set registry "http://registry.npmjs.org"
+  npm config set registry http://registry.cnpmjs.org
+  npm config set registry https://registry.npm.taobao.org
+  npm config set registry https://registry.npmjs.org
+
+  npm cache clean -f
+  npm cache clean --force
+  npm cache verify
+
+  npm info underscore
+  npm --registry http://registry.cnpmjs.org info underscore
+
+  sudo npm install npm -g
+
+33.nohup
+  nohup /root/start.sh >/dev/null 2>&1 &
+  nohup node app.js >>aaa.log 2>&1 &
+  exit退出终端才可以
+
+  forever start app.js
+  forever start -l forever.log -o out.log -e err.log app.js 
+  forever stop app.js
+  forever list
+
+34.挂载
+  sudo fdisk -l
+  sudo df -h
+  ls -l /dev/disk/by-id/
+  sudo file -s /dev/vdb
+
+  sudo fdisk /dev/vdb
+  n
+  p
+  1
+  wq
+
+  sudo fdisk -l
+  ls -l /dev/disk/by-id/
+
+  sudo mkfs.ext3 /dev/vdb1
+
+  mkdir ~/ethereum
+  mount /dev/vdb1 /home/ubuntu/ethereum
+
+  lsblk -f
+
+  sudo cp /etc/fstab /etc/fstab.backup
+
+  sudo vim /etc/fstab
+  /dev/disk/by-id/virtio-disk-o7pgds1a-part1 /home/ubuntu/ethereum ext3 defaults,nofail 0 1
+
+  sudo mount -a
+
+  扩容
+  sudo umount -v /home/ubuntu/ethereum
+  wget -O /tmp/devresize.py http://mirrors.tencentyun.com/install/virts/devresize.py
+  sudo python /tmp/devresize.py /dev/vdb
+  sudo mount -a
+
+35.MinGW Clang
+  gcc main.c -o appc.exe
+  g++ main.cpp -o appcpp.exe
+
+  #clang -std=c11 -Wall --target=i686-pc-mingw32 main.c -o appc.exe
+  #clang++ -std=c++14 -Wall --target=i686-pc-mingw32 main.cpp -o appcpp.exe
+
+  #clang --target=i686-w64-mingw32 main.c -o appc.exe
+  #clang --target=i686-pc-mingw32 main.c -o appc.exe
+  #clang++ --target=i686-pc-mingw32 main.cpp -o appcpp.exe
+  clang --target=x86_64-w64-mingw32 main.c -o appc.exe
+  clang++ --target=x86_64-w64-mingw32 main.cpp -o appcpp.exe
+
+  add_definitions("--target=i686-pc-mingw32")
+  set(CMAKE_C_COMPILER "D:/Program Files/LLVM/bin/clang.exe")
+  set(CMAKE_CXX_COMPILER "D:/Program Files/LLVM/bin/clang++.exe")
+  cmake -DCMAKE_CXX_COMPILER="D:/Program Files/LLVM/bin/clang++.exe"
+  cmake -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -DCMAKE_MAKE_PROGRAM=mingw32-make
+  message(STATUS "This is BINARY dir " ${CMAKE_BINARY_DIR})
+
+  cmake -G"Unix Makefiles" .
+  cmake -G"MinGW Makefiles" .
+
+  cmake -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++  .
+  cmake -DCMAKE_TOOLCHAIN_FILE=test.toolchain.cmake -G"MinGW Makefiles" .
+
+  findstr /s /i "__float128" *.*
+
+36.Ethereum
+  go get -d github.com/ethereum/go-ethereum
+  git checkout v1.8.12
+  make geth
+
+  geth --datadir data --rpc --rpcaddr 0.0.0.0 --rpccorsdomain "*" --syncmode "fast" --cache=2048 console 2>>eth.log
+  nohup geth --datadir data --rpc --rpcaddr 0.0.0.0 --rpccorsdomain "*" --syncmode "fast" --cache=2048 >>eth.log 2>&1 &
+  geth attach ipc:/home/ubuntu/ethereum/node1/data/geth.ipc
+
+  net.listening
+  net.peerCount
+  admin.peers
+  admin.nodeInfo
+  eth.accounts
+  personal.listAccounts
+  miner.setEtherbase("0x348b4276c75425016be89a2627bd4797d4c638dc")
+
+  personal.unlockAccount(eth.coinbase)
+  eth.getBalance(eth.coinbase).toNumber()
+  eth.syncing
+  eth.mining
+  eth.blockNumber
+  miner.setEtherbase(eth.coinbase)
+  miner.start(4)
+  miner.stop()
+
+  sudo cnpm install solc -g
+  sudo add-apt-repository ppa:ethereum/ethereum
+  sudo apt-get update
+  sudo apt-get install solc
+  sudo cnpm install web3 -g
+  sudo cnpm install truffle -g
+  sudo cnpm install webpack -g
+  sudo cnpm install webpack-cli -g
+
+  vim private.json
+  geth --datadir data init private.json
+  geth --rpc --rpcaddr 0.0.0.0 --rpccorsdomain "*" --datadir data --networkid 1448 console
+  geth attach ipc:/home/thomas/eth/data/geth.ipc
+
+  personal.newAccount('13717064390')
+  eth.getBalance('0xe89d4872b78ab5c5c903583725fe5d485686d6ce')
+  eth.getBalance("0x044b8ab7c603f0938f53e72b7586ec38f3eff044")
+  eth.getBalance('0xced5d036328e9b6da0ed9a7ce1a7770b951fc636')
+  miner.start(1)
+  miner.stop()
+
+  personal.unlockAccount("0xe89d4872b78ab5c5c903583725fe5d485686d6ce",'13717064390')
+  personal.unlockAccount("0x044b8ab7c603f0938f53e72b7586ec38f3eff044",'13717064390')
+  personal.unlockAccount("0xced5d036328e9b6da0ed9a7ce1a7770b951fc636",'13717064390')
+  eth.getBlock(1)
+  web3.toDecimal(0xffffffff)
+  web3.toWei('1','ether')
+  web3.fromWei('22000000000000', 'ether')
+  wei kwei mwei gwei microether milliether ether
+  txpool.status
+  eth.coinbase
+  eth.sendTransaction({from: '0xe89d4872b78ab5c5c903583725fe5d485686d6ce', to: '0x044b8ab7c603f0938f53e72b7586ec38f3eff044', value: web3.toWei(1, "ether")})  0x10ada6672609311159ae15510801e2c27db91c7e29c2129eb7f74c172a6f58bf
+  eth.sendTransaction({from: '0x044b8ab7c603f0938f53e72b7586ec38f3eff044', to: '0xced5d036328e9b6da0ed9a7ce1a7770b951fc636', value: web3.toWei(1, "ether")})
+  eth.getTransaction("0x1b21bba16dd79b659c83594b0c41de42debb2738b447f6b24e133d51149ae2a6")
+
+  truffle unbox webpack
+  npm install
+  truffle compile
+  truffle migrate
+  miner.start(1);admin.sleepBlocks(1);miner.stop();
+
+  1.获得地址和私钥
+  2.交易
+  3.编写Solidity智能合约
+  4.编译智能合约
+  5.安装智能合约
+  6.升级智能合约
+  7.交易gas、合约gas
+  8.solcjs solc --bin --abi -o ./ ./hello.sol
+  9.truffle
+  10.web3
+
+  1.solidity编码
+  2.solidity编译
+  3.移植智能合约ABI
+  4.用JSON-RPC与智能合约交互
+
+  MetaCoin.deployed().then(function(instance){return instance.getBalance(web3.eth.accounts[0]);}).then(function(value){return value.toNumber()});
+  MetaCoin.deployed().then(function(instance){return instance.sendCoin(web3.eth.accounts[1], 500);});
+
+  curl -X POST -H "Content-Type":application/json --data '{"jsonrpc":"2.0", "method":"eth_accounts","params":[],"id":67}' 127.0.0.1:8545
+  curl -X POST -H "Content-Type":application/json --data '{"jsonrpc":"2.0", "method":"eth_getBalance","params":["0xe89d4872b78ab5c5c903583725fe5d485686d6ce","latest"],"id":67}' 127.0.0.1:8545
+  curl -X POST -H "Content-Type":application/json --data '{"jsonrpc":"2.0", "method":"eth_blockNumber","params":[],"id":67}' 127.0.0.1:8545
+
+  curl -X POST -H "Content-Type":application/json --data '{"jsonrpc":"2.0","method":"eth_sendTransaction","params": [{                                                                               
+    "from": "0xe89d4872b78ab5c5c903583725fe5d485686d6ce",
+    "to": "0x044b8ab7c603f0938f53e72b7586ec38f3eff044",
+    "value": "0x1"
+  }],
+  "id":67}' 127.0.0.1:8545
+
+  {“jsonrpc”:”2.0”,”method”:”eth_call”,”params”:[{“to”:”0xcF9b0ea3D6Cd99C17531eaC74D9B8C845520D688”,”data”:”0xfe50cc72”},”latest”],”id”:67}
+  "{\"jsonrpc\":\"2.0\",\"method\":\"web3_clientVersion\",\"params\":[{\"to\":\"0x3b37B585D69720a10241b0690310daED9FBD521E\",\"data\":\"0xfe50cc72\"},\"latest\"],\"id\":67}";
+
+  curl -X POST -H "Content-Type":application/json --data '{"jsonrpc":"2.0", "method":"net_version","params":[],"id":67}' 127.0.0.1:8545
+
+  solc --abi contracts/Greeter.sol
+  abigen --abi contracts/Greeter.abi --pkg greeter --out greeter.go
+
+
+  solc --abi Store.sol
+  solc --bin Store.sol
+  abigen --bin=Store_sol_Store.bin --abi=Store_sol_Store.abi --pkg=store --out=Store.go
+
+  privkey:24e37b26f354d123eb4d2675bac002fd802e4db39d6df10fcd2faae8c111b586
+  address:0xf036eF6F352048b27C291295B6f6DCD237973a0d
+
+  contractAddr:0x2b01981B95904CA40B0F390b5D196D4fe56e2f0E
+
+  privkey:a166eae0879b0eee88a7a5960cf4f4e0b589c2b2f47121eaddd0d7f3df585059
+  address:0x23ACbdE81993A95F762Fe858fC75F201636056e5
+
+37.fabric
+
+38.EOS
+  mkdir /home/thomas/eos/contracts
+
+  docker pull eosio/eos:v1.4.5
+  docker logs --tail 10 eosio
+
+  curl http://127.0.0.1:8888/v1/chain/get_info
+
+  cleos --wallet-url http://127.0.0.1:5555 wallet list
+  curl --request POST --url http://127.0.0.1:5555/v1/wallet/list_wallets --header 'content-type: application/x-www-form-urlencoded; charset=UTF-8'
+
+  cleos --url http://127.0.0.1:8888/ --wallet-url http://0.0.0.0:5555/ push action eosio.token transfer '[ "alice", "bob", "25.0000 SYS", "m" ]' -p alice@active
+
+  git clone --recursive https://github.com/eosio/eosio.cdt --branch v1.2.1 --single-branch
+  cd eosio.cdt
+  ./build.sh SYS
+  sudo ./install.sh
+  
+  docker run --name eosio \
+    --publish 8888:8888 \
+    --publish 5555:5555 \
+    --volume /home/thomas/eos/contracts:/home/thomas/eos/contracts \
+    --detach \
+    eosio/eos \
+    /bin/bash -c \
+    "keosd --http-server-address=0.0.0.0:5555 & exec nodeos -e -p eosio --plugin eosio::producer_plugin --plugin eosio::producer_api_plugin --plugin eosio::chain_api_plugin --plugin eosio::history_plugin --plugin eosio::history_api_plugin --plugin eosio::http_plugin --data-dir /home/thomas/eosio/data --config-dir /home/thomas/eosio/config --http-server-address=0.0.0.0:8888 --access-control-allow-origin=* --contracts-console --http-validate-host=false --filter-on='*'"
+
+  docker exec -it eosio bash
+  cleos wallet create --to-console -n sunlight
+
+  wallet password: PW5J5AvkFzVdyy5Z4JoHAZVYV7nv1wgx4dwe48st6LBDELw6Rp7aJ
+
+  cleos wallet open -n sunlight
+  cleos wallet unlock -n sunlight
+  #cleos wallet lock -n sunlight
+  #cleos wallet list
+  cleos wallet create_key -n sunlight
+
+  public key: EOS6pXnMFJTyKbTTYKaMNQhRERWnvW5i9L7PeTg34mNuuWKmDUuSA
+
+  cleos wallet import -n sunlight
+
+  private key: 5KQwrPbwdL6PhXujxW37FSSQZ1JiwsST4cqQzDeyXtP79zkvFD3
+  public key: EOS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV
+
+  cleos wallet keys
+
+  cleos create account eosio bob EOS6pXnMFJTyKbTTYKaMNQhRERWnvW5i9L7PeTg34mNuuWKmDUuSA
+  cleos create account eosio alice EOS6pXnMFJTyKbTTYKaMNQhRERWnvW5i9L7PeTg34mNuuWKmDUuSA
+
+  eosio-cpp -abigen hello.cpp -o hello.wasm
+  cleos create account eosio hello EOS6pXnMFJTyKbTTYKaMNQhRERWnvW5i9L7PeTg34mNuuWKmDUuSA -p eosio@active
+  cleos set contract hello /home/thomas/eos/contracts/hello -p hello@active
+  cleos push action hello hi '["bob"]' -p bob@active
+  cleos push action hello hi '["alice"]' -p alice@active
+
+  eosio-cpp -I include -o eosio.token.wasm src/eosio.token.cpp -abigen
+  cleos create account eosio eosio.token EOS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV
+  cleos set contract eosio.token /home/thomas/eos/contracts/eosio.contracts/eosio.token --abi eosio.token.abi -p eosio.token@active
+  
+  eosio-cpp -I include -o eosio.bios.wasm src/eosio.bios.cpp -abigen
+  cleos create account eosio eosio.bios EOS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV
+  cleos set contract eosio.bios /home/thomas/eos/contracts/eosio.contracts/eosio.bios -p eosio.bios@active
+
+  eosio-cpp -I include -o eosio.system.wasm src/eosio.system.cpp -abigen
+  cleos create account eosio eosio.system EOS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV
+  cleos set contract eosio.system /home/thomas/eos/contracts/eosio.contracts/eosio.system -p eosio.system@active
+
+  cleos push action eosio.token create '{"issuer":"eosio", "maximum_supply":"1000000000.0000 SYS"}' -p eosio.token@active
+  cleos push action eosio.token issue '[ "alice", "10000.0000 SYS", "memo" ]' -p eosio@active
+  cleos push action eosio.token transfer '[ "alice", "bob", "2.0000 SYS", "m" ]' -p alice@active
+  
+  cleos get currency balance eosio.token bob SYS
+  cleos get currency balance eosio.token alice SYS
+  cleos get currency balance eosio.token eosio SYS
+  cleos get currency balance eosio.token eosio.token SYS
+
+39.boost
+  sudo apt-get install build-essential g++ python-dev autotools-dev libicu-dev build-essential libbz2-dev libboost-all-dev
+  tar -xjvf boost.tar.bz2
+  sudo ./bootstrap.sh --prefix=/usr/local/boost
+  sudo ./b2 install
+
+40.bitcoin
+  docker pull freewil/bitcoin-testnet-box
+  docker run -t -i -p 19001:19001 -p 19011:19011 freewil/bitcoin-testnet-box
+
+  docker exec -it 85551da51200 /bin/bash
+
+  bitcoind -datadir=1 -daemon
+  bitcoind -datadir=2 -daemon
+
+  bitcoin-cli -datadir=1 -getinfo
+  bitcoin-cli -datadir=2 -getinfo
+
+  bitcoin-cli -datadir=1 generate 1
+  bitcoin-cli -datadir=2 generate 1
+
+  bitcoin-cli -datadir=1 getnewaddress
+  bitcoin-cli -datadir=2 getnewaddress
+
+  bitcoin-cli -datadir=1 help
+
+  bitcoin-cli -datadir=1 getbalance
+  bitcoin-cli -datadir=2 getbalance
+
+  bitcoin-cli -datadir=1 getwalletinfo
+  bitcoin-cli -datadir=1 listwallets
+  bitcoin-cli -datadir=1 listaccounts
+
+  bitcoin-cli -datadir=1 getaccount "2NAW7hR3trVq9z3XnoKPdatSGSkus6qT5Gz"
+  bitcoin-cli -datadir=1 getaccountaddress ""
+  bitcoin-cli -datadir=1 getaccountaddress thomas
+  bitcoin-cli -datadir=1 getaddressesbyaccount ""
+  bitcoin-cli -datadir=1 getaddressesbyaccount thomas
+
+  bitcoin-cli -datadir=1 getpeerinfo
+
+  bitcoin-cli -datadir=1 gettransaction 441b096b2059eb782a4c60b7bc8538bc6cb7e0f5fb3c0e7c70aa46cfa1d55f01
+
+  bitcoin-cli -datadir=1 getblock 
+  bitcoin-cli -datadir=1 getblockchaininfo 
+  bitcoin-cli -datadir=1 getblockcount 
+  bitcoin-cli -datadir=1 getblockhash 107 
+
+  1:2N1H1D5pWTJvWpeJoZYL1z4NpuW48LWvGhr
+  2:2MzxYfzCuVUwaKTaxB48cX4Noh7RqcWByGM
+
+  bitcoin-cli -datadir=1 sendtoaddress 2MzxYfzCuVUwaKTaxB48cX4Noh7RqcWByGM 10
+  036b236789297d837906dd6b8a2b35913372e1a674ef699d9e9e32e5050a6f1a
+  ebd1454eadd38f7ef7e3bd1988c114911899efba8510bcee5e4c44c276515764
+
+  bitcoin-cli -datadir=1 listtransactions
+  bitcoin-cli -datadir=1 getrawtransaction 036b236789297d837906dd6b8a2b35913372e1a674ef699d9e9e32e5050a6f1a
+  bitcoin-cli -datadir=1 decoderawtransaction
+
+  bitcoin-cli -datadir=1 listreceivedbyaddress
+
+  bitcoin-cli -datadir=1 listunspent
+  bitcoin-cli -datadir=1 createrawtransaction
+  bitcoin-cli -datadir=1 signrawtransaction
+  bitcoin-cli -datadir=1 sendrawtransaction
+  bitcoin-cli -datadir=1 gettransaction
+
+41.book
+  bee run -gendoc=true -downdoc=true
+  注册：
+  邮箱 秘密
+
+42.Vue Element-UI
+  sudo npm install -g @vue/cli
+  vue create hello-world
+  npm run serve
+  npm run build
+  vue add element
+
+  npm install --save axios
+  npm install --save qs
+  npm install --save js-sha256
+  npm install --save vue-router
+
+  git clone https://github.com/lin-xin/vue-manage-system.git (npm install & npm run serve)
+  git clone https://github.com/PanJiaChen/vue-element-admin.git (npm install & npm run dev)
+  git clone https://github.com/PanJiaChen/vue-admin-template.git (npm install & npm run dev)
+  
+
+43.Kubernetes
+  集群部署：
+  sudo usermod -aG docker hadoop
+  exit
+  
+  docker rm `docker ps -a -q`
+  docker rmi -f `docker images -q`
+
+  sudo apt-get update
+  sudo apt-get install -y apt-transport-https
+
+  sudo su
+  curl https://mirrors.aliyun.com/kubernetes/apt/doc/apt-key.gpg | apt-key add - 
+  cat <<EOF >/etc/apt/sources.list.d/kubernetes.list
+  deb https://mirrors.aliyun.com/kubernetes/apt/ kubernetes-xenial main
+  EOF
+  exit
+
+  sudo apt-get update
+  sudo apt-get install -y kubelet kubeadm kubectl
+
+  echo "source <(kubectl completion bash)" >> ~/.bashrc
+  source ~/.bashrc
+
+  kubeadm config images list
+
+  k8s.gcr.io/kube-apiserver:v1.13.4
+  k8s.gcr.io/kube-controller-manager:v1.13.4
+  k8s.gcr.io/kube-scheduler:v1.13.4
+  k8s.gcr.io/kube-proxy:v1.13.4
+  k8s.gcr.io/pause:3.1
+  k8s.gcr.io/etcd:3.2.24
+  k8s.gcr.io/coredns:1.2.6
+
+  docker pull registry.cn-hangzhou.aliyuncs.com/google_containers/kube-apiserver-amd64:v1.13.4
+  docker pull registry.cn-hangzhou.aliyuncs.com/google_containers/kube-controller-manager-amd64:v1.13.4
+  docker pull registry.cn-hangzhou.aliyuncs.com/google_containers/kube-scheduler-amd64:v1.13.4
+  docker pull registry.cn-hangzhou.aliyuncs.com/google_containers/kube-proxy-amd64:v1.13.4
+  docker pull registry.cn-hangzhou.aliyuncs.com/google_containers/pause-amd64:3.1
+  docker pull registry.cn-hangzhou.aliyuncs.com/google_containers/etcd-amd64:3.2.24
+  docker pull registry.cn-hangzhou.aliyuncs.com/google_containers/coredns:1.2.6
+
+  docker tag registry.cn-hangzhou.aliyuncs.com/google_containers/kube-apiserver-amd64:v1.13.4 k8s.gcr.io/kube-apiserver:v1.13.4
+  docker tag registry.cn-hangzhou.aliyuncs.com/google_containers/kube-controller-manager-amd64:v1.13.4 k8s.gcr.io/kube-controller-manager:v1.13.4
+  docker tag registry.cn-hangzhou.aliyuncs.com/google_containers/kube-scheduler-amd64:v1.13.4 k8s.gcr.io/kube-scheduler:v1.13.4
+  docker tag registry.cn-hangzhou.aliyuncs.com/google_containers/kube-proxy-amd64:v1.13.4 k8s.gcr.io/kube-proxy:v1.13.4
+  docker tag registry.cn-hangzhou.aliyuncs.com/google_containers/pause-amd64:3.1 k8s.gcr.io/pause:3.1
+  docker tag registry.cn-hangzhou.aliyuncs.com/google_containers/etcd-amd64:3.2.24 k8s.gcr.io/etcd:3.2.24
+  docker tag registry.cn-hangzhou.aliyuncs.com/google_containers/coredns:1.2.6 k8s.gcr.io/coredns:1.2.6
+
+  docker pull quay.io/coreos/flannel:v0.11.0-amd64
+  docker save -o flannel.tar quay.io/coreos/flannel:v0.11.0-amd64
+  scp flannel.tar hadoop@slave01:/home/hadoop/kube
+  docker load -i flannel.tar
+
+  sudo swapoff -a
+  free
+  #sudo swapon -a
+  #sudo vim /etc/fstab
+
+  未操作：{
+  chrony
+  iptables
+  
+  ipvs:
+  lsmod | grep ip_vs
+  lsmod | grep -e ip_vs -e nf_conntrack_ipv4
+  ps -ef | grep ip_vs
+
+  modprobe -- ip_vs
+  modprobe -- ip_vs_rr
+  modprobe -- ip_vs_wrr
+  modprobe -- ip_vs_sh
+  modprobe -- nf_conntrack_ipv4
+
+  sudo apt-get install ipset ipvsadm
+  }
+
+  sudo kubeadm init \
+      --apiserver-advertise-address=192.168.1.145 \
+      --image-repository registry.cn-hangzhou.aliyuncs.com/google_containers \
+      --kubernetes-version v1.13.4 \
+      --pod-network-cidr=10.244.0.0/16
+
+  sudo kubeadm init \
+      --apiserver-advertise-address=192.168.1.7 \
+      --image-repository registry.cn-hangzhou.aliyuncs.com/google_containers \
+      --kubernetes-version v1.13.4 \
+      --pod-network-cidr=10.244.0.0/16
+
+  mkdir -p $HOME/.kube
+  sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+  sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+  kubectl get cs
+  kubectl get nodes
+  kubectl describe node ubuntuthomas
+  kubectl get pod -n kube-system -o wide
+  kubeadm token list
+  kubeadm token create --print-join-command
+
+  kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
+  
+  sudo kubeadm join 192.168.1.145:6443 --token 4eh9vk.v4ittghckn3qazry --discovery-token-ca-cert-hash sha256:4fa579cc49dcebe0dde1a57fc024b2ff6761f7c7374ff3ed4baeaecec1125eab
+
+  sudo kubeadm join 192.168.1.7:6443 --token ouy68p.fjetixzpf2ulx2ps --discovery-token-ca-cert-hash sha256:f396703c75a8159e5e5bacd006a07d9e7bca2083183ee801dc80f994cea69b80
+
+  kubectl get pod --all-namespaces -o wide
+  kubectl describe pod kube-flannel-ds-amd64-rxvvg --namespace=kube-system
+  
+  kubectl create deployment nginx --image=nginx:alpine
+  kubectl get deployments
+  kubectl delete deployment ubuntu
+  kubectl scale deployment nginx --replicas=2
+  kubectl get pods -l app=nginx -o wide
+  kubectl expose deployment nginx --port=80 --type=NodePort
+  kubectl get services nginx
+
+  kubectl run -it curl --image=radial/busyboxplus:curl
+  nslookup nginx
+  curl http://nginx/
+  curl 10.244.1.2
+
+  #kubectl taint node k8s-master node-role.kubernetes.io/master-
+  #kubectl taint node k8s-master node-role.kubernetes.io/master=:NoSchedule
+
+  #kubectl drain slave01 --delete-local-data --force --ignore-daemonsets
+  #kubectl delete node slave01
+
+  #sudo kubeadm reset
+  #sudo rm -rf /etc/kubernetes
+  #rm -rf $HOME/.kube
+  #rm -rf $HOME/.helm
+
+Helm:
+  tar -xzvf helm-v2.12.3-linux-amd64.tar.gz
+  sudo cp linux-amd64/helm /usr/local/bin
+
+  sudo apt-get install socat
+  kubectl config view
+
+  #create a role and service account name
+  vim ~/helm/rbac-config.yaml
+  apiVersion: v1
+  kind: ServiceAccount
+  metadata:
+    name: tiller
+    namespace: kube-system
+  ---
+  apiVersion: rbac.authorization.k8s.io/v1
+  kind: ClusterRoleBinding
+  metadata:
+    name: tiller
+  roleRef:
+    apiGroup: rbac.authorization.k8s.io
+    kind: ClusterRole
+    name: cluster-admin
+  subjects:
+    - kind: ServiceAccount
+      name: tiller
+      namespace: kube-system
+
+  #kubectl create -f rbac-config.yaml
+  #helm init --service-account tiller
+
+  helm version #注意tiller版本
+  kubectl create serviceaccount --namespace kube-system tiller
+  kubectl create clusterrolebinding tiller-cluster-rule --clusterrole=cluster-admin --serviceaccount=kube-system:tiller
+
+  helm init --service-account tiller --upgrade -i registry.cn-hangzhou.aliyuncs.com/google_containers/tiller:v2.12.3  --stable-repo-url https://kubernetes.oss-cn-hangzhou.aliyuncs.com/charts
+
+  kubectl get pods -n kube-system
+  kubectl describe pod tiller-deploy-5687f55748-gbxwg --namespace=kube-system
+  
+  helm repo remove stable
+  helm repo add stable https://kubernetes.oss-cn-hangzhou.aliyuncs.com/charts
+  helm repo add incubator https://aliacs-app-catalog.oss-cn-hangzhou.aliyuncs.com/charts-incubator/
+  helm repo update
+  helm repo list
+
+  helm search
+  helm search incubator
+  helm list
+
+  helm reset --force
+  rm -rf $HOME/.helm
+
+  #helm mysql
+  sudo /etc/init.d/mysql stop
+
+  #sudo iptables -P FORWARD ACCEPT
+  kubectl get pv
+  kubectl get pvc
+
+  helm install --name my-release stable/mysql
+  helm install --name my-release \
+  --set mysqlRootPassword=secretpassword,mysqlUser=my-user,mysqlPassword=my-password,mysqlDatabase=my-database \
+    stable/mysql
+  helm install --name my-release -f values.yaml stable/mysql
+
+  helm ls --all
+  kubectl get pod --all-namespaces -o wide
+  kubectl describe pod my-release-mysql-86547664d5-z22sl
+
+  #helm del --purge my-release
+  #helm status my-release
+
+  MYSQL_ROOT_PASSWORD=$(kubectl get secret --namespace default my-release-mysql -o jsonpath="{.data.mysql-root-password}" | base64 --decode; echo)
+
+  kubectl run -i --tty ubuntu --image=ubuntu:16.04 --restart=Never -- bash -il
+  apt-get update && apt-get install mysql-client -y
+  mysql -h my-release-mysql -p
+
+  MYSQL_HOST=127.0.0.1
+  MYSQL_PORT=3306
+  export POD_NAME=$(kubectl get pods --namespace default -l "app=my-release-mysql" -o jsonpath="{.items[0].metadata.name}")
+  kubectl port-forward $POD_NAME 3306:3306
+  mysql -h ${MYSQL_HOST} -P${MYSQL_PORT} -u root -p${MYSQL_ROOT_PASSWORD}
+
+  kubectl delete pod ubuntu
+
+44.Mesos&Marathon
+
+45.OpenStack
+
+46.ipfs
+  ipfs init  QmZsv3ZxUJyTUGvzbC7WUWbLGCUMhyFkRy1Cihdtun43KL
+  ipfs init --profile server
+
+  ipfs id
+
+  ipfs cat /ipfs/QmS4ustL54uo8FzR9455qaxZwuMiUhyvMcX9Ba8nUH4uVv/readme
+  ipfs cat /ipfs/QmYwAPJzv5CZsnA625s3Xf2nemtYgPpHdWEz79ojWnPbdG/readme
+
+  ipfs cat /ipfs/QmYwAPJzv5CZsnA625s3Xf2nemtYgPpHdWEz79ojWnPbdG/quick-start
+
+  ipfs daemon
+  ipfs swarm peers
+
+  ipfs cat /ipfs/QmW2WQi7j6c7UgJTarActp7tDNikE4B2qXtFCfLPdsgaTQ/cat.jpg >cat.jpg
+
+  hash=`echo "I <a3 IPFS -$(whoami)" | ipfs add -q`
+  ipfs cat /ipfs/$hash
+
+  curl "https://ipfs.io/ipfs/$hash"
+  curl "http://127.0.0.1:8080/ipfs/$hash"
+
+  curl http://192.168.1.136:5001/webui
+  curl http://127.0.0.1:5001/webui
+
+
+  ipfs add myfile.txt QmQECo2p8LdVcjtkEWDVNVM7Hrsc7arW52P5vz5BVuvEgR
+  ipfs name publish　/ipfs/QmQECo2p8LdVcjtkEWDVNVM7Hrsc7arW52P5vz5BVuvEgR
+  ipfs name resolve QmQQ5t88W44Je5WgvmgpV1xSZTg1y5UXdYFHcQQ7EayxwR
+  https://ipfs.io/ipfs/QmQECo2p8LdVcjtkEWDVNVM7Hrsc7arW52P5vz5BVuvEgR
+  https://ipfs.io/ipns/QmQQ5t88W44Je5WgvmgpV1xSZTg1y5UXdYFHcQQ7EayxwR
+
+  ipfs key gen --type=rsa --size=2048 keyname
+  ipfs key list -l
+  ipfs name publish --key=keyname  QmPoyokqso3BKYCqwiU1rspLE59CPCv5csYhcPkEd6xvtm
+  ipfs resolve /ipns/QmYTpEqtNYvNFUwFysuRsEufNDJJBBEJfqsqrFXDT93sEE
+  
+47.Network
+  sudo vim /etc/init.d/rc.local
+  sudo ifconfig ens33 down
+  sudo ifconfig ens33 hw ether 00:0c:29:9e:42:56
+  sudo ifconfig ens33 up
+  cat /sys/class/net/ens33/address
+
+  sudo vim /etc/network/interfaces
+  auto ens33
+  # iface ens33 inet dhcp
+  iface ens33 inet static
+  address 192.168.1.146
+  netmask 255.255.255.0
+  gateway 192.168.1.1
+  hwaddress ether 00:0c:29:9e:42:56
+
+  sudo vim /etc/resolvconf/resolv.conf.d/base
+  nameserver 192.168.1.146
+  nameserver 114.114.114.114
+
+  sudo /etc/init.d/networking restart
+  sudo reboot
+
+  sudo vim /etc/hostname
+  ubuntuthomas1
+
+  sudo vim /etc/hosts
+  127.0.0.1   localhost
+  127.0.1.1   ubuntuthomas1 delete
+
+  192.168.1.145    ubuntuthomas
+  192.168.1.146    ubuntuthomas1
+  192.168.1.147    ubuntuthomas2
+
+
+48.Hadoop
+  sudo useradd -m hadoop -s /bin/bash
+  sudo passwd hadoop
+  sudo adduser hadoop sudo
+
+  sudo chmod u+w /etc/sudoers
+  sudo vim /etc/sudoers
+  hadoop  ALL=(ALL:ALL) ALL
+  sudo chmod u-w /etc/sudoers
+
+  su - hadoop
+
+  sudo apt-get install openssh-server
+  ssh localhost
+  exit
+  cd ~/.ssh/
+  ssh-keygen -t rsa
+  cat ./id_rsa.pub >> ./authorized_keys
+  ssh localhost
+
+  http://mirrors.hust.edu.cn/apache/hadoop/common/
+  sudo tar -zxvf  hadoop-2.6.0.tar.gz -C /usr/local
+  cd /usr/local
+  sudo mv hadoop-2.6.0 hadoop
+  sudo chown -R hadoop:hadoop hadoop/
+
+  vim ~/.bashrc
+  export HADOOP_HOME=/usr/local/hadoop
+  export CLASSPATH=$($HADOOP_HOME/bin/hadoop classpath):$CLASSPATH
+  export HADOOP_COMMON_LIB_NATIVE_DIR=$HADOOP_HOME/lib/native
+  export PATH=$PATH:$HADOOP_HOME/bin:$HADOOP_HOME/sbin
+
+  export HADOOP_INSTALL=$HADOOP_HOME
+  export HADOOP_MAPRED_HOME=$HADOOP_HOME
+  export HADOOP_COMMON_HOME=$HADOOP_HOME
+  export HADOOP_HDFS_HOME=$HADOOP_HOME
+  export YARN_HOME=$HADOOP_HOME
+
+  vim /usr/local/hadoop/etc/hadoop/hadoop-env.sh
+  export JAVA_HOME=/usr/local/java/jdk1.8.0_202
+  export HADOOP_OPTS="-Djava.library.path=${HADOOP_HOME}/lib/native"
+
+  vim /usr/local/hadoop/etc/hadoop/core-site.xml
+  <configuration>
+    <property>
+      <name>hadoop.tmp.dir</name>
+      <value>file:/usr/local/hadoop/tmp</value>
+      <description>Abase for other temporary directories.</description>
+    </property>
+    <property>
+      <name>fs.defaultFS</name>
+      <value>hdfs://localhost:9000</value>
+    </property>
+  </configuration>
+
+  vim /usr/local/hadoop/etc/hadoop/hdfs-site.xml
+  <configuration>
+    <property>
+      <name>dfs.replication</name>
+      <value>1</value>
+    </property>
+    <property>
+      <name>dfs.namenode.name.dir</name>
+      <value>file:/usr/local/hadoop/tmp/dfs/name</value>
+    </property>
+    <property>
+      <name>dfs.datanode.data.dir</name>
+      <value>file:/usr/local/hadoop/tmp/dfs/data</value>
+    </property>
+  </configuration>
+
+  集群部署：
+  vim etc/hadoop/core-site.xml
+  <configuration>
+    <property>
+      <name>hadoop.tmp.dir</name>
+      <value>file:/usr/local/hadoop/tmp</value>
+      <description>Abase for other temporary directories.</description>
+    </property>
+    <property>
+      <name>fs.defaultFS</name>
+      <value>hdfs://ubuntuthomas:9000</value>
+    </property>
+  </configuration>
+
+  vim etc/hadoop/hdfs-site.xml
+  <configuration>
+    <property>
+      <name>dfs.replication</name>
+      <value>2</value>
+    </property>
+    <property>
+      <name>dfs.namenode.name.dir</name>
+      <value>file:/usr/local/hadoop/tmp/dfs/name</value>
+    </property>
+    <property>
+      <name>dfs.datanode.data.dir</name>
+      <value>file:/usr/local/hadoop/tmp/dfs/data</value>
+    </property>
+    <property>
+      <name>dfs.namenode.secondary.http-address</name>
+      <value>ubuntuthomas:9001</value>
+    </property>
+  </configuration>
+
+  vim etc/hadoop/mapred-site.xml
+  <configuration>
+    <property>
+      <name>mapreduce.framework.name</name>
+      <value>yarn</value>
+    </property>
+  </configuration>
+
+  <property>
+    <name>yarn.app.mapreduce.am.env</name>
+    <value>HADOOP_MAPRED_HOME=${HADOOP_HOME}</value>
+  </property>
+  <property>
+    <name>mapreduce.map.env</name>
+    <value>HADOOP_MAPRED_HOME=${HADOOP_HOME}</value>
+  </property>
+  <property>
+    <name>mapreduce.reduce.env</name>
+    <value>HADOOP_MAPRED_HOME=${HADOOP_HOME}</value>
+  </property>
+
+  vim etc/hadoop/yarn-site.xml
+  <configuration>
+    <property>
+      <name>yarn.resourcemanager.hostname</name>
+      <value>ubuntuthomas</value>
+    </property>
+    <property>
+      <name>yarn.nodemanager.aux-services</name>
+      <value>mapreduce_shuffle</value>
+    </property>
+    <property>
+      <name>yarn.log-aggregation-enable</name>
+      <value>true</value>
+    </property>
+    <property>
+      <name>yarn.log-aggregation.retain-seconds</name>
+      <value>604800</value>
+    </property>
+  </configuration>
+
+  vim etc/hadoop/workers
+  ubuntuthomas1
+  ubuntuthomas2
+
+  scp -r etc/hadoop/* hadoop@ubuntuthomas1:/usr/local/hadoop/etc/hadoop/
+  scp -r etc/hadoop/* hadoop@ubuntuthomas2:/usr/local/hadoop/etc/hadoop/
+
+  rm -rf logs tmp
+  hdfs namenode -format
+  start-all.sh
+  stop-all.sh
+
+  echo "My name is Li Thomas. This is a example program called WordCount, run by Li Thomas " >> testWordCount
+  hadoop fs -mkdir /wordCountInput
+  hadoop fs -put testWordCount /wordCountInput
+  hadoop jar /usr/local/hadoop/share/hadoop/mapreduce/hadoop-mapreduce-examples-2.9.2.jar wordcount /wordCountInput /wordCountOutput
+  hadoop fs -ls /wordCountOutput
+  hadoop fs -cat /wordCountOutpart-r-00000
+
+49.Hive
+  mysql -u root -p
+  create user 'hive'@'%' identified by 'hive';
+  select Host,User from mysql.user;
+  grant all privileges on *.* to 'hive'@'%' with grant option;
+  flush privileges;
+  create database if not exists hive_metadata;
+  grant all privileges on hive_metadata.* to 'hive'@'%' identified by 'hive';
+  grant all privileges on hive_metadata.* to 'hive'@'localhost' identified by 'hive';
+  flush privileges;
+  exit
+  sudo /etc/init.d/mysql restart
+  mysql -u hive -p hive
+  show databases;
+  #create database hive_metadata;
+
+  http://www.eu.apache.org/dist/hive/
+  sudo tar -zxvf apache-hive-2.3.4-bin.tar.gz -C /usr/local
+  mv apache-hive-2.3.4-bin hive
+  sudo chown -R hadoop:hadoop hive/
+  cp hive-default.xml.template hive-site.xml
+
+  vim conf/hive-site.xml
+  <property>
+    <name>javax.jdo.option.ConnectionURL</name>
+    <value>jdbc:mysql://localhost:3306/hive_metadata?createDatabaseIfNotExist=true</value>
+  </property>
+  <property>
+    <name>javax.jdo.option.ConnectionDriverName</name>
+    <value>com.mysql.jdbc.Driver</value>
+  </property>
+  <property>
+    <name>javax.jdo.option.ConnectionUserName</name>
+    <value>hive</value>
+  </property>
+  <property>
+    <name>javax.jdo.option.ConnectionPassword</name>
+    <value>hive</value>
+  </property>
+
+  <property>
+    <name>system:java.io.tmpdir</name>
+    <value>/usr/local/hive/tmpdir</value>
+  </property>
+
+  <property>
+    <name>system:user.name</name>
+    <value>hive</value>
+  </property>
+
+  <--property>
+    <name>datanucleus.schema.autoCreateAll</name>
+    <value>true</value>
+  </property>
+
+  <property>
+    <name>hive.metastore.schema.verification</name>
+    <value>false</value>
+  </property>
+
+  cp hive-env.sh.template hive-env.sh
+  vim hive-env.sh
+  export HADOOP_HOME=/usr/local/hadoop
+  export HIVE_CONF_DIR=/usr/local/hive/conf
+
+  vim hive-config.sh
+  export JAVA_HOME=/usr/local/java/jdk1.8.0_91
+  export HIVE_HOME=/usr/local/hive
+  export HADOOP_HOME=/usr/local/hadoop
+
+  vim ~/.bashrc
+  export HIVE_HOME=/usr/local/hive
+  export PATH=$PATH:$HIVE_HOME/bin
+
+  cd /usr/local/hive
+  wget http://ftp.ntu.edu.tw/MySQL/Downloads/Connector-J/mysql-connector-java-5.1.47.tar.gz
+  tar -zxvf mysql-connector-java-5.1.47.tar.gz
+  cp mysql-connector-java-5.1.47-bin.jar ../lib/
+
+  schematool -dbType mysql -initSchema
+  hive
+
+50.HBase
+  wget http://mirror.bit.edu.cn/apache/hbase/1.4.9/hbase-1.4.9-bin.tar.gz
+
+  sudo tar -zxvf hbase-1.4.9-bin.tar.gz -C /usr/local/
+  sudo mv hbase-1.4.9 hbase
+  sudo chown -R hadoop:hadoop hbase/
+
+  vim ~/.bashrc
+  export HBASE_HOME=/usr/local/hbase
+  export PATH=$PATH:$HBASE_HOME/bin
+
+  vim conf/hbase-env.sh
+  export JAVA_HOME=/usr/local/java/jdk1.8.0_91
+  export HBASE_CLASSPATH=/usr/local/hbase/conf
+  export HBASE_MANAGES_ZK=false
+
+  vim conf/hbase-site.xml
+  <configuration>
+    <property>
+      <name>hbase.master</name>
+      <value>thomas:60000</value>
+    </property>
+    <property>
+      <name>hbase.cluster.distributed</name>
+      <value>true</value>
+    </property>
+    <property>
+      <name>hbase.rootdir</name>
+      <value>hdfs://thomas:9000/hbase</value>
+    </property>
+
+    <property>
+      <name>hbase.master.maxclockskew</name>
+      <value>180000</value>
+    </property>
+
+    <property>
+      <name>hbase.zookeeper.quorum</name>
+      <value>thomas:2181,slave01:2181,slave02:2181</value>
+      <description>The directory shared by RegionServers.
+      </description>
+    </property>
+
+    <property>
+      <name>hbase.zookeeper.property.clientPort</name>
+      <value>2181</value>
+    </property>
+
+    <property>
+      <name>hbase.zookeeper.property.dataDir</name>
+      <value>/usr/local/zookeeper/data</value>
+      <description>Property from ZooKeeper config zoo.cfg.
+      The directory
+      where the snapshot is stored.
+      </description>
+    </property>
+
+  </configuration>
+
+  vim conf/regionservers
+  slave01
+  slave02
+
+  scp -r hbase/* hadoop@slave01:/usr/local/hbase/
+  scp -r hbase/* hadoop@slave02:/usr/local/hbase/
+
+  start-hbase.sh
+  hbase shell
+  create 'member', 'm_id', 'address', 'info'
+  list
+
+51.Scala
+  java -version
+  sudo tar -zxvf scala-2.12.8.tgz -C /usr/local
+  sudo mv scala-2.12.8 scala
+
+  vim ~/.bashrc
+  export SCALA_HOME=/usr/local/scala
+  export PATH=$PATH:$SCALA_HOME/bin
+
+  cd /usr/local
+  sudo mkdir scala
+  sudo chown -R hadoop:hadoop scala
+
+  scp -r scala/* hadoop@slave01:/usr/local/scala/
+
+
+52.Spark
+  sudo tar -zxvf spark-2.4.0-bin-hadoop2.7.tgz -C /usr/local
+  sudo mv spark-2.4.0-bin-hadoop2.7 spark
+  sudo chown -R hadoop:hadoop spark
+
+  cp spark-env.sh.template spark-env.sh
+  vim conf/spark-env.sh
+  export SCALA_HOME=/usr/local/scala
+  export JAVA_HOME=/usr/local/java/jdk1.8.0_91
+  export HADOOP_HOME=/usr/local/hadoop
+  export HADOOP_CONF_DIR=$HADOOP_HOME/etc/hadoop
+  SPARK_LOCAL_DIRS=/usr/local/spark
+  SPARK_DRIVER_MEMORY=1G
+  export LD_LIBRARY_PATH=/usr/local/hadoop/lib/native/:$LD_LIBRARY_PATH
+
+  export SPARK_MASTER_IP=192.168.1.7
+  export SPARK_MASTER_HOST=192.168.1.7
+  export SPARK_LOCAL_IP=192.168.1.7        #每个节点不一样
+  export SPARK_WORKER_MEMORY=1g
+  export SPARK_WORKER_CORES=2
+  export SPARK_HOME=/usr/local/spark
+  export SPARK_DIST_CLASSPATH=$(/usr/local/hadoop/bin/hadoop classpath)
+
+  cp slaves.template slaves
+  vim slaves
+  slave01
+  slave02
+
+  sudo mkdir spark
+  sudo chown -R hadoop:hadoop spark
+
+  scp -r spark/* hadoop@slave01:/usr/local/spark/
+  scp -r spark/* hadoop@slave02:/usr/local/spark/
+
+  cd /usr/local/spark/sbin
+  ./start-all.sh
+
+  cd /usr/local/spark/bin
+  ./run-example SparkPi 10 --slave01 local[2]
+
+53.micro
+  protobuf --> protoc
+  protobuf+golang --> protoc-gen-go
+  protobuf+golang+grpc --> protoc-gen-go
+
+  go + protobuf:
+  protoc --go_out=. *.proto
+  
+  go + grpc + protobuf:
+  protoc -I helloworld/ helloworld/helloworld.proto --go_out=plugins=grpc:helloworld
+
+  unzip consul_1.4.4_linux_amd64.zip
+  cp consul ~/golang/bin/
+  consul agent -dev
+  consul members -detailed
+  curl localhost:8500/v1/catalog/nodes
+  dig @127.0.0.1 -p 8600 thomas.node.consul
+
+  consul kv put redis/config/minconns 1
+  consul kv get redis/config/minconns
+  consul kv get -recurse
+  
+  go run main.go --registry=consul
