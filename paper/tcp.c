@@ -276,6 +276,22 @@ void server()
     return;
   }
 
+  int val = 1024;
+  len = sizeof(val);
+  ret = setsockopt(fd, SOL_SOCKET, SO_RCVBUF, &val, len);
+  if (ret == -1)
+  {
+    printf("setsockopt fail\n");
+    return;
+  }
+
+  ret = getsockopt(fd, SOL_SOCKET, SO_RCVBUF, &val, &len);
+  if (ret == -1)
+  {
+    printf("getsockopt fail\n");
+    return;
+  }
+
   ret = shutdown(fd, SHUT_WR);//SHUT_RDWR SHUT_RD
   if (ret == -1)
   {
