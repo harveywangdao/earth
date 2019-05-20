@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <errno.h>
+#include <string.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <sys/socket.h>
@@ -9,7 +11,8 @@
 #include <stdint.h>
 #include <netdb.h>
 
-void server()
+/*
+void socket_test()
 {
   int ret;
   int fd = socket(AF_INET, SOCK_STREAM, 0);//AF_INET6 AF_UNIX SOCK_DGRAM SOCK_RAW SOCK_SEQPACKET
@@ -148,8 +151,8 @@ void server()
 
   struct sockaddr
   {
-    sa_family_t sa_family;    /* Common data: address family and length.  */
-    char sa_data[14];       /* Address data.  */
+    sa_family_t sa_family;    //Common data: address family and length.
+    char sa_data[14];       //Address data.
   };
 
   struct in6_addr
@@ -172,10 +175,10 @@ void server()
   struct sockaddr_in6
   {
     sa_family_t sin6_family;
-    in_port_t sin6_port;    /* Transport layer port # */
-    uint32_t sin6_flowinfo; /* IPv6 flow information */
-    struct in6_addr sin6_addr;  /* IPv6 address */
-    uint32_t sin6_scope_id; /* IPv6 scope-id */
+    in_port_t sin6_port;    //Transport layer port #
+    uint32_t sin6_flowinfo; //IPv6 flow information
+    struct in6_addr sin6_addr;  //IPv6 address
+    uint32_t sin6_scope_id; //IPv6 scope-id
   };
 
   struct in_addr
@@ -186,10 +189,10 @@ void server()
   struct sockaddr_in
   {
     sa_family_t sin_family;
-    in_port_t sin_port;         /* Port number.  */
-    struct in_addr sin_addr;        /* Internet address.  */
+    in_port_t sin_port;         //Port number.
+    struct in_addr sin_addr;        //Internet address.
 
-    /* Pad to size of `struct sockaddr'.  */
+    //Pad to size of `struct sockaddr'.
     unsigned char sin_zero[sizeof (struct sockaddr) -
     __SOCKADDR_COMMON_SIZE -
     sizeof (in_port_t) -
@@ -301,10 +304,130 @@ void server()
 
   close(fd);
 }
+*/
+
+#define portnumber 8080
+
+void server()
+{
+  int sockfd, connfd;
+  struct sockaddr_in server_addr;
+  struct sockaddr_in client_addr;
+  int sin_size, recvbytes;
+  const char hello[] = "Hello cpp, you are success.\n";
+  char buffer[4096];
+
+  if((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
+  {
+    fprintf(stderr,"Socket error:%s\n\a", strerror(errno));
+    return;
+  }
+
+  memset(&server_addr, 0, sizeof(struct sockaddr_in));
+  server_addr.sin_family = AF_INET;
+  server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+  server_addr.sin_port = htons(portnumber);
+
+  if(bind(sockfd, (struct sockaddr *)(&server_addr), sizeof(struct sockaddr)) == -1)
+  {
+    fprintf(stderr, "Bind error:%s\n\a", strerror(errno));
+    return;
+  }
+
+  if(listen(sockfd, 5) == -1)
+  {
+    fprintf(stderr,"Listen error:%s\n\a", strerror(errno));
+    return;
+  }
+
+  while(1)
+  {
+    sin_size = sizeof(struct sockaddr_in);
+    if((connfd = accept(sockfd, (struct sockaddr *)(&client_addr), &sin_size)) == -1)
+    {
+      fprintf(stderr, "Accept error:%s\n\a", strerror(errno));
+      return;
+    }
+
+    fprintf(stdout,"Server get connection from %s\n", inet_ntoa(client_addr.sin_addr));
+    recvbytes = recv(connfd, buffer, 4096, 0);
+    if(recvbytes < 0)
+    { 
+      perror("Recv\n");
+      exit(1);
+    }
+
+    printf("Recv data is %s\n", buffer);
+    send(connfd, buffer, sizeof(buffer), 0);
+    if(write(connfd, hello, strlen(hello)) == -1)
+    {
+      fprintf(stderr,"write error:%s\n",strerror(errno));
+      return;
+    }
+
+    close(connfd);
+  }
+
+  close(sockfd);
+}
 
 void client()
 {
-  
+  int sockfd;
+  char sendbuffer[200];
+  char recvbuffer[200];
+  char buffer[1024];
+  struct sockaddr_in server_addr;
+  struct hostent *host;
+  int nbytes;
+
+  if((host = gethostbyname("localhost")) == NULL)
+  {
+    perror("Get host name error\n");
+    exit(1);
+  }
+
+  if((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
+  {
+    fprintf(stderr,"Socket Error:%s\a\n",strerror(errno));
+    exit(1);
+  }
+
+  memset(&server_addr, 0, sizeof(server_addr));
+  server_addr.sin_family = AF_INET;
+  server_addr.sin_port = htons(portnumber);
+  server_addr.sin_addr = *((struct in_addr *)host->h_addr);
+
+  if(connect(sockfd, (struct sockaddr *)(&server_addr), sizeof(struct sockaddr)) == -1)
+  {
+    fprintf(stderr, "Connect error:%s\n", strerror(errno));
+    exit(1);
+  }
+
+  while(1)
+  {
+    printf("Please input your word:\n");
+    scanf("%s", sendbuffer);
+    printf("\n");
+
+    if(strcmp(sendbuffer, "quit") == 0)
+      break;
+
+    send(sockfd, sendbuffer, sizeof(sendbuffer), 0);
+    recv(sockfd, recvbuffer, 200, 0);
+    printf("recv data of my world is :%s\n", recvbuffer);
+  }
+
+  if((nbytes = read(sockfd, buffer, 1024)) == -1)
+  {
+    fprintf(stderr, "read error:%s\n", strerror(errno));
+    exit(1);
+  }
+
+  buffer[nbytes] = '\0';
+  printf("I have received %s\n", buffer);
+
+  close(sockfd);
 }
 
 void do1()

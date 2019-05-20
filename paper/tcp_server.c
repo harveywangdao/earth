@@ -7,7 +7,7 @@
 #include <ctype.h>
 #include <string.h>
 
-int port =8000;
+int port = 8000;
 
 int main(int argc, char** argv)
 {
