@@ -15,7 +15,7 @@
 void socket_test()
 {
   int ret;
-  int fd = socket(AF_INET, SOCK_STREAM, 0);//AF_INET6 AF_UNIX SOCK_DGRAM SOCK_RAW SOCK_SEQPACKET
+  int fd = socket(AF_INET, SOCK_STREAM, 0);//1.AF_INET6 AF_UNIX; 2.SOCK_DGRAM SOCK_RAW SOCK_SEQPACKET
   if (fd == -1)
   {
     printf("socket fail\n");
@@ -302,11 +302,15 @@ void socket_test()
     return;
   }
 
+  in_addr_t inet_addr (const char *__cp)
+  char *inet_ntoa (struct in_addr __in)
+  int inet_aton (const char *__cp, struct in_addr *__inp)
+
   close(fd);
 }
 */
 
-#define portnumber 8080
+#define port 8080
 
 void server()
 {
@@ -319,14 +323,14 @@ void server()
 
   if((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
   {
-    fprintf(stderr,"Socket error:%s\n\a", strerror(errno));
+    perror("socket fail");
     return;
   }
 
   memset(&server_addr, 0, sizeof(struct sockaddr_in));
   server_addr.sin_family = AF_INET;
   server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-  server_addr.sin_port = htons(portnumber);
+  server_addr.sin_port = htons(port);
 
   if(bind(sockfd, (struct sockaddr *)(&server_addr), sizeof(struct sockaddr)) == -1)
   {
@@ -395,7 +399,7 @@ void client()
 
   memset(&server_addr, 0, sizeof(server_addr));
   server_addr.sin_family = AF_INET;
-  server_addr.sin_port = htons(portnumber);
+  server_addr.sin_port = htons(port);
   server_addr.sin_addr = *((struct in_addr *)host->h_addr);
 
   if(connect(sockfd, (struct sockaddr *)(&server_addr), sizeof(struct sockaddr)) == -1)
