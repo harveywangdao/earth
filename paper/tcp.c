@@ -10,6 +10,7 @@
 #include <netinet/in.h>
 #include <stdint.h>
 #include <netdb.h>
+#include <time.h>
 
 /*
 void socket_test()
@@ -386,7 +387,61 @@ void test1()
   printf("addrstr:%s\n", addrstr);
 }
 
-#define port 9057
+void printsockopt(int fd)
+{
+  int rcvbufsz = 0;
+  int sndbufsz = 0;
+  socklen_t socklen;
+
+  socklen = sizeof(rcvbufsz);
+  int ret = getsockopt(fd, SOL_SOCKET, SO_RCVBUF, &rcvbufsz, &socklen);
+  if (ret == -1)
+  {
+    printf("getsockopt fail\n");
+    return;
+  }
+  printf("rcvbufsz:%d, socklen:%d\n", rcvbufsz, socklen);
+
+  socklen = sizeof(sndbufsz);
+  ret = getsockopt(fd, SOL_SOCKET, SO_SNDBUF, &sndbufsz, &socklen);
+  if (ret == -1)
+  {
+    printf("getsockopt fail\n");
+    return;
+  }
+  printf("sndbufsz:%d, socklen:%d\n", sndbufsz, socklen);
+}
+
+void modifysockopt(int fd, int bufsz)
+{
+  //对于客户， SO_RCVBUF选项必须在调用connect之前设置
+  //对于服务器，该选项必须在调用listen之前给监听套接字设置
+  //实际设置的值是X2
+  //结果不能大于416k
+  int rcvbufsz = bufsz;
+  int sndbufsz = bufsz;
+  socklen_t socklen;
+
+  socklen = sizeof(rcvbufsz);
+  int ret = setsockopt(fd, SOL_SOCKET, SO_RCVBUF, &rcvbufsz, socklen);
+  if (ret == -1)
+  {
+    printf("setsockopt fail\n");
+    return;
+  }
+  printf("modifysockopt rcvbufsz:%d, socklen:%d\n", rcvbufsz, socklen);
+
+  socklen = sizeof(sndbufsz);
+  ret = setsockopt(fd, SOL_SOCKET, SO_SNDBUF, &sndbufsz, socklen);
+  if (ret == -1)
+  {
+    printf("setsockopt fail\n");
+    return;
+  }
+  printf("modifysockopt sndbufsz:%d, socklen:%d\n", sndbufsz, socklen);
+}
+
+int port = 9057;
 
 void server()
 {
@@ -434,7 +489,7 @@ void server()
       return;
     }
     printf("server sinlen:%d, server get connection from ip:%s\n", sinlen, inet_ntoa(client_addr.sin_addr));
-
+    
     memset(buffer, 0, sizeof(buffer));
     nbytes = recv(connfd, buffer, sizeof(buffer), 0);
     if (nbytes < 0)
@@ -485,11 +540,16 @@ void client()
   server_addr.sin_port = htons(port);
   server_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
 
+  printsockopt(sockfd);
+  modifysockopt(sockfd, 1024*128);
+  printsockopt(sockfd);
+  
   if (connect(sockfd, (struct sockaddr *)(&server_addr), sizeof(struct sockaddr)) == -1)
   {
     perror("connect fail");
     return;
   }
+  printsockopt(sockfd);
 
   if (send(sockfd, sendbuf, strlen(sendbuf), 0) == -1)
   { 
@@ -522,6 +582,10 @@ void client()
 
 void do1()
 {
+  srand(time(NULL));
+  port = rand()%100 + 4000;
+  printf("port:%d\n", port);
+
   pid_t pid;
   pid = fork();
   if (pid == -1)
