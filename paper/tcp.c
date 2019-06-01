@@ -491,6 +491,15 @@ void server()
     printf("server sinlen:%d, server get connection from ip:%s\n", sinlen, inet_ntoa(client_addr.sin_addr));
     
     memset(buffer, 0, sizeof(buffer));
+    nbytes = recv(connfd, buffer, sizeof(buffer), MSG_DONTWAIT);
+    if (nbytes < 0)
+    { 
+      perror("recv MSG_DONTWAIT fail");
+    }
+    buffer[nbytes] = '\0';
+    printf("server recv data:%s\n", buffer);
+
+    memset(buffer, 0, sizeof(buffer));
     nbytes = recv(connfd, buffer, sizeof(buffer), 0);
     if (nbytes < 0)
     { 
@@ -549,7 +558,8 @@ void client()
     perror("connect fail");
     return;
   }
-  printsockopt(sockfd);
+
+  sleep(1);
 
   if (send(sockfd, sendbuf, strlen(sendbuf), 0) == -1)
   { 
