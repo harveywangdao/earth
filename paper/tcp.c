@@ -302,26 +302,104 @@ void socket_test()
     return;
   }
 
-  in_addr_t inet_addr (const char *__cp)
-  char *inet_ntoa (struct in_addr __in)
-  int inet_aton (const char *__cp, struct in_addr *__inp)
+  in_addr_t inet_addr (const char *cp)
+  char *inet_ntoa (struct in_addr in)
+  int inet_aton (const char *cp, struct in_addr *inp)
+  #define INADDR_ANY ((unsigned long int) 0x00000000)
+  int gethostname (char *name, size_t len)
+  struct hostent *gethostbyname (const char *name)
+
+  struct hostent
+  {
+    char *h_name;         //Official name of host.  
+    char **h_aliases;     //Alias list.  
+    int h_addrtype;       //Host address type.  
+    int h_length;         //Length of address.  
+    char **h_addr_list;   //List of addresses from name server.  
+  };
 
   close(fd);
 }
 */
 
-#define port 8080
+void test1()
+{
+  struct in_addr in;
+  int ret = inet_aton("192.168.1.17", &in);
+  if (ret == 0)
+  {
+    printf("inet_aton fail\n");
+    return;
+  }
+  printf("inet_ntoa(in) = %s\n", inet_ntoa(in));
+
+  char hostname[128];
+  ret = gethostname(hostname, sizeof(hostname));
+  if (ret != 0)
+  {
+    printf("gethostname fail\n");
+    return;
+  }
+  printf("hostname=%s\n", hostname);
+
+  struct hostent *host;
+  host = gethostbyname(hostname);
+  if (host == NULL)
+  {
+    printf("gethostbyname fail\n");
+    return;
+  }
+  printf("%s, %d, %d\n", host->h_name, host->h_addrtype, host->h_length);
+
+  int i = 0;
+  while(host->h_aliases[i] != NULL)
+  {
+    printf("h_aliases:%s\n", host->h_aliases[i]);
+    i++;
+  }
+
+  i = 0;
+  while(host->h_addr_list[i] != NULL)
+  {
+    printf("h_addr_list:%s\n", inet_ntoa(*(struct in_addr*)host->h_addr_list[i]));
+    i++;
+  }
+
+  char addrstr[] = "192.168.1.25";
+  char netaddr[128];
+
+  memset(netaddr, 0, sizeof(netaddr));
+  ret = inet_pton(AF_INET, addrstr, netaddr);
+  if (ret != 1)
+  {
+    printf("inet_pton fail\n");
+    return;
+  }
+
+  memset(addrstr, 0, sizeof(addrstr));
+  const char *p = inet_ntop(AF_INET, netaddr, addrstr, sizeof(addrstr));
+  if (p == NULL)
+  {
+    printf("inet_ntop fail\n");
+    return;
+  }
+  printf("addrstr:%s\n", addrstr);
+}
+
+#define port 9057
 
 void server()
 {
   int sockfd, connfd;
   struct sockaddr_in server_addr;
   struct sockaddr_in client_addr;
-  int sin_size, recvbytes;
-  const char hello[] = "Hello cpp, you are success.\n";
-  char buffer[4096];
+  socklen_t sinlen;
+  ssize_t nbytes;
+  const char hello1[] = "I am server xiao hong1.";
+  const char hello2[] = "I am server xiao hong2.";
+  char buffer[128];
 
-  if((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
+  if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
   {
     perror("socket fail");
     return;
@@ -329,47 +407,60 @@ void server()
 
   memset(&server_addr, 0, sizeof(struct sockaddr_in));
   server_addr.sin_family = AF_INET;
-  server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+  server_addr.sin_addr.s_addr = htonl(INADDR_ANY);  //inet_addr("192.168.1.0")
   server_addr.sin_port = htons(port);
 
-  if(bind(sockfd, (struct sockaddr *)(&server_addr), sizeof(struct sockaddr)) == -1)
+  printf("server listen address = %s\n", inet_ntoa(server_addr.sin_addr));
+
+  if (bind(sockfd, (struct sockaddr *)(&server_addr), sizeof(struct sockaddr)) == -1)
   {
-    fprintf(stderr, "Bind error:%s\n\a", strerror(errno));
+    perror("bind fail");
     return;
   }
 
-  if(listen(sockfd, 5) == -1)
+  if (listen(sockfd, 5) == -1)
   {
-    fprintf(stderr,"Listen error:%s\n\a", strerror(errno));
+    perror("listen fail");
     return;
   }
 
   while(1)
   {
-    sin_size = sizeof(struct sockaddr_in);
-    if((connfd = accept(sockfd, (struct sockaddr *)(&client_addr), &sin_size)) == -1)
+    sinlen = sizeof(struct sockaddr_in);
+    memset(&client_addr, 0, sizeof(struct sockaddr_in));
+    if ((connfd = accept(sockfd, (struct sockaddr *)(&client_addr), &sinlen)) == -1)
     {
-      fprintf(stderr, "Accept error:%s\n\a", strerror(errno));
+      perror("accept fail");
       return;
     }
+    printf("server sinlen:%d, server get connection from ip:%s\n", sinlen, inet_ntoa(client_addr.sin_addr));
 
-    fprintf(stdout,"Server get connection from %s\n", inet_ntoa(client_addr.sin_addr));
-    recvbytes = recv(connfd, buffer, 4096, 0);
-    if(recvbytes < 0)
+    memset(buffer, 0, sizeof(buffer));
+    nbytes = recv(connfd, buffer, sizeof(buffer), 0);
+    if (nbytes < 0)
     { 
-      perror("Recv\n");
-      exit(1);
+      perror("recv fail");
+      return;
     }
+    buffer[nbytes] = '\0';
+    printf("server recv data:%s\n", buffer);
 
-    printf("Recv data is %s\n", buffer);
-    send(connfd, buffer, sizeof(buffer), 0);
-    if(write(connfd, hello, strlen(hello)) == -1)
+    if (send(connfd, hello1, strlen(hello1), 0) == -1)
+    { 
+      perror("send fail");
+      return;
+    }
+    
+    sleep(1);
+
+    if(write(connfd, hello2, strlen(hello2)) == -1)
     {
-      fprintf(stderr,"write error:%s\n",strerror(errno));
+      perror("write fail");
       return;
     }
 
     close(connfd);
+    break;
   }
 
   close(sockfd);
@@ -378,58 +469,53 @@ void server()
 void client()
 {
   int sockfd;
-  char sendbuffer[200];
-  char recvbuffer[200];
-  char buffer[1024];
+  const char sendbuf[] = "I am client xiao ming.";
+  char recvbuf[128];
   struct sockaddr_in server_addr;
-  struct hostent *host;
-  int nbytes;
+  ssize_t nbytes;
 
-  if((host = gethostbyname("localhost")) == NULL)
+  if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
   {
-    perror("Get host name error\n");
-    exit(1);
-  }
-
-  if((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
-  {
-    fprintf(stderr,"Socket Error:%s\a\n",strerror(errno));
-    exit(1);
+    perror("socket fail");
+    return;
   }
 
   memset(&server_addr, 0, sizeof(server_addr));
   server_addr.sin_family = AF_INET;
   server_addr.sin_port = htons(port);
-  server_addr.sin_addr = *((struct in_addr *)host->h_addr);
+  server_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
 
-  if(connect(sockfd, (struct sockaddr *)(&server_addr), sizeof(struct sockaddr)) == -1)
+  if (connect(sockfd, (struct sockaddr *)(&server_addr), sizeof(struct sockaddr)) == -1)
   {
-    fprintf(stderr, "Connect error:%s\n", strerror(errno));
-    exit(1);
+    perror("connect fail");
+    return;
   }
 
-  while(1)
-  {
-    printf("Please input your word:\n");
-    scanf("%s", sendbuffer);
-    printf("\n");
-
-    if(strcmp(sendbuffer, "quit") == 0)
-      break;
-
-    send(sockfd, sendbuffer, sizeof(sendbuffer), 0);
-    recv(sockfd, recvbuffer, 200, 0);
-    printf("recv data of my world is :%s\n", recvbuffer);
+  if (send(sockfd, sendbuf, strlen(sendbuf), 0) == -1)
+  { 
+    perror("send fail");
+    return;
   }
 
-  if((nbytes = read(sockfd, buffer, 1024)) == -1)
-  {
-    fprintf(stderr, "read error:%s\n", strerror(errno));
-    exit(1);
+  memset(recvbuf, 0, sizeof(recvbuf));
+  nbytes = recv(sockfd, recvbuf, sizeof(recvbuf), 0);
+  if (nbytes < 0)
+  { 
+    perror("recv fail");
+    return;
   }
-
-  buffer[nbytes] = '\0';
-  printf("I have received %s\n", buffer);
+  recvbuf[nbytes] = '\0';
+  printf("client recv data:%s\n", recvbuf);
+  
+  memset(recvbuf, 0, sizeof(recvbuf));
+  nbytes = read(sockfd, recvbuf, sizeof(recvbuf));
+  if(nbytes == -1)
+  {
+    perror("read fail");
+    return;
+  }
+  recvbuf[nbytes] = '\0';
+  printf("client recv data:%s\n", recvbuf);
 
   close(sockfd);
 }
@@ -455,6 +541,7 @@ void do1()
   else
   {
     server();
+
     int status = 0;
     int ret = waitpid(pid, &status, 0);
     if (ret == -1)
@@ -470,6 +557,7 @@ void do1()
 int main(int argc, char const *argv[])
 {
   do1();
+  //test1();
 
   return 0;
 }
