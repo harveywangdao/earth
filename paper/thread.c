@@ -7,6 +7,11 @@
 
 //gcc -o app thread.c -lpthread
 //int sched_yield(void);
+//pthread_once
+//pthread_key_create
+//pthread_key_delete
+//pthread_key_setspecific
+//pthread_key_getspecific
 
 static int run = 1;
 static int retvalue;
