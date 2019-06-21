@@ -344,7 +344,7 @@
   git clone thomas@119.23.8.126:/home/thomas/doc/tech/bigpen.git
 
 17.golang
-  liteIDE goland
+  goland
 
   sudo tar -zxvf go1.6.2.linux-amd64.tar.gz -C /usr/local/
   sudo vim  /etc/profile
