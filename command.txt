@@ -1333,12 +1333,12 @@ Helm:
   ipfs name publish --key=keyname  QmPoyokqso3BKYCqwiU1rspLE59CPCv5csYhcPkEd6xvtm
   ipfs resolve /ipns/QmYTpEqtNYvNFUwFysuRsEufNDJJBBEJfqsqrFXDT93sEE
   
-47.Network
-  sudo vim /etc/init.d/rc.local
-  sudo ifconfig ens33 down
-  sudo ifconfig ens33 hw ether 00:0c:29:9e:42:56
-  sudo ifconfig ens33 up
-  cat /sys/class/net/ens33/address
+47.network
+  #sudo vim /etc/init.d/rc.local
+  #sudo ifconfig ens33 down
+  #sudo ifconfig ens33 hw ether 00:0c:29:9e:42:56
+  #sudo ifconfig ens33 up
+  #cat /sys/class/net/ens33/address
 
   sudo vim /etc/network/interfaces
   auto ens33
@@ -1353,9 +1353,6 @@ Helm:
   nameserver 192.168.1.146
   nameserver 114.114.114.114
 
-  sudo /etc/init.d/networking restart
-  sudo reboot
-
   sudo vim /etc/hostname
   ubuntuthomas1
 
@@ -1367,6 +1364,8 @@ Helm:
   192.168.1.146    ubuntuthomas1
   192.168.1.147    ubuntuthomas2
 
+  #sudo /etc/init.d/networking restart
+  sudo reboot
 
 48.Hadoop
   sudo useradd -m hadoop -s /bin/bash
@@ -1765,3 +1764,139 @@ Helm:
   consul kv get -recurse
   
   go run main.go --registry=consul
+
+54.etcd
+  WAL：Write Ahead Log(预写式日志)
+  Snapshot、Entry、HTTP Server、Store、Raft
+  静态配置启动、etcd自身服务发现、通过DNS进行服务发现
+  
+  tar -xzvf etcd-v3.3.13-linux-amd64.tar.gz -C ~/server/
+  ./etcd
+  export ETCDCTL_API=3
+  ./etcdctl --endpoints=localhost:2379 put key value
+  ./etcdctl --endpoints=localhost:2379 get key
+
+  rm -rf /var/lib/etcd/member/*
+
+  scp etcd-v3.3.13-linux-amd64.tar.gz thomas@node01:/home/thomas/server
+  scp etcd-v3.3.13-linux-amd64.tar.gz thomas@node02:/home/thomas/server
+  tar -xzvf etcd-v3.3.13-linux-amd64.tar.gz
+
+  cd server/etcd-v3.3.13-linux-amd64
+  rm -rf data.etcd
+
+  ./etcd --data-dir=data.etcd --name et-wang-1 \
+    --initial-advertise-peer-urls http://192.168.1.7:2380 --listen-peer-urls http://192.168.1.7:2380 \
+    --advertise-client-urls http://192.168.1.7:2379 --listen-client-urls http://192.168.1.7:2379 \
+    --initial-cluster et-wang-1=http://192.168.1.7:2380,et-wang-2=http://192.168.1.10:2380,et-wang-3=http://192.168.1.11:2380 \
+    --initial-cluster-state new \
+    --initial-cluster-token token-wang-group-1
+
+  ./etcd --data-dir=data.etcd --name et-wang-2 \
+    --initial-advertise-peer-urls http://192.168.1.10:2380 --listen-peer-urls http://192.168.1.10:2380 \
+    --advertise-client-urls http://192.168.1.10:2379 --listen-client-urls http://192.168.1.10:2379 \
+    --initial-cluster et-wang-1=http://192.168.1.7:2380,et-wang-2=http://192.168.1.10:2380,et-wang-3=http://192.168.1.11:2380 \
+    --initial-cluster-state new \
+    --initial-cluster-token token-wang-group-1
+
+  ./etcd --data-dir=data.etcd --name et-wang-3 \
+    --initial-advertise-peer-urls http://192.168.1.11:2380 --listen-peer-urls http://192.168.1.11:2380 \
+    --advertise-client-urls http://192.168.1.11:2379 --listen-client-urls http://192.168.1.11:2379 \
+    --initial-cluster et-wang-1=http://192.168.1.7:2380,et-wang-2=http://192.168.1.10:2380,et-wang-3=http://192.168.1.11:2380 \
+    --initial-cluster-state new \
+    --initial-cluster-token token-wang-group-1
+
+  export ETCDCTL_API=3
+  ./etcdctl --endpoints=192.168.1.7:2379 member list
+  ./etcdctl --endpoints=192.168.1.7:2379 put wang king
+  ./etcdctl --endpoints=192.168.1.7:2379 get wang
+  ./etcdctl --endpoints=192.168.1.10:2379 get wang
+
+  ./etcdctl --endpoints=192.168.1.7:2379 put web1 value1
+  ./etcdctl --endpoints=192.168.1.7:2379 put web2 value2
+  ./etcdctl --endpoints=192.168.1.7:2379 put web3 value3
+  ./etcdctl --endpoints=192.168.1.7:2379 get web --prefix
+
+  ./etcdctl --endpoints=192.168.1.7:2379 put key beer
+  ./etcdctl --endpoints=192.168.1.7:2379 get key
+  ./etcdctl --endpoints=192.168.1.7:2379 del key
+
+  ./etcdctl --endpoints=192.168.1.7:2379 put k1 value1
+  ./etcdctl --endpoints=192.168.1.7:2379 put k2 value2
+  ./etcdctl --endpoints=192.168.1.7:2379 get k --prefix
+  ./etcdctl --endpoints=192.168.1.7:2379 del k --prefix
+
+  ./etcdctl --endpoints=192.168.1.7:2379 put user1 bad
+  ./etcdctl --endpoints=192.168.1.7:2379 txn --interactive
+  compares:
+  value("user1") = "bad"
+  success requests (get, put, delete):
+  del user1
+  failure requests (get, put, delete):
+  put user1 good
+
+  ./etcdctl --endpoints=192.168.1.7:2379 get user1
+
+  ./etcdctl --endpoints=192.168.1.7:2379 watch stock1
+  ./etcdctl --endpoints=192.168.1.7:2379 put stock1 1000
+  ./etcdctl --endpoints=192.168.1.7:2379 watch stock --prefix
+  ./etcdctl --endpoints=192.168.1.7:2379 put stock1 10
+  ./etcdctl --endpoints=192.168.1.7:2379 put stock2 20
+
+  ./etcdctl --endpoints=192.168.1.7:2379 lease grant 30
+  ./etcdctl --endpoints=192.168.1.7:2379 put sample value --lease=5e156b838cfa311e
+  ./etcdctl --endpoints=192.168.1.7:2379 get sample
+  ./etcdctl --endpoints=192.168.1.7:2379 lease keep-alive 5e156b838cfa311e
+  ./etcdctl --endpoints=192.168.1.7:2379 lease revoke 5e156b838cfa311e
+  ./etcdctl --endpoints=192.168.1.7:2379 get sample
+
+  ./etcdctl --endpoints=192.168.1.7:2379 lock mutex1
+
+  ./etcdctl --endpoints=192.168.1.7:2379,192.168.1.10:2379,192.168.1.11:2379 --write-out=table endpoint status
+  ./etcdctl --endpoints=192.168.1.7:2379 endpoint health
+
+  ./etcdctl --endpoints=192.168.1.7:2379 elect one p1
+
+  ./etcdctl --endpoints=192.168.1.7:2379 snapshot save my.db
+  ./etcdctl --endpoints=192.168.1.7:2379 --write-out=table snapshot status my.db
+
+  ./etcdctl --endpoints=192.168.1.7:2379 member list
+  ./etcdctl --endpoints=192.168.1.7:2379 member remove 1e91165f86b1da62
+  ./etcdctl --endpoints=192.168.1.7:2379 member add et-wang-4 --peer-urls=http://192.168.1.11:2380
+
+  rm -rf data.etcd
+  ./etcd --data-dir=data.etcd --name et-wang-4 \
+    --initial-advertise-peer-urls http://192.168.1.11:2380 --listen-peer-urls http://192.168.1.11:2380 \
+    --advertise-client-urls http://192.168.1.11:2379 --listen-client-urls http://192.168.1.11:2379 \
+    --initial-cluster et-wang-1=http://192.168.1.7:2380,et-wang-2=http://192.168.1.10:2380,et-wang-4=http://192.168.1.11:2380 \
+    --initial-cluster-state existing \
+    --initial-cluster-token token-wang-group-1
+
+  ./etcdctl --endpoints=192.168.1.7:2379 role add root
+  ./etcdctl --endpoints=192.168.1.7:2379 role grant-permission root readwrite fookey
+  ./etcdctl --endpoints=192.168.1.7:2379 role get root
+  ./etcdctl --endpoints=192.168.1.7:2379 role list
+
+  ./etcdctl --endpoints=192.168.1.7:2379 user add root
+  ./etcdctl --endpoints=192.168.1.7:2379 user grant-role root root
+  ./etcdctl --endpoints=192.168.1.7:2379 user get root
+  ./etcdctl --endpoints=192.168.1.7:2379 user list
+
+  ./etcdctl --endpoints=192.168.1.7:2379 auth enable
+
+  ./etcdctl --endpoints=192.168.1.7:2379 --user=root:123456 put fookey people
+  ./etcdctl --endpoints=192.168.1.7:2379 get fookey
+  ./etcdctl --endpoints=192.168.1.7:2379 --user=root:123456 get fookey
+  ./etcdctl --endpoints=192.168.1.7:2379 --user=root:123456 get foo1
+
+  ./etcdctl --endpoints=192.168.1.7:2379 --user=root:123456 auth disable
+
+
+  go build -o app *.go
+  cd golang/src/
+  mkdir -p ant/conf
+
+  scp app thomas@node01:/home/thomas/golang/src/ant
+  scp conf/app.yaml thomas@node01:/home/thomas/golang/src/ant/conf
+  scp app thomas@node02:/home/thomas/golang/src/ant
+  scp conf/app.yaml thomas@node02:/home/thomas/golang/src/ant/conf
