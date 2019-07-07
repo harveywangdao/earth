@@ -1902,3 +1902,36 @@ Helm:
   scp conf/app.yaml thomas@node01:/home/thomas/golang/src/ant/conf
   scp app thomas@node02:/home/thomas/golang/src/ant
   scp conf/app.yaml thomas@node02:/home/thomas/golang/src/ant/conf
+
+55.GRPC
+  service
+  method
+  message
+
+  Message
+  NewMessage
+  NewMessageWithExtensionRegistry
+  NewMessageWithMessageFactory
+  AsDynamicMessage
+  AsDynamicMessageWithExtensionRegistry
+  AsDynamicMessageWithMessageFactory
+
+  Stub
+  NewStub
+  NewStubWithMessageFactory
+
+  MessageFactory
+  NewMessageFactoryWithExtensionRegistry
+  NewMessageFactoryWithKnownTypeRegistry
+  NewMessageFactoryWithDefaults
+  NewMessageFactoryWithRegistries
+
+  ExtensionRegistry
+  NewExtensionRegistryWithDefaults
+
+  KnownTypeRegistry
+  NewKnownTypeRegistryWithDefaults
+  NewKnownTypeRegistryWithoutWellKnownTypes
+
+  MessageRegistry
+  NewMessageRegistryWithDefaults
