@@ -343,6 +343,8 @@
   git init --bare bigpen.git
   git clone thomas@119.23.8.126:/home/thomas/doc/tech/bigpen.git
 
+  git submodule update --init --recursive
+
 17.golang
   goland
 
