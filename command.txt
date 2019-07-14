@@ -379,6 +379,7 @@
   sudo tar -xzvf jdk-8u91-linux-x64.tar.gz -C /usr/local/java/
   #sudo vim /etc/profile
   #source /etc/profile
+  #sudo vim /etc/sudoers
   sudo vim ~/.bashrc
   export JAVA_HOME=/usr/local/java/jdk1.8.0_91
   export JRE_HOME=$JAVA_HOME/jre
@@ -1935,3 +1936,82 @@ Helm:
 
   MessageRegistry
   NewMessageRegistryWithDefaults
+
+56.elasticsearch
+  sudo dpkg -i elasticsearch-7.2.0-amd64.deb
+
+  sudo /bin/systemctl daemon-reload
+  sudo /bin/systemctl enable elasticsearch.service
+  sudo systemctl start elasticsearch.service
+  sudo systemctl stop elasticsearch.service
+
+  sudo /etc/init.d/elasticsearch start
+
+  curl -X GET "localhost:9200/"
+
+  /etc/elasticsearch
+  /usr/share/elasticsearch
+  /var/log/elasticsearch/
+
+  path.data: /var/lib/elasticsearch
+  path.logs: /var/log/elasticsearch
+
+kibana:
+  sudo dpkg -i kibana-7.2.0-amd64.deb
+  sudo systemctl daemon-reload
+  sudo systemctl enable kibana.service
+  sudo systemctl start kibana.service
+  sudo systemctl stop kibana.service
+
+  /var/log/kibana/
+  /etc/kibana/kibana.yml
+  /var/lib/kibana path.data
+
+  192.168.1.7:5601
+
+Metricbeat:
+  sudo dpkg -i metricbeat-7.2.0-amd64.deb
+
+  sudo metricbeat modules enable system
+  sudo metricbeat setup -e
+  sudo service metricbeat start
+  sudo service metricbeat stop
+  sudo service metricbeat restart
+
+  ps -ef | grep metricbeat
+  sudo vim /etc/metricbeat/metricbeat.yml
+
+  http://192.168.1.7:5601/app/kibana#/dashboard/Metricbeat-system-overview-ecs
+
+Filebeat:
+  sudo dpkg -i filebeat-7.2.0-amd64.deb
+
+  /usr/share/filebeat
+  sudo vim /etc/filebeat/filebeat.yml
+
+  sudo service filebeat start
+  sudo service filebeat stop
+  sudo service filebeat restart
+
+  sudo filebeat setup -e \
+    -E output.logstash.enabled=false \
+    -E output.elasticsearch.hosts=['localhost:9200'] \
+    -E output.elasticsearch.username=filebeat_internal \
+    -E output.elasticsearch.password=YOUR_PASSWORD \
+    -E setup.kibana.host=localhost:5601
+
+  ps -ef | grep filebeat
+
+Logstash:
+  sudo -E dpkg -i logstash-7.2.0.deb
+  #sudo /etc/init.d/logstash start
+  #sudo systemctl start logstash.service
+
+  ps -ef | grep logstash
+  ps aux | grep pid
+  netstat -tunlp | grep port
+  
+  vim /etc/logstash/metrics-pipelines.conf
+  cd /usr/share/logstash
+  sudo -E ./bin/logstash -f /etc/logstash/metrics-pipelines.conf
+
