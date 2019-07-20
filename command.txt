@@ -214,27 +214,24 @@
   NET stop mongodb
   
 13.Docker
+  https://docs.docker.com/install/linux/docker-ce/ubuntu/
   sudo apt-get update
   sudo apt-get install \
       apt-transport-https \
       ca-certificates \
       curl \
+      gnupg-agent \
       software-properties-common
-
   curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-  sudo apt-key fingerprint 0EBFCD88
-
   sudo add-apt-repository \
      "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
      $(lsb_release -cs) \
      stable"
-
   sudo apt-get update
-  sudo apt-get install docker-ce
-  sudo docker run hello-world
+  sudo apt-get install docker-ce docker-ce-cli containerd.io
 
-  wget -qO- https://get.docker.com/ | sh
-  curl -sSL https://get.docker.com/ | sh
+  #wget -qO- https://get.docker.com/ | sh
+  #curl -sSL https://get.docker.com/ | sh
 
   sudo usermod -aG docker thomas
 
@@ -1100,34 +1097,34 @@
 
   kubeadm config images list
 
-  k8s.gcr.io/kube-apiserver:v1.13.4
-  k8s.gcr.io/kube-controller-manager:v1.13.4
-  k8s.gcr.io/kube-scheduler:v1.13.4
-  k8s.gcr.io/kube-proxy:v1.13.4
+  k8s.gcr.io/kube-apiserver:v1.15.0
+  k8s.gcr.io/kube-controller-manager:v1.15.0
+  k8s.gcr.io/kube-scheduler:v1.15.0
+  k8s.gcr.io/kube-proxy:v1.15.0
   k8s.gcr.io/pause:3.1
-  k8s.gcr.io/etcd:3.2.24
-  k8s.gcr.io/coredns:1.2.6
+  k8s.gcr.io/etcd:3.3.10
+  k8s.gcr.io/coredns:1.3.1
 
-  docker pull registry.cn-hangzhou.aliyuncs.com/google_containers/kube-apiserver-amd64:v1.13.4
-  docker pull registry.cn-hangzhou.aliyuncs.com/google_containers/kube-controller-manager-amd64:v1.13.4
-  docker pull registry.cn-hangzhou.aliyuncs.com/google_containers/kube-scheduler-amd64:v1.13.4
-  docker pull registry.cn-hangzhou.aliyuncs.com/google_containers/kube-proxy-amd64:v1.13.4
+  docker pull registry.cn-hangzhou.aliyuncs.com/google_containers/kube-apiserver-amd64:v1.15.0
+  docker pull registry.cn-hangzhou.aliyuncs.com/google_containers/kube-controller-manager-amd64:v1.15.0
+  docker pull registry.cn-hangzhou.aliyuncs.com/google_containers/kube-scheduler-amd64:v1.15.0
+  docker pull registry.cn-hangzhou.aliyuncs.com/google_containers/kube-proxy-amd64:v1.15.0
   docker pull registry.cn-hangzhou.aliyuncs.com/google_containers/pause-amd64:3.1
-  docker pull registry.cn-hangzhou.aliyuncs.com/google_containers/etcd-amd64:3.2.24
-  docker pull registry.cn-hangzhou.aliyuncs.com/google_containers/coredns:1.2.6
+  docker pull registry.cn-hangzhou.aliyuncs.com/google_containers/etcd-amd64:3.3.10
+  docker pull registry.cn-hangzhou.aliyuncs.com/google_containers/coredns:1.3.1
 
-  docker tag registry.cn-hangzhou.aliyuncs.com/google_containers/kube-apiserver-amd64:v1.13.4 k8s.gcr.io/kube-apiserver:v1.13.4
-  docker tag registry.cn-hangzhou.aliyuncs.com/google_containers/kube-controller-manager-amd64:v1.13.4 k8s.gcr.io/kube-controller-manager:v1.13.4
-  docker tag registry.cn-hangzhou.aliyuncs.com/google_containers/kube-scheduler-amd64:v1.13.4 k8s.gcr.io/kube-scheduler:v1.13.4
-  docker tag registry.cn-hangzhou.aliyuncs.com/google_containers/kube-proxy-amd64:v1.13.4 k8s.gcr.io/kube-proxy:v1.13.4
+  docker tag registry.cn-hangzhou.aliyuncs.com/google_containers/kube-apiserver-amd64:v1.15.0 k8s.gcr.io/kube-apiserver:v1.15.0
+  docker tag registry.cn-hangzhou.aliyuncs.com/google_containers/kube-controller-manager-amd64:v1.15.0 k8s.gcr.io/kube-controller-manager:v1.15.0
+  docker tag registry.cn-hangzhou.aliyuncs.com/google_containers/kube-scheduler-amd64:v1.15.0 k8s.gcr.io/kube-scheduler:v1.15.0
+  docker tag registry.cn-hangzhou.aliyuncs.com/google_containers/kube-proxy-amd64:v1.15.0 k8s.gcr.io/kube-proxy:v1.15.0
   docker tag registry.cn-hangzhou.aliyuncs.com/google_containers/pause-amd64:3.1 k8s.gcr.io/pause:3.1
-  docker tag registry.cn-hangzhou.aliyuncs.com/google_containers/etcd-amd64:3.2.24 k8s.gcr.io/etcd:3.2.24
-  docker tag registry.cn-hangzhou.aliyuncs.com/google_containers/coredns:1.2.6 k8s.gcr.io/coredns:1.2.6
+  docker tag registry.cn-hangzhou.aliyuncs.com/google_containers/etcd-amd64:3.3.10 k8s.gcr.io/etcd:3.3.10
+  docker tag registry.cn-hangzhou.aliyuncs.com/google_containers/coredns:1.3.1 k8s.gcr.io/coredns:1.3.1
 
   docker pull quay.io/coreos/flannel:v0.11.0-amd64
-  docker save -o flannel.tar quay.io/coreos/flannel:v0.11.0-amd64
-  scp flannel.tar hadoop@slave01:/home/hadoop/kube
-  docker load -i flannel.tar
+  #docker save -o flannel.tar quay.io/coreos/flannel:v0.11.0-amd64
+  #scp flannel.tar hadoop@slave01:/home/hadoop/kube
+  #docker load -i flannel.tar
 
   sudo swapoff -a
   free
@@ -1153,15 +1150,9 @@
   }
 
   sudo kubeadm init \
-      --apiserver-advertise-address=192.168.1.145 \
+      --apiserver-advertise-address=192.168.1.10 \
       --image-repository registry.cn-hangzhou.aliyuncs.com/google_containers \
-      --kubernetes-version v1.13.4 \
-      --pod-network-cidr=10.244.0.0/16
-
-  sudo kubeadm init \
-      --apiserver-advertise-address=192.168.1.7 \
-      --image-repository registry.cn-hangzhou.aliyuncs.com/google_containers \
-      --kubernetes-version v1.13.4 \
+      --kubernetes-version v1.15.0 \
       --pod-network-cidr=10.244.0.0/16
 
   mkdir -p $HOME/.kube
@@ -1176,8 +1167,6 @@
   kubeadm token create --print-join-command
 
   kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
-  
-  sudo kubeadm join 192.168.1.145:6443 --token 4eh9vk.v4ittghckn3qazry --discovery-token-ca-cert-hash sha256:4fa579cc49dcebe0dde1a57fc024b2ff6761f7c7374ff3ed4baeaecec1125eab
 
   sudo kubeadm join 192.168.1.7:6443 --token ouy68p.fjetixzpf2ulx2ps --discovery-token-ca-cert-hash sha256:f396703c75a8159e5e5bacd006a07d9e7bca2083183ee801dc80f994cea69b80
 
@@ -1336,7 +1325,7 @@ Helm:
   ipfs name publish --key=keyname  QmPoyokqso3BKYCqwiU1rspLE59CPCv5csYhcPkEd6xvtm
   ipfs resolve /ipns/QmYTpEqtNYvNFUwFysuRsEufNDJJBBEJfqsqrFXDT93sEE
   
-47.network
+47.Network
   #sudo vim /etc/init.d/rc.local
   #sudo ifconfig ens33 down
   #sudo ifconfig ens33 hw ether 00:0c:29:9e:42:56
@@ -1937,7 +1926,8 @@ Helm:
   MessageRegistry
   NewMessageRegistryWithDefaults
 
-56.elasticsearch
+56.ELK
+Elasticsearch:
   sudo dpkg -i elasticsearch-7.2.0-amd64.deb
 
   sudo /bin/systemctl daemon-reload
@@ -1956,7 +1946,7 @@ Helm:
   path.data: /var/lib/elasticsearch
   path.logs: /var/log/elasticsearch
 
-kibana:
+Kibana:
   sudo dpkg -i kibana-7.2.0-amd64.deb
   sudo systemctl daemon-reload
   sudo systemctl enable kibana.service
@@ -2015,3 +2005,60 @@ Logstash:
   cd /usr/share/logstash
   sudo -E ./bin/logstash -f /etc/logstash/metrics-pipelines.conf
 
+57.Prometheus
+  tar -xzvf prometheus-2.11.1.linux-amd64.tar.gz -C /home/thomas/server/
+  vim prometheus.yml
+  ./prometheus --config.file=prometheus.yml
+
+  192.168.1.7:9090
+  192.168.1.7:9090/metrics
+  192.168.1.7:9090/graph
+
+  git clone https://github.com/prometheus/client_golang.git
+  cd client_golang/examples/random
+  go get -d
+  go build
+
+  ./random -listen-address=:8080
+  ./random -listen-address=:8081
+  ./random -listen-address=:8082
+
+  docker run -p 9090:9090 prom/prometheus
+  docker run -p 9090:9090 -v /tmp/prometheus.yml:/etc/prometheus/prometheus.yml prom/prometheus
+  docker run --name prometheus -d -p 127.0.0.1:9090:9090 prom/prometheus
+
+Grafana:
+  sudo dpkg -i grafana_6.2.5_amd64.deb
+
+  sudo service grafana-server start
+  admin / admin
+  sudo update-rc.d grafana-server defaults
+
+  sudo systemctl daemon-reload
+  sudo systemctl start grafana-server
+  sudo systemctl status grafana-server
+  sudo systemctl enable grafana-server.service
+
+  sudo vim /etc/grafana/grafana.ini
+
+  http://192.168.1.7:3000/
+
+  docker run -d -p 3000:3000 --name grafana grafana/grafana
+
+InfluxDB:
+
+58.Supervisor
+  //sudo pip install --upgrade pip
+  //sudo npm uninstall -g supervisor
+
+  sudo pip install supervisor
+  echo_supervisord_conf
+
+  mkdir ~/supervisor
+  cd ~/supervisor
+  echo_supervisord_conf > supervisord.conf
+
+  supervisord -c supervisord.conf
+  ps -ef | grep supervisor
+  supervisorctl -c supervisord.conf
+  
