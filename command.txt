@@ -2082,12 +2082,10 @@ InfluxDB:
 
   CGO_ENABLED=0 go build -o app01 main.go
   docker build -t ants/app01:v1.0 .
-  docker run -d -p 8080:8080 ants/app01:v1.0
-
-  docker run -i -t ants/app01:v1.0 /bin/bash
-
-  docker exec -it d92a084a8d89 /bin/sh 
-  docker exec -it ants/app01:v1.0 /bin/bash
+  #docker run -d -p 8080:8080 ants/app01:v1.0
+  #docker run -i -t ants/app01:v1.0 /bin/bash
+  #docker exec -it d92a084a8d89 /bin/sh 
+  #docker exec -it ants/app01:v1.0 /bin/bash
 
   docker save -o app01.tar ants/app01:v1.0
   scp app01.tar thomas@node01:/home/thomas/golang/src/app01/
