@@ -1195,6 +1195,8 @@
   #sudo kubeadm reset
   #sudo rm -rf /etc/kubernetes
   #rm -rf $HOME/.kube
+  #sudo rm -rf /var/lib/etcd
+  #sudo rm -rf /var/lib/kubelet
   #rm -rf $HOME/.helm
 
 Helm:
@@ -1733,7 +1735,7 @@ Helm:
   cd /usr/local/spark/bin
   ./run-example SparkPi 10 --slave01 local[2]
 
-53.micro
+53.go-micro
   protobuf --> protoc
   protobuf+golang --> protoc-gen-go
   protobuf+golang+grpc --> protoc-gen-go
@@ -2062,3 +2064,56 @@ InfluxDB:
   ps -ef | grep supervisor
   supervisorctl -c supervisord.conf
   
+59.MicroService
+  RBAC
+  Dockerfile
+  docker registry
+
+  Pod
+  Deployment
+  Service
+
+  ReplicationController
+  ReplicaSet
+  DaemonSet
+  StatefulSet
+  Job
+  CronJob
+
+  CGO_ENABLED=0 go build -o app01 main.go
+  docker build -t ants/app01:v1.0 .
+  docker run -d -p 8080:8080 ants/app01:v1.0
+
+  docker run -i -t ants/app01:v1.0 /bin/bash
+
+  docker exec -it d92a084a8d89 /bin/sh 
+  docker exec -it ants/app01:v1.0 /bin/bash
+
+  docker save -o app01.tar ants/app01:v1.0
+  scp app01.tar thomas@node01:/home/thomas/golang/src/app01/
+  scp app01.tar thomas@node02:/home/thomas/golang/src/app01/
+  docker load -i app01.tar
+
+  sudo kubeadm join 192.168.1.10:6443 --token okcoi5.399m3okradcsux6f \
+    --discovery-token-ca-cert-hash sha256:d9b6e238ddf86a5cb745398ba502515a56d68f906988ec72e5116a5bdff6a326
+
+  scp app01-deployment.yaml thomas@node01:/home/thomas/golang/src/app01/
+  scp app01-service.yaml thomas@node01:/home/thomas/golang/src/app01/
+  #kubectl create -f app01-deployment.yaml
+  kubectl apply -f app01-deployment.yaml
+  kubectl apply -f app01-service.yaml
+
+  kubectl get deployments
+  kubectl get rs
+  kubectl get pods --show-labels
+  kubectl get pods -o wide
+  kubectl get services -o wide
+
+  kubectl describe pod app01-deployment-d68448f69-484pp
+
+  curl 10.100.244.221:8080/ping
+  curl 10.244.1.4:8080/ping
+  curl 192.168.1.10:30001/ping
+  curl 192.168.1.11:30001/ping
+
+
