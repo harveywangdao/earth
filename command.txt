@@ -1126,8 +1126,7 @@
   #scp flannel.tar hadoop@slave01:/home/hadoop/kube
   #docker load -i flannel.tar
 
-  sudo swapoff -a
-  free
+  #free
   #sudo swapon -a
   #sudo vim /etc/fstab
 
@@ -1149,6 +1148,7 @@
   sudo apt-get install ipset ipvsadm
   }
 
+  sudo swapoff -a
   sudo kubeadm init \
       --apiserver-advertise-address=192.168.1.10 \
       --image-repository registry.cn-hangzhou.aliyuncs.com/google_containers \
@@ -1159,17 +1159,17 @@
   sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
   sudo chown $(id -u):$(id -g) $HOME/.kube/config
 
-  kubectl get cs
+  kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
+
+  sudo kubeadm join 192.168.1.10:6443 --token km2889.j89uvmvccd3p9uog \
+    --discovery-token-ca-cert-hash sha256:ee216c2f3767a9e12987973e96228cc6ca6cd1cd24a21aebaac60d77501e3824
+
   kubectl get nodes
+  kubectl get cs
   kubectl describe node ubuntuthomas
   kubectl get pod -n kube-system -o wide
   kubeadm token list
   kubeadm token create --print-join-command
-
-  kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
-
-  sudo kubeadm join 192.168.1.7:6443 --token ouy68p.fjetixzpf2ulx2ps --discovery-token-ca-cert-hash sha256:f396703c75a8159e5e5bacd006a07d9e7bca2083183ee801dc80f994cea69b80
-
   kubectl get pod --all-namespaces -o wide
   kubectl describe pod kube-flannel-ds-amd64-rxvvg --namespace=kube-system
   
@@ -1194,9 +1194,11 @@
 
   #sudo kubeadm reset
   #sudo rm -rf /etc/kubernetes
+  #sudo rm -rf /var/lib/kubelet
+
   #rm -rf $HOME/.kube
   #sudo rm -rf /var/lib/etcd
-  #sudo rm -rf /var/lib/kubelet
+
   #rm -rf $HOME/.helm
 
 Helm:
@@ -2065,53 +2067,47 @@ InfluxDB:
   supervisorctl -c supervisord.conf
   
 59.MicroService
-  RBAC
-  Dockerfile
-  docker registry
-
-  Pod
-  Deployment
-  Service
-
-  ReplicationController
-  ReplicaSet
-  DaemonSet
-  StatefulSet
-  Job
-  CronJob
-
-  CGO_ENABLED=0 go build -o app01 main.go
-  docker build -t ants/app01:v1.0 .
   #docker run -d -p 8080:8080 ants/app01:v1.0
   #docker run -i -t ants/app01:v1.0 /bin/bash
   #docker exec -it d92a084a8d89 /bin/sh 
   #docker exec -it ants/app01:v1.0 /bin/bash
+  #docker save -o app01.tar ants/app01:v1.0
+  #scp app01.tar thomas@node01:/home/thomas/golang/src/app01/
+  #scp app01.tar thomas@node02:/home/thomas/golang/src/app01/
+  #docker load -i app01.tar
+  #dig -t A draveness.me +trace
+  #dig +trace +additional draveness.me
 
-  docker save -o app01.tar ants/app01:v1.0
-  scp app01.tar thomas@node01:/home/thomas/golang/src/app01/
-  scp app01.tar thomas@node02:/home/thomas/golang/src/app01/
-  docker load -i app01.tar
+  CGO_ENABLED=0 go build -o app01 main.go
+  docker build -t ants/app01:v1.0 .
 
-  sudo kubeadm join 192.168.1.10:6443 --token okcoi5.399m3okradcsux6f \
-    --discovery-token-ca-cert-hash sha256:d9b6e238ddf86a5cb745398ba502515a56d68f906988ec72e5116a5bdff6a326
-
-  scp app01-deployment.yaml thomas@node01:/home/thomas/golang/src/app01/
-  scp app01-service.yaml thomas@node01:/home/thomas/golang/src/app01/
-  #kubectl create -f app01-deployment.yaml
+  scp * thomas@node01:/home/thomas/golang/src/app01/
   kubectl apply -f app01-deployment.yaml
   kubectl apply -f app01-service.yaml
 
-  kubectl get deployments
-  kubectl get rs
-  kubectl get pods --show-labels
-  kubectl get pods -o wide
-  kubectl get services -o wide
-
-  kubectl describe pod app01-deployment-d68448f69-484pp
-
-  curl 10.100.244.221:8080/ping
-  curl 10.244.1.4:8080/ping
+  curl 10.110.76.133:8080/ping
+  curl 10.99.236.149:8081/ping
   curl 192.168.1.10:30001/ping
-  curl 192.168.1.11:30001/ping
+  curl 192.168.1.10:30002/ping
+
+  hostname:foo
+  subdomain:bar
+  namespace:my-namespace
+  foo.bar.my-namespace.svc.cluster-domain.example
+
+  kubectl get nodes
+  kubectl get pods --all-namespaces -o wide
+  kubectl get deployments --all-namespaces -o wide
+  kubectl get services --all-namespaces -o wide
+  kubectl get configmaps --all-namespaces -o wide
+  kubectl describe pod app01-deployment-d68448f69-484pp
+  kubectl -n kube-system get configmap coredns -oyaml
+  kubectl delete --namespace=kube-system deployment coredns
+
+  kubectl exec -ti app02-deployment-5989c68c56-zw6ff -- /bin/sh
+  curl nginx.default.svc.cluster.local
+
+  curl http://app01-service.default.svc.cluster.local:8080/ping
+
 
 
