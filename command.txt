@@ -2085,11 +2085,6 @@ InfluxDB:
   kubectl apply -f app01-deployment.yaml
   kubectl apply -f app01-service.yaml
 
-  curl 10.110.76.133:8080/ping
-  curl 10.99.236.149:8081/ping
-  curl 192.168.1.10:30001/ping
-  curl 192.168.1.10:30002/ping
-
   hostname:foo
   subdomain:bar
   namespace:my-namespace
@@ -2100,14 +2095,49 @@ InfluxDB:
   kubectl get deployments --all-namespaces -o wide
   kubectl get services --all-namespaces -o wide
   kubectl get configmaps --all-namespaces -o wide
+  kubectl get ingress --all-namespaces -o wide
   kubectl describe pod app01-deployment-d68448f69-484pp
+  kubectl describe ingress ants-ingress
   kubectl -n kube-system get configmap coredns -oyaml
   kubectl delete --namespace=kube-system deployment coredns
 
   kubectl exec -ti app02-deployment-5989c68c56-zw6ff -- /bin/sh
+  kubectl exec -ti nginx-ingress-controller-7995bd9c47-2n9v4 -n ingress-nginx -- /bin/bash
+
+  curl 10.110.76.133:8080/ping
+  curl 10.99.236.149:8081/ping
+  curl 192.168.1.10:30001/ping
+  curl 192.168.1.10:30002/ping
   curl nginx.default.svc.cluster.local
-
   curl http://app01-service.default.svc.cluster.local:8080/ping
+  curl app01.app.com:30367/ping
+  curl app02.app.com:30367/ping
+
+  kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/static/mandatory.yaml
+  kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/static/provider/baremetal/service-nodeport.yaml
+
+  POD_NAME=$(kubectl get pods -n ingress-nginx -l app.kubernetes.io/name=ingress-nginx -o jsonpath='{.items[0].metadata.name}')
+  kubectl exec -it $POD_NAME -n ingress-nginx -- /nginx-ingress-controller --version
 
 
+60.Istio
+  control plane
+  data plane
+  Envoy
+  sidecar
+  Mixer
+  Pilot
+  Galley
+  Citadel
+  inbound and outbound
 
+
+61.Go Module
+  export GO111MODULE=on
+  export GOPROXY=https://goproxy.io
+
+  go mod init packagename
+  go mod download
+  go mod tidy
+  go get packagename@v1.2.3
+  go mod vendor
