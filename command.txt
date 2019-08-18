@@ -2119,7 +2119,6 @@ InfluxDB:
   POD_NAME=$(kubectl get pods -n ingress-nginx -l app.kubernetes.io/name=ingress-nginx -o jsonpath='{.items[0].metadata.name}')
   kubectl exec -it $POD_NAME -n ingress-nginx -- /nginx-ingress-controller --version
 
-
 60.Istio
   control plane
   data plane
@@ -2131,7 +2130,6 @@ InfluxDB:
   Citadel
   inbound and outbound
 
-
 61.Go Module
   export GO111MODULE=on
   export GOPROXY=https://goproxy.io
@@ -2141,3 +2139,9 @@ InfluxDB:
   go mod tidy
   go get packagename@v1.2.3
   go mod vendor
+  
+62.Ceph
+  HDFS
+  Fastdfs
+  Minio
+  
