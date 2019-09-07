@@ -1934,8 +1934,8 @@ Helm:
 Elasticsearch:
   sudo dpkg -i elasticsearch-7.2.0-amd64.deb
 
-  sudo /bin/systemctl daemon-reload
-  sudo /bin/systemctl enable elasticsearch.service
+  sudo systemctl daemon-reload
+  sudo systemctl enable elasticsearch.service
   sudo systemctl start elasticsearch.service
   sudo systemctl stop elasticsearch.service
 
@@ -2129,6 +2129,11 @@ InfluxDB:
   Galley
   Citadel
   inbound and outbound
+
+Envoy:
+  docker pull envoyproxy/envoy:v1.11.1
+  docker run --rm -d -p 10000:10000 envoyproxy/envoy:v1.11.1
+  curl -v localhost:10000
 
 61.Go Module
   export GO111MODULE=on
