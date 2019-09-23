@@ -183,6 +183,155 @@
 
   del key1
 
+  普通redis分布式锁：
+  上锁 set key value px 30000 nx # value是唯一值
+  解锁 先判断value是否对再删key，可用lua脚本保证原子性
+  if redis.call("get",KEYS[1]) == ARGV[1] then
+    return redis.call("del",KEYS[1])
+  else
+    return 0
+  end
+
+  存在单点问题
+
+  redlock：
+  上锁 多个master节点，相同key和唯一value，响应超时时间50ms，30s-获取锁的时间，只要在一个节点上获取锁失败就要在其它节点释放锁
+  所有节点key的超时时间都是30s，但由于设置key本身也需要时间，所以实际超时时间是30s-设置key时间
+
+  1.未上锁          获取锁
+  2.已上锁          锁失败
+  3.redis节点不够   锁失败，删除所有节点key
+  4.响应时间太长    锁失败，删除所有节点key
+
+  1.正常用完        释放锁，删除所有节点key
+  2.服务挂了        所有节点key等待超时
+  3.服务没挂但超时了 所有节点key，但要判断value，防止删除别人的锁
+
+  1.客户端分区方案 Redis Sharding 根据key的hash映射到哪个节点，主从、哨兵，客户端无法动态增删节点，自行维护分发逻辑
+  2.代理分区方案 Twemproxy Codis 性能低
+  3.查询路由方案
+
+  顺序分区
+  哈希分区
+  1.节点取余分区
+  2.一致性哈希分区
+  3.虚拟槽分区 2^14 0 ~ 16383 slot = CRC16（key）& 16383 限制 key批量操作 key事务操作
+
+  mkdir -p /home/thomas/server/redis-cluster
+  cd /home/thomas/server/redis-cluster
+  mkdir conf data log
+  mkdir -p data/redis-6379 data/redis-6389 data/redis-6380 data/redis-6390 data/redis-6381 data/redis-6391
+  cp ~/server/redis-4.0.14/redis.conf ./conf/
+  cp redis.conf redis-7001.conf
+
+  daemonize yes
+  bind 127.0.0.1
+  cluster-enabled yes
+  cluster-node-timeout 10000
+  appendonly yes
+  port 6379
+  cluster-config-file /home/thomas/server/redis-cluster/conf/nodes-6379.conf
+  dir /home/thomas/server/redis-cluster/data/redis-6379
+  pidfile /var/run/redis-cluster/redis-6379.pid
+  logfile /home/thomas/server/redis-cluster/log/redis-6379.log
+
+  sudo apt-get install build-essential
+  make
+  cp redis-4.0.14/src/redis-trib.rb /home/thomas/server/redis-cluster/
+  sudo apt-get install ruby
+  sudo gem install redis
+
+  cd /home/thomas/server/redis-4.0.14/src
+  ./redis-server /home/thomas/server/redis-cluster/conf/redis-6379.conf
+  ./redis-server /home/thomas/server/redis-cluster/conf/redis-6380.conf
+  ./redis-server /home/thomas/server/redis-cluster/conf/redis-6381.conf
+  ./redis-server /home/thomas/server/redis-cluster/conf/redis-6389.conf
+  ./redis-server /home/thomas/server/redis-cluster/conf/redis-6390.conf
+  ./redis-server /home/thomas/server/redis-cluster/conf/redis-6391.conf
+
+  #./redis-cli -p 6379 shutdown
+
+  ./redis-trib.rb create --replicas 1 127.0.0.1:6379 127.0.0.1:6380 127.0.0.1:6381 127.0.0.1:6389 127.0.0.1:6390 127.0.0.1:6391
+
+  Adding replica 127.0.0.1:6390 to 127.0.0.1:6379
+  Adding replica 127.0.0.1:6391 to 127.0.0.1:6380
+  Adding replica 127.0.0.1:6389 to 127.0.0.1:6381
+
+  ./redis-cli -c -h 127.0.0.1 -p 6379
+  cluster nodes
+  cluster info
+
+  加节点：
+  cp redis-6379.conf redis-6385.conf
+  cp redis-6379.conf redis-6395.conf
+  mkdir -p data/redis-6385 data/redis-6395
+
+  ./redis-server /home/thomas/server/redis-cluster/conf/redis-6385.conf
+  ./redis-server /home/thomas/server/redis-cluster/conf/redis-6395.conf
+
+  ./redis-trib.rb add-node 127.0.0.1:6385 127.0.0.1:6379
+  ./redis-trib.rb reshard 127.0.0.1:6379
+
+  增加从节点：
+  ./redis-trib.rb add-node --slave --master-id e77bd17d74a84079decfdeee6e75afd3867a44c0 127.0.0.1:6395 127.0.0.1:6379
+
+  删除节点：
+  ./redis-trib.rb reshard 127.0.0.1:6379
+  ./redis-trib.rb del-node 127.0.0.1:6385 e77bd17d74a84079decfdeee6e75afd3867a44c0
+  ./redis-trib.rb del-node 127.0.0.1:6395 1411045e449ff84c13ccc548919eda65e2e9dbd1
+
+
+  单点主从、哨兵搭建：
+  mkdir -p data/redis-7001 data/redis-8001
+
+  daemonize yes
+  bind 127.0.0.1
+  appendonly no
+  port 7001
+  logfile /home/thomas/server/redis-cluster/log/redis-7001.log
+  pidfile /var/run/redis-cluster/redis-7001.pid
+  dir /home/thomas/server/redis-cluster/data/redis-7001
+
+  slaveof 127.0.0.1 7001
+
+  ./redis-server /home/thomas/server/redis-cluster/conf/redis-7001.conf
+  ./redis-cli -p 7001
+  ./redis-server /home/thomas/server/redis-cluster/conf/redis-8001.conf
+  ./redis-cli -p 8001
+
+  哨兵：
+  cp ~/server/redis-4.0.14/sentinel.conf ./conf/
+  cp sentinel.conf sentinel-9001.conf
+  mkdir -p data/sentinel-9001 data/sentinel-9002 data/sentinel-9003
+
+  port 9001
+  daemonize yes
+  logfile /home/thomas/server/redis-cluster/log/sentinel-9001.log
+  dir /home/thomas/server/redis-cluster/data/sentinel-9001
+  sentinel monitor mymaster 127.0.0.1 7001 2
+  #sentinel auth-pass mymaster abc
+  sentinel down-after-milliseconds mymaster 1500
+  sentinel parallel-syncs mymaster 1
+  sentinel failover-timeout mymaster 30000
+
+  cp sentinel-9001.conf sentinel-9002.conf
+  cp sentinel-9001.conf sentinel-9003.conf
+
+  ./redis-sentinel /home/thomas/server/redis-cluster/conf/sentinel-9001.conf
+  ./redis-sentinel /home/thomas/server/redis-cluster/conf/sentinel-9002.conf
+  ./redis-sentinel /home/thomas/server/redis-cluster/conf/sentinel-9003.conf
+
+  ./redis-cli -p 9001
+  info sentinel
+  sentinel masters
+  sentinel slaves mymaster
+  sentinel get-master-addr-by-name mymaster
+
+  ./redis-cli -p 8001 shutdown 没什么变化
+  ./redis-cli -p 7001 shutdown
+
+
+
 12.MongoDB
   sudo apt-get install mongodb
 
@@ -1781,26 +1930,31 @@ Helm:
   cd server/etcd-v3.3.13-linux-amd64
   rm -rf data.etcd
 
-  ./etcd --data-dir=data.etcd --name et-wang-1 \
+  nohup ./etcd --data-dir=data.etcd --name et-wang-1 \
     --initial-advertise-peer-urls http://192.168.1.7:2380 --listen-peer-urls http://192.168.1.7:2380 \
     --advertise-client-urls http://192.168.1.7:2379 --listen-client-urls http://192.168.1.7:2379 \
     --initial-cluster et-wang-1=http://192.168.1.7:2380,et-wang-2=http://192.168.1.10:2380,et-wang-3=http://192.168.1.11:2380 \
     --initial-cluster-state new \
-    --initial-cluster-token token-wang-group-1
+    --initial-cluster-token token-wang-group-1 \
+    >>etcd.log 2>&1 &
 
-  ./etcd --data-dir=data.etcd --name et-wang-2 \
+  nohup ./etcd --data-dir=data.etcd --name et-wang-2 \
     --initial-advertise-peer-urls http://192.168.1.10:2380 --listen-peer-urls http://192.168.1.10:2380 \
     --advertise-client-urls http://192.168.1.10:2379 --listen-client-urls http://192.168.1.10:2379 \
     --initial-cluster et-wang-1=http://192.168.1.7:2380,et-wang-2=http://192.168.1.10:2380,et-wang-3=http://192.168.1.11:2380 \
     --initial-cluster-state new \
-    --initial-cluster-token token-wang-group-1
+    --initial-cluster-token token-wang-group-1 \
+    >>etcd.log 2>&1 &
 
-  ./etcd --data-dir=data.etcd --name et-wang-3 \
+
+  nohup ./etcd --data-dir=data.etcd --name et-wang-3 \
     --initial-advertise-peer-urls http://192.168.1.11:2380 --listen-peer-urls http://192.168.1.11:2380 \
     --advertise-client-urls http://192.168.1.11:2379 --listen-client-urls http://192.168.1.11:2379 \
     --initial-cluster et-wang-1=http://192.168.1.7:2380,et-wang-2=http://192.168.1.10:2380,et-wang-3=http://192.168.1.11:2380 \
     --initial-cluster-state new \
-    --initial-cluster-token token-wang-group-1
+    --initial-cluster-token token-wang-group-1 \
+    >>etcd.log 2>&1 &
+
 
   export ETCDCTL_API=3
   ./etcdctl --endpoints=192.168.1.7:2379 member list
@@ -2161,3 +2315,16 @@ Envoy:
   搜索 购买 支付 发货 收货 退货 退款
 
   用户 商品 订单
+
+  卖家
+  品牌 荣耀
+  名称 mate30
+  型号 128G
+  种类 手机
+
+  grpcurl -plaintext -d '{"phoneNumber":"12465465461", "name":"xiaoming"}' 127.0.0.1:6068 user.UserService/AddUser
+  grpcurl -plaintext -d '{"userID":"fsadfgsdfsadf"}' 127.0.0.1:6068 user.UserService/DelUser
+  grpcurl -plaintext -d '{"userID":"3258a18a000147adb3c47d88fce9115a"}' 127.0.0.1:6068 user.UserService/GetUser
+  grpcurl -plaintext -d '{"userID":"18931f8fd0134a35bf7fcd2137254fca", "userInfo":{"name":"xiaowang"}}' 127.0.0.1:6068 user.UserService/ModifyUserInfo
+  grpcurl -plaintext -d '{"phoneNumber":"12465465461"}' 127.0.0.1:6068 user.UserService/GetUserIdByPhoneNumber
+  grpcurl -plaintext -d '{"name":"xiaoming"}' 127.0.0.1:6068 user.UserService/GetUsersByName
