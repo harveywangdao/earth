@@ -183,6 +183,28 @@
 
   del key1
 
+  主从、哨兵、集群
+  string -- int，raw或者embstr
+  hash   -- ziplist 或者 hashtable
+  list   -- ziplist(压缩列表) 和 linkedlist(双端链表)
+  set    -- intset 或者 hashtable
+  sorted set  --  ziplist 或者 skiplist
+  事务
+  hyperloglog
+  pub/sub
+  lua
+  pipelining
+
+  FIFO：First In First Out，先进先出。判断被存储的时间，离目前最远的数据优先被淘汰。
+  LRU：Least Recently Used，最近最少使用。判断最近被使用的时间，目前最远的数据优先被淘汰。
+  LFU：Least Frequently Used，最不经常使用。在一段时间内，数据被使用次数最少的，优先被淘汰。
+  redis缓存击穿(热点key不失效或加锁)、缓存穿透(不存在的key设置空value和过期时间)、缓存雪崩(key失效时间不同)
+
+  分布式锁
+  redlock
+  持久化RDB AOF
+
+
   普通redis分布式锁：
   上锁 set key value px 30000 nx # value是唯一值
   解锁 先判断value是否对再删key，可用lua脚本保证原子性
@@ -329,6 +351,31 @@
 
   ./redis-cli -p 8001 shutdown 没什么变化
   ./redis-cli -p 7001 shutdown
+
+  cp ~/server/redis-4.0.14/redis.conf ./conf/
+  cp redis.conf redis-7001.conf
+
+  daemonize yes
+  bind 0.0.0.0
+  port 7001
+  logfile /home/thomas/server/redis-cluster/log/redis-7001.log
+  pidfile /var/run/redis-cluster/redis-7001.pid
+  dir /home/thomas/server/redis-cluster/data/redis-7001
+
+  mkdir -p data/redis-7001 data/redis-7002 data/redis-7003 data/redis-7004 data/redis-7005
+
+  cp redis-7001.conf redis-7002.conf
+  cp redis-7001.conf redis-7003.conf
+  cp redis-7001.conf redis-7004.conf
+  cp redis-7001.conf redis-7005.conf
+
+  ./redis-server /home/thomas/server/redis-cluster/conf/redis-7001.conf
+  ./redis-server /home/thomas/server/redis-cluster/conf/redis-7002.conf
+  ./redis-server /home/thomas/server/redis-cluster/conf/redis-7003.conf
+  ./redis-server /home/thomas/server/redis-cluster/conf/redis-7004.conf
+  ./redis-server /home/thomas/server/redis-cluster/conf/redis-7005.conf
+  
+  ./redis-cli -p 7001
 
 
 
