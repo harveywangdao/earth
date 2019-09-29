@@ -382,14 +382,18 @@
 12.MongoDB
   sudo apt-get install mongodb
 
-  service mongodb start
-  service mongodb restart
-  service mongodb stop
+  sudo service mongodb start
+  sudo service mongodb restart
+  sudo service mongodb stop
+  systemctl status mongodb.service
 
   sudo vim /etc/mongodb.conf
 
   pgrep mongo -l
   sudo apt-get --purge remove mongodb mongodb-clients mongodb-server
+  sudo apt-get purge mongodb-org*
+  sudo rm -rf /var/log/mongodb
+  sudo rm -rf /var/lib/mongodb
 
   show dbs
   show collections
@@ -408,6 +412,240 @@
   mongod --dbpath "D:\mongo\data\db" --logpath "D:\mongo\data\log\mongodb.log" --install --serviceName "mongodb"
   NET START mongodb
   NET stop mongodb
+
+  搭建集群：
+  sudo apt-get install libcurl3 openssl
+  tar -xzvf mongodb-linux-x86_64-ubuntu1604-3.6.14.tgz
+
+  mkdir -p /home/thomas/server/mongo-cluster/conf
+  cd /home/thomas/server/mongo-cluster/conf
+  touch mongod.conf
+  {
+  storage:
+      engine: wiredTiger
+      directoryPerDB: true
+      journal:
+          enabled: true
+  systemLog:
+      destination: file
+      logAppend: true
+  operationProfiling:
+    slowOpThresholdMs: 10000
+  replication:
+      oplogSizeMB: 10240
+  processManagement:
+      fork: true
+  security:
+      authorization: "enabled"
+  }
+
+  touch mongos.conf
+  {
+  systemLog:
+      destination: file
+      logAppend: true
+  processManagement:
+      fork: true
+  }
+
+  mkdir -p /home/thomas/server/mongo-cluster/keyfile
+  cd /home/thomas/server/mongo-cluster/keyfile
+  sudo openssl rand -base64 756 > mongo.key
+  chmod 400 mongo.key
+
+  cd /home/thomas/server/mongo-cluster
+  mkdir -p mongos-10001/data mongos-10002/data mongos-10003/data \
+        config-primary-10011/data config-secondary-10012/data config-secondary-10013/data \
+        shard1-primary-10021/data shard1-secondary-10022/data shard1-secondary-10023/data \
+        shard2-primary-10031/data shard2-secondary-10032/data shard2-secondary-10033/data
+
+  cd /home/thomas/server/mongodb-linux-x86_64-ubuntu1604-3.6.14/bin
+
+  KEYFILE=/home/thomas/server/mongo-cluster/keyfile/mongo.key
+  WORK_DIR=/home/thomas/server/mongo-cluster
+  CONFFILE=/home/thomas/server/mongo-cluster/conf/mongod.conf
+
+  Config Server:       --bind_ip 0.0.0.0
+  ./mongod --port 10011 --bind_ip 0.0.0.0 --configsvr --replSet configReplSet --keyFile $KEYFILE --dbpath $WORK_DIR/config-primary-10011/data --pidfilepath $WORK_DIR/config-primary-10011/db.pid --logpath $WORK_DIR/config-primary-10011/db.log --config $CONFFILE
+
+  ./mongod --port 10012 --bind_ip 0.0.0.0 --configsvr --replSet configReplSet --keyFile $KEYFILE --dbpath $WORK_DIR/config-secondary-10012/data --pidfilepath $WORK_DIR/config-secondary-10012/db.pid --logpath $WORK_DIR/config-secondary-10012/db.log --config $CONFFILE
+
+  ./mongod --port 10013 --bind_ip 0.0.0.0 --configsvr --replSet configReplSet --keyFile $KEYFILE --dbpath $WORK_DIR/config-secondary-10013/data --pidfilepath $WORK_DIR/config-secondary-10013/db.pid --logpath $WORK_DIR/config-secondary-10013/db.log --config $CONFFILE
+
+  ./mongo --port 10011 --host 127.0.0.1
+  cfg = {
+      _id:"configReplSet", 
+      configsvr: true,
+      members:[
+          {_id:0, host:'127.0.0.1:10011'},
+          {_id:1, host:'127.0.0.1:10012'}, 
+          {_id:2, host:'127.0.0.1:10013'}
+      ]};
+  rs.initiate(cfg);
+  rs.status()
+
+  Shard1:
+  ./mongod --port 10021 --bind_ip 0.0.0.0 --shardsvr --replSet shard1 --keyFile $KEYFILE --dbpath $WORK_DIR/shard1-primary-10021/data --pidfilepath $WORK_DIR/shard1-primary-10021/db.pid --logpath $WORK_DIR/shard1-primary-10021/db.log --config $CONFFILE
+
+  ./mongod --port 10022 --bind_ip 0.0.0.0 --shardsvr --replSet shard1 --keyFile $KEYFILE --dbpath $WORK_DIR/shard1-secondary-10022/data --pidfilepath $WORK_DIR/shard1-secondary-10022/db.pid --logpath $WORK_DIR/shard1-secondary-10022/db.log --config $CONFFILE
+
+  ./mongod --port 10023 --bind_ip 0.0.0.0 --shardsvr --replSet shard1 --keyFile $KEYFILE --dbpath $WORK_DIR/shard1-secondary-10023/data --pidfilepath $WORK_DIR/shard1-secondary-10023/db.pid --logpath $WORK_DIR/shard1-secondary-10023/db.log --config $CONFFILE
+
+  ./mongo --port 10021 --host 127.0.0.1
+  cfg = {
+      _id:"shard1", 
+      members:[
+          {_id:0, host:'127.0.0.1:10021'},
+          {_id:1, host:'127.0.0.1:10022'}, 
+          {_id:2, host:'127.0.0.1:10023'}
+      ]};
+  rs.initiate(cfg);
+
+  Shard2:
+  ./mongod --port 10031 --bind_ip 0.0.0.0 --shardsvr --replSet shard2 --keyFile $KEYFILE --dbpath $WORK_DIR/shard2-primary-10031/data --pidfilepath $WORK_DIR/shard2-primary-10031/db.pid --logpath $WORK_DIR/shard2-primary-10031/db.log --config $CONFFILE
+
+  ./mongod --port 10032 --bind_ip 0.0.0.0 --shardsvr --replSet shard2 --keyFile $KEYFILE --dbpath $WORK_DIR/shard2-secondary-10032/data --pidfilepath $WORK_DIR/shard2-secondary-10032/db.pid --logpath $WORK_DIR/shard2-secondary-10032/db.log --config $CONFFILE
+
+  ./mongod --port 10033 --bind_ip 0.0.0.0 --shardsvr --replSet shard2 --keyFile $KEYFILE --dbpath $WORK_DIR/shard2-secondary-10033/data --pidfilepath $WORK_DIR/shard2-secondary-10033/db.pid --logpath $WORK_DIR/shard2-secondary-10033/db.log --config $CONFFILE
+
+  ./mongo --port 10031 --host 127.0.0.1
+  cfg = {
+      _id:"shard2", 
+      members:[
+          {_id:0, host:'127.0.0.1:10031'},
+          {_id:1, host:'127.0.0.1:10032'}, 
+          {_id:2, host:'127.0.0.1:10033'}
+      ]};
+  rs.initiate(cfg);
+
+  Mongos:
+  KEYFILE=/home/thomas/server/mongo-cluster/keyfile/mongo.key
+  WORK_DIR=/home/thomas/server/mongo-cluster
+  CONFFILE=/home/thomas/server/mongo-cluster/conf/mongos.conf
+
+  ./mongos --port=10001 --bind_ip 0.0.0.0 --configdb configReplSet/127.0.0.1:10011,127.0.0.1:10012,127.0.0.1:10013 --keyFile $KEYFILE --pidfilepath $WORK_DIR/mongos-10001/db.pid --logpath $WORK_DIR/mongos-10001/db.log --config $CONFFILE
+  
+  ./mongos --port=10002 --bind_ip 0.0.0.0 --configdb configReplSet/127.0.0.1:10011,127.0.0.1:10012,127.0.0.1:10013 --keyFile $KEYFILE --pidfilepath $WORK_DIR/mongos-10002/db.pid --logpath $WORK_DIR/mongos-10002/db.log --config $CONFFILE
+  
+  ./mongos --port=10003 --bind_ip 0.0.0.0 --configdb configReplSet/127.0.0.1:10011,127.0.0.1:10012,127.0.0.1:10013 --keyFile $KEYFILE --pidfilepath $WORK_DIR/mongos-10003/db.pid --logpath $WORK_DIR/mongos-10003/db.log --config $CONFFILE
+
+  ./mongo --port 10001 --host 127.0.0.1
+
+  sh.addShard("shard1/127.0.0.1:10021")
+  sh.addShard("shard2/127.0.0.1:10031")
+
+  use admin
+  db.createUser({
+      user:'admin',pwd:'123456',
+      roles:[
+          {role:'clusterAdmin',db:'admin'},
+          {role:'userAdminAnyDatabase',db:'admin'},
+          {role:'dbAdminAnyDatabase',db:'admin'},
+          {role:'readWriteAnyDatabase',db:'admin'}
+  ]})
+
+  use admin
+  db.auth('admin','123456')
+  sh.status()
+  rs.add(HOST_NAME:PORT)
+
+  use admin
+  db.system.users.find().pretty()
+  show users
+  db.dropUser("admin")
+  db.changeUserPassword('tank2','test')
+  db.updateUser("usertest",{roles:[ {role:"read",db:"testDB"} ]})
+  db.grantRolesToUser("usertest", [{role:"readWrite", db:"testDB"},{role:"read", db:"testDB"}])
+  db.revokeRolesFromUser("usertest",[{role:"read", db:"testDB"}])
+  db.shutdownServer()
+  
+  use appdb
+  db.createUser({user:'appuser',pwd:'123456',roles:[{role:'dbOwner',db:'appdb'}]})
+  sh.enableSharding("appdb")
+
+  use appdb
+  db.createCollection("book")
+  db.device.ensureIndex({createTime:1})
+  sh.shardCollection("appdb.book", {bookId:"hashed"}, false, { numInitialChunks: 4} )
+
+  use appdb
+  var cnt = 0;
+  for(var i=0; i<1000; i++){
+      var dl = [];
+      for(var j=0; j<100; j++){
+          dl.push({
+                  "bookId" : "BBK-" + i + "-" + j,
+                  "type" : "Revision",
+                  "version" : "IricSoneVB0001",
+                  "title" : "Jackson's Life",
+                  "subCount" : 10,
+                  "location" : "China CN Shenzhen Futian District",
+                  "author" : {
+                        "name" : 50,
+                        "email" : "RichardFoo@yahoo.com",
+                        "gender" : "female"
+                  },
+                  "createTime" : new Date()
+              });
+        }
+        cnt += dl.length;
+        db.book.insertMany(dl);
+        print("insert ", cnt);
+  }
+
+  db.book.getShardDistribution()
+
+  db.setting.save({"_id":"chunksize","value":1})
+  db.user.insert({"id":i,"name":"jack"+i})
+  sh.enableSharding("calon")
+
+
+  show dbs
+  db
+  db.dropDatabase()
+
+  db.createCollection(name, options)
+  show tables
+  show collections
+  db.collection.drop()
+
+  db.collection.find()
+  db.product.find().pretty()
+  db.product.find({"test5":"OK"}).pretty()
+  db.product.find({$or:[{"test5":"OK"},{"test8":"OK"}]}).pretty()
+  $lt $lte $gt $gte $ne $or $in $nin $all
+  db.product.find({"test5":{$type:'string'}}).pretty()
+  db.product.find({"test5":{$type:'string'}}).limit(1).pretty()
+  db.product.find({"test5":{$type:'string'}}).limit(2).skip(1).pretty()
+  db.product.find({"test5":{$type:'string'}}).sort({"test9":1}).pretty()
+  db.users.find({}, {'name' : 1, 'skills' : 1});
+  db.users.find({name:/hurry/}); select * from users where name like "%hurry%";
+  db.users.find({name:/^hurry/}); select * from users where name like "hurry%";
+  db.users.distinct('name');
+  db.users.count();
+  db.users.find({'skills' : {'$all' : ['java','python']}})
+  db.collection.find({ "field" : { $gt: value1, $lt: value2 } } );
+
+  db.collection.update() db.product.update({"product_name":"phone"}, {$set:{"brand":"apple"}}, {multi:true})
+  db.product.update({"price":{$gt:1000}}, {$set:{"test7":"OK"}}, true, true)
+  db.product.update({"price":{$gt:8000}}, {$inc:{"test9":1}}, true, true)
+
+  db.collection.remove() db.product.remove({"test9":1})
+
+  db.collection.createIndex(keys, options)
+  db.product.createIndex({"test9":1})
+  db.product.createIndex({"test9":1}, {unique:true})
+  db.posts.ensureIndex({post_text:"text"})
+  db.posts.find({$text:{$search:"runoob"}})
+  db.posts.getIndexes()
+  db.posts.dropIndex("post_text_text")
+
+  db.collection.aggregate()
+  db.product.aggregate([{$group:{_id:"$test9", count:{$sum:1}}}])
+  $group $sum $avg $min $max $push $addToSet $first $last
+
+
+
   
 13.Docker
   https://docs.docker.com/install/linux/docker-ce/ubuntu/
@@ -2375,3 +2613,8 @@ Envoy:
   grpcurl -plaintext -d '{"userID":"18931f8fd0134a35bf7fcd2137254fca", "userInfo":{"name":"xiaowang"}}' 127.0.0.1:6068 user.UserService/ModifyUserInfo
   grpcurl -plaintext -d '{"phoneNumber":"12465465461"}' 127.0.0.1:6068 user.UserService/GetUserIdByPhoneNumber
   grpcurl -plaintext -d '{"name":"xiaoming"}' 127.0.0.1:6068 user.UserService/GetUsersByName
+
+  mysql
+  etcd
+  redis
+  mongodb
