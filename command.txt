@@ -1285,6 +1285,27 @@
   zkserver stop
   zkcli -server localhost:2181
 
+  集群搭建:
+  tar -xzvf zookeeper-3.4.14.tar.gz
+  conf/zoo_sample.cfg --> conf/zoo.cfg
+
+  vim zoo.cfg
+  dataDir=/home/thomas/server/zookeeper-3.4.14/data
+  dataLogDir=/home/thomas/server/zookeeper-3.4.14/logs
+  server.1=192.168.1.7:2888:3888
+  server.2=192.168.1.10:2888:3888
+  server.3=192.168.1.11:2888:3888
+
+  echo 1 >> /home/thomas/server/zookeeper-3.4.14/data/myid
+  echo 2 >> /home/thomas/server/zookeeper-3.4.14/data/myid
+  echo 3 >> /home/thomas/server/zookeeper-3.4.14/data/myid
+
+  cd /home/thomas/server/zookeeper-3.4.14/bin
+  ./zkServer.sh start
+  ./zkServer.sh status
+  ./zkServer.sh stop
+
+
 29.kafka
   tar -xzvf kafka_2.12-1.0.0.tgz -C /home/thomas/server/
   #bin/zookeeper-server-start.sh config/zookeeper.properties
@@ -1306,7 +1327,6 @@
   vim producer.properties
   vim consumer.properties
 
-
   cd E:\golang\src\hcxy\iov\iov_server
   cd E:\golang\src\hcxy\iov\iov_client
 
@@ -1318,6 +1338,34 @@
   bin\windows\kafka-console-producer.bat --broker-list localhost:9092 --topic TspToIov
   bin\windows\kafka-console-consumer.bat --zookeeper localhost:2181 --topic TspToIov --from-beginning 2>/dev/null
 
+  集群搭建:
+  tar -xzvf kafka_2.12-2.2.1.tgz
+
+  cd /home/thomas/server/kafka_2.12-2.2.1/config
+  vim server.properties
+
+  broker.id=1
+  listeners=PLAINTEXT://192.168.1.7:9092
+  zookeeper.connect=192.168.1.7:2181,192.168.1.10:2181,192.168.1.11:2181
+
+  broker.id=2
+  listeners=PLAINTEXT://192.168.1.10:9092
+  zookeeper.connect=192.168.1.7:2181,192.168.1.10:2181,192.168.1.11:2181
+
+  broker.id=3
+  listeners=PLAINTEXT://192.168.1.11:9092
+  zookeeper.connect=192.168.1.7:2181,192.168.1.10:2181,192.168.1.11:2181
+
+  cd /home/thomas/server/kafka_2.12-2.2.1/bin
+  ./kafka-server-start.sh -daemon ../config/server.properties
+  ./kafka-topics.sh --create --zookeeper 192.168.1.7:2181 --replication-factor 2 --partitions 3 --topic xiaoming
+  ./kafka-topics.sh --describe --zookeeper 192.168.1.7:2181 --topic xiaoming
+  ./kafka-console-producer.sh --broker-list 192.168.1.7:9092 --topic xiaoming
+  ./kafka-console-consumer.sh --bootstrap-server 192.168.1.10:9092 --from-beginning --topic xiaoming
+  ./kafka-topics.sh --zookeeper 192.168.1.7:2181 --list
+
+  ./kafka-consumer-groups.sh --new-consumer --bootstrap-server 192.168.1.7:9092 --list
+  ./kafka-consumer-groups.sh --new-consumer --bootstrap-server 192.168.1.7:9092 --group groupid1 --describe
 
 30.netstat
   netstat -a
@@ -2456,7 +2504,7 @@ Helm:
   scp etcd-v3.3.13-linux-amd64.tar.gz thomas@node02:/home/thomas/server
   tar -xzvf etcd-v3.3.13-linux-amd64.tar.gz
 
-  cd server/etcd-v3.3.13-linux-amd64
+  cd /home/thomas/server/etcd-v3.3.13-linux-amd64
   rm -rf data.etcd
 
   nohup ./etcd --data-dir=data.etcd --name et-wang-1 \
