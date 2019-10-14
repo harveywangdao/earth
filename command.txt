@@ -2881,7 +2881,24 @@ Envoy:
   Fastdfs
   Minio
   
-63.System
+63.NSQ
+  tar -xzvf nsq-1.2.0.linux-amd64.go1.12.9.tar.gz
+  cd /home/thomas/server/nsq-1.2.0.linux-amd64.go1.12.9/bin
+  ./nsqlookupd
+  ./nsqd --lookupd-tcp-address=127.0.0.1:4160
+  ./nsqadmin --lookupd-http-address=127.0.0.1:4161
+  ./nsq_to_file --topic=test --output-dir=/tmp --lookupd-http-address=127.0.0.1:4161
+  curl -d 'hello world 1' 'http://127.0.0.1:4151/pub?topic=test'
+  http://192.168.1.7:4171/
+
+  curl -X POST http://127.0.0.1:4151/channel/create?topic=name&channel=name
+  curl http://127.0.0.1:4151/stats
+  curl http://127.0.0.1:4161/lookup
+  curl http://127.0.0.1:4161/topics
+  curl http://127.0.0.1:4161/channels
+  curl http://127.0.0.1:4161/nodes
+
+64.System
   电商系统 淘宝 京东 卖票 买书
   及时通讯 QQ 微信
   社交系统 微博 抖音
