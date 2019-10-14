@@ -2883,11 +2883,20 @@ Envoy:
   
 63.NSQ
   tar -xzvf nsq-1.2.0.linux-amd64.go1.12.9.tar.gz
+  mkdir /home/thomas/server/nsq-cluster
+  cd /home/thomas/server/nsq-cluster
+  mkdir nsqd1 nsqd2 nsqd3
   cd /home/thomas/server/nsq-1.2.0.linux-amd64.go1.12.9/bin
-  ./nsqlookupd
-  ./nsqd --lookupd-tcp-address=127.0.0.1:4160
-  ./nsqadmin --lookupd-http-address=127.0.0.1:4161
-  ./nsq_to_file --topic=test --output-dir=/tmp --lookupd-http-address=127.0.0.1:4161
+
+  nohup ./nsqlookupd >>nsqlookupd.log 2>&1 &
+
+  nohup ./nsqd -lookupd-tcp-address=127.0.0.1:4160 -tcp-address=0.0.0.0:4601 -http-address=0.0.0.0:4701 -data-path=/home/thomas/server/nsq-cluster/nsqd1 >>/home/thomas/server/nsq-cluster/nsqd1.log 2>&1 &
+  nohup ./nsqd -lookupd-tcp-address=127.0.0.1:4160 -tcp-address=0.0.0.0:4602 -http-address=0.0.0.0:4702 -data-path=/home/thomas/server/nsq-cluster/nsqd2 >>/home/thomas/server/nsq-cluster/nsqd2.log 2>&1 &
+  nohup ./nsqd -lookupd-tcp-address=127.0.0.1:4160 -tcp-address=0.0.0.0:4603 -http-address=0.0.0.0:4703 -data-path=/home/thomas/server/nsq-cluster/nsqd3 >>/home/thomas/server/nsq-cluster/nsqd3.log 2>&1 &
+
+  nohup ./nsqadmin --lookupd-http-address=127.0.0.1:4161 >>nsqadmin.log 2>&1 &
+  nohup ./nsq_to_file --topic=test --output-dir=/tmp --lookupd-http-address=127.0.0.1:4161 >>nsq_to_file.log 2>&1 &
+
   curl -d 'hello world 1' 'http://127.0.0.1:4151/pub?topic=test'
   http://192.168.1.7:4171/
 
@@ -2897,6 +2906,7 @@ Envoy:
   curl http://127.0.0.1:4161/topics
   curl http://127.0.0.1:4161/channels
   curl http://127.0.0.1:4161/nodes
+
 
 64.System
   电商系统 淘宝 京东 卖票 买书
