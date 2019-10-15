@@ -2908,7 +2908,16 @@ Envoy:
   curl http://127.0.0.1:4161/nodes
 
 
-64.System
+64.TiDB
+  git clone https://github.com/pingcap/tidb-docker-compose.git
+  cd tidb-docker-compose && docker-compose pull && docker-compose up -d
+  mysql -h 127.0.0.1 -P 4000 -u root
+  http://localhost:3000 admin admin
+  http://localhost:8010
+
+  docker-compose down
+
+65.System
   电商系统 淘宝 京东 卖票 买书
   及时通讯 QQ 微信
   社交系统 微博 抖音
