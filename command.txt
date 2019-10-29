@@ -724,6 +724,193 @@
 
   docker rmi -f runoob/ubuntu:v4
 
+  LXC:
+  sudo apt-get install lxc
+  cd /usr/share/lxc/templates/
+  sudo lxc-create -t ubuntu -n xiaoming
+  sudo lxc-start -n xiaoming -d
+  sudo lxc-ls
+  sudo lxc-console -n xiaoming
+  sudo lxc-checkconfig
+  sudo lxc-info -n xiaoming
+  sudo lxc-stop -n xiaoming
+  sudo lxc-destory -n xiaoming
+
+  chroot，根切换，从容器内的角度来看，仿佛真的有自己的根树
+  namespaces：名称空间，负责将资源隔离，pid，net，mnt，user，uts，ipc
+  CGroups：控制组，负责控制资源的分配 资源限制、优先级分配、资源统计、进程控制
+
+  libcontainer:
+  libnetwork
+  execdriver
+  networkdriver
+  graphdriver
+
+  network/sandbox/endpoint
+  veth pair
+  none、bridge、joined container 和 多主机的 overlay、macvlan，第三方 Driver 就包括多主机的 flannel、weave、calico
+  Container Network Model，CNM
+  VxLAN VLAN
+  ovs(open vswitch)
+
+  macvlan: (macvtap)
+  sudo lsmod | grep macvlan
+  bridge模式
+  sudo ip link add link ens33 dev mac1 type macvlan mode bridge
+  sudo ip link add link ens33 dev mac2 type macvlan mode bridge
+
+  sudo ip netns add ns1
+  sudo ip netns add ns2
+
+  sudo ip link set mac1 netns ns1
+  sudo ip link set mac2 netns ns2
+
+  sudo ip netns exec ns1 ip a a 192.168.1.122/24 dev mac1
+  sudo ip netns exec ns1 ip l s mac1 up
+
+  sudo ip netns exec ns2 ip a a 192.168.1.123/24 dev mac2
+  sudo ip netns exec ns2 ip l s mac2 up
+
+  sudo ip netns exec ns1 ip a show mac1
+  sudo ip netns exec ns2 ip a show mac2
+
+  sudo ip netns exec ns1 ping 192.168.1.123
+
+  -----------------------------------------------------------
+  docker network ls
+  docker network create -d macvlan --subnet=172.16.10.0/24 --gateway=172.16.10.1 -o parent=ens33 mac3
+  docker run -itd --name c1 --ip=172.16.10.2 --network mac3 busybox
+  docker run -itd --name c2 --ip=172.16.10.3 --network mac3 busybox
+  docker exec c1 ping 172.16.10.3
+
+  sudo vconfig add ens33 100
+  sudo vconfig add ens33 200
+
+  sudo vconfig set_flag ens33.100 1 1
+  sudo vconfig set_flag ens33.200 1 1
+
+  sudo ifconfig ens33.100 up
+  sudo ifconfig ens33.200 up
+
+  docker network create -d macvlan --subnet=172.16.30.0/24 --gateway=172.16.30.1 -o parent=ens33.100 mac10
+  docker network create -d macvlan --subnet=172.16.40.0/24 --gateway=172.16.40.1 -o parent=ens33.200 mac20
+  
+  node1:
+  docker run -itd --name d1 --ip=172.16.30.10 --network mac10 busybox
+  docker run -itd --name d2 --ip=172.16.40.10 --network mac20 busybox
+
+  node2:
+  docker run -itd --name d3 --ip=172.16.30.11 --network mac10 busybox
+  docker run -itd --name d4 --ip=172.16.40.11 --network mac20 busybox
+
+  docker exec d1 ping 172.16.30.10
+  docker exec d1 ping 172.16.40.10
+  docker exec d1 ping 172.16.30.11
+  docker exec d1 ping 172.16.40.11
+
+  node3:
+  #sysctl -w net.ipv4.ip_forward=1
+  cat /proc/sys/net/ipv4/ip_forward
+  sudo vconfig add ens33 100
+  sudo vconfig add ens33 200
+  sudo vconfig set_flag ens33.100 1 1
+  sudo vconfig set_flag ens33.200 1 1
+  sudo ifconfig ens33.100 172.16.30.1 netmask 255.255.255.0 up
+  sudo ifconfig ens33.200 172.16.40.1 netmask 255.255.255.0 up
+
+  sudo iptables -t nat -A POSTROUTING -o ens33.100 -j MASQUERADE
+  sudo iptables -t nat -A POSTROUTING -o ens33.200 -j MASQUERADE
+
+  sudo iptables -A FORWARD -i ens33.100 -o ens33.200 -m state --state RELATED,ESTABLISHED -j ACCEPT
+  sudo iptables -A FORWARD -i ens33.200 -o ens33.100 -m state --state RELATED,ESTABLISHED -j ACCEPT
+
+  sudo iptables -A FORWARD -i ens33.100 -o ens33.200 -j ACCEPT
+  sudo iptables -A FORWARD -i ens33.200 -o ens33.100 -j ACCEPT
+
+  veth-pair:(tap/tun)
+  sudo ip netns a ns3
+  sudo ip netns a ns4
+
+  sudo ip l a veth3 type veth peer name veth4
+  sudo ip l s veth3 netns ns3
+  sudo ip l s veth4 netns ns4
+
+  sudo ip netns exec ns3 ip a a 10.1.1.42/24 dev veth3
+  sudo ip netns exec ns3 ip l s veth3 up
+  sudo ip netns exec ns4 ip a a 10.1.1.43/24 dev veth4
+  sudo ip netns exec ns4 ip l s veth4 up
+
+  sudo ip netns exec ns3 ping 10.1.1.43
+
+  -------------------------------------
+  sudo ip l a br0 type bridge
+  sudo ip l s br0 up
+
+  sudo ip l a veth5 type veth peer name br-veth5
+  sudo ip l a veth6 type veth peer name br-veth6
+
+  sudo ip l s veth5 netns ns3
+  sudo ip l s br-veth5 master br0
+  sudo ip l s br-veth5 up
+  sudo ip l s veth6 netns ns4
+  sudo ip l s br-veth6 master br0
+  sudo ip l s br-veth6 up
+
+  sudo ip netns exec ns3 ip a a 10.1.1.45/24 dev veth5
+  sudo ip netns exec ns3 ip l s veth5 up
+  sudo ip netns exec ns4 ip a a 10.1.1.46/24 dev veth6
+  sudo ip netns exec ns4 ip l s veth6 up
+
+  sudo ip netns exec ns3 ping 10.1.1.46
+
+  VxLAN:
+  sudo apt-get install bridge-utils
+  brctl show
+
+  sudo ip link add vxlan1 type vxlan id 1 remote 192.168.1.12 dstport 4789 dev ens33
+  sudo ip link set vxlan1 up
+  sudo ip addr add 10.0.0.106/24 dev vxlan1
+
+  sudo ip link add vxlan1 type vxlan id 1 remote 192.168.1.11 dstport 4789 dev ens33
+  sudo ip link set vxlan1 up
+  sudo ip addr add 10.0.0.107/24 dev vxlan1
+
+  ifconfig vxlan1
+  route -n
+  ping 10.0.0.107
+  sudo tcpdump -i ens33 host 192.168.1.12 -s0 -v -w vxlan_vni_1.pcap
+
+  -------------------------------------------------------------------------
+  docker network ls
+  ifconfig docker0
+  docker network create --subnet 172.18.0.0/16 mynetwork
+  docker run -itd --net mynetwork --ip 172.18.0.2 centos
+  docker run -itd --net mynetwork --ip 172.18.0.3 centos
+
+  docker ps -a
+  docker exec -it 5c46961334c6 /bin/bash
+
+  yum whatprovides ifconfig
+  net-tools-2.0-0.51.20160912git.el8.x86_64
+  yum install net-tools -y
+  ifconfig eth0
+
+  brctl show
+  sudo ip link add vxlan_docker type vxlan id 200 remote 192.168.1.12 dstport 4789 dev ens33
+  sudo ip link set vxlan_docker up
+  sudo brctl addif br-69602f5a273c vxlan_docker
+
+  sudo ip link add vxlan_docker type vxlan id 200 remote 192.168.1.11 dstport 4789 dev ens33
+  sudo ip link set vxlan_docker up
+  sudo brctl addif br-7a9721b67697 vxlan_docker
+
+  ping 172.18.0.3
+  ping 172.18.0.1
+
+  存储驱动:
+  docker info
+  AUFS Btrfs DeviceMapper Overlay ZFS VFS
+
 14.scrapy
   scrapy startproject jdspider
   scrapy genspider jd jd.com
@@ -826,7 +1013,6 @@
   sudo tar -xzvf jdk-8u91-linux-x64.tar.gz -C /usr/local/java/
   #sudo vim /etc/profile
   #source /etc/profile
-  #sudo vim /etc/sudoers
   sudo vim ~/.bashrc
   export JAVA_HOME=/usr/local/java/jdk1.8.0_91
   export JRE_HOME=$JAVA_HOME/jre
@@ -864,6 +1050,7 @@
   
   sudo rm /usr/bin/python
   sudo ln -s /usr/bin/python3.5 /usr/bin/python
+  ls -l /usr/bin/python*
 
   Python 2.7.6
   Python 3.4.3
@@ -1799,9 +1986,6 @@
 
 43.Kubernetes
   集群部署：
-  sudo usermod -aG docker hadoop
-  exit
-  
   docker rm `docker ps -a -q`
   docker rmi -f `docker images -q`
 
@@ -1852,10 +2036,6 @@
   #scp flannel.tar hadoop@slave01:/home/hadoop/kube
   #docker load -i flannel.tar
 
-  #free
-  #sudo swapon -a
-  #sudo vim /etc/fstab
-
   未操作：{
   chrony
   iptables
@@ -1874,6 +2054,7 @@
   sudo apt-get install ipset ipvsadm
   }
 
+  free
   sudo swapoff -a
   sudo kubeadm init \
       --apiserver-advertise-address=192.168.1.10 \
@@ -1887,8 +2068,8 @@
 
   kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
 
-  sudo kubeadm join 192.168.1.10:6443 --token km2889.j89uvmvccd3p9uog \
-    --discovery-token-ca-cert-hash sha256:ee216c2f3767a9e12987973e96228cc6ca6cd1cd24a21aebaac60d77501e3824
+  sudo kubeadm join 192.168.1.10:6443 --token wm12nh.xm2zn4w3ghsivcs7 \
+      --discovery-token-ca-cert-hash sha256:21d3124cf1140661c35559da24f4f38f68183780ea769a45a4984640cf06b267
 
   kubectl get nodes
   kubectl get cs
@@ -1906,26 +2087,29 @@
   kubectl get pods -l app=nginx -o wide
   kubectl expose deployment nginx --port=80 --type=NodePort
   kubectl get services nginx
+  kubectl cluster-info
 
   kubectl run -it curl --image=radial/busyboxplus:curl
   nslookup nginx
   curl http://nginx/
   curl 10.244.1.2
 
+  #kubectl apply -f https://docs.projectcalico.org/v3.10/manifests/calico.yaml
   #kubectl taint node k8s-master node-role.kubernetes.io/master-
   #kubectl taint node k8s-master node-role.kubernetes.io/master=:NoSchedule
 
   #kubectl drain slave01 --delete-local-data --force --ignore-daemonsets
   #kubectl delete node slave01
 
-  #sudo kubeadm reset
-  #sudo rm -rf /etc/kubernetes
-  #sudo rm -rf /var/lib/kubelet
+  sudo kubeadm reset
+  sudo rm -rf /etc/kubernetes
+  sudo rm -rf /var/lib/kubelet
+  sudo rm -rf /var/lib/etcd
+  rm -rf $HOME/.helm
+  rm -rf $HOME/.kube
 
-  #rm -rf $HOME/.kube
-  #sudo rm -rf /var/lib/etcd
-
-  #rm -rf $HOME/.helm
+  #sudo swapon -a
+  #sudo vim /etc/fstab
 
 Helm:
   tar -xzvf helm-v2.12.3-linux-amd64.tar.gz
@@ -2861,10 +3045,46 @@ InfluxDB:
   Citadel
   inbound and outbound
 
-Envoy:
+  Envoy:
   docker pull envoyproxy/envoy:v1.11.1
   docker run --rm -d -p 10000:10000 envoyproxy/envoy:v1.11.1
   curl -v localhost:10000
+
+  Istio集群:
+  curl -L https://git.io/getLatestIstio | ISTIO_VERSION=1.3.3 sh -
+  cd istio-1.3.3
+  sudo cp bin/istioctl /usr/bin/
+  sudo chmod 755 /usr/bin/istioctl
+
+  for i in install/kubernetes/helm/istio-init/files/crd*yaml; do kubectl apply -f $i; done
+  kubectl apply -f install/kubernetes/istio-demo.yaml
+  kubectl get svc -n istio-system
+  kubectl get pods -n istio-system
+
+  kubectl label namespace default istio-injection=enabled
+  kubectl apply -f samples/bookinfo/platform/kube/bookinfo.yaml
+  kubectl get services
+  kubectl get pods
+  kubectl get pod --all-namespaces -o wide
+  kubectl exec -it $(kubectl get pod -l app=ratings -o jsonpath='{.items[0].metadata.name}') -c ratings -- curl productpage:9080/productpage | grep -o "<title>.*</title>"
+
+  kubectl apply -f samples/bookinfo/networking/bookinfo-gateway.yaml
+  kubectl get gateway
+  kubectl get virtualservices
+  kubectl get destinationrules
+
+  kubectl apply -f samples/httpbin/httpbin.yaml
+  export INGRESS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="http2")].nodePort}')
+  #export SECURE_INGRESS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="https")].nodePort}')
+  export INGRESS_HOST=$(kubectl get po -l istio=ingressgateway -n istio-system -o jsonpath='{.items[0].status.hostIP}')
+  
+  export GATEWAY_URL=$INGRESS_HOST:$INGRESS_PORT
+  curl -s http://${GATEWAY_URL}/productpage | grep -o "<title>.*</title>"
+
+  #samples/bookinfo/platform/kube/cleanup.sh
+  #kubectl delete -f install/kubernetes/istio-demo.yaml
+  #for i in install/kubernetes/helm/istio-init/files/crd*yaml; do kubectl delete -f $i; done
+
 
 61.Go Module
   export GO111MODULE=on
@@ -2877,10 +3097,287 @@ Envoy:
   go mod vendor
   
 62.Ceph
-  HDFS
-  Fastdfs
+  object storage
+  block storage
+  file system
+  ceph-deploy
+  rados(Reliable Autonomic Distributed Object Store)
+  Monitor
+  OSD(Object Storage Device)
+  MDS(Ceph Metadata Server)
+  CRUSH(Controlled Replication Under Scalable Hashing)
+  RBD(RADOS block device)
+  RGW(RADOS gateway)
+  CephFS
+
+  Ceph Monitor, Ceph Manager, Ceph OSD (Object Storage Daemon), Ceph Metadata Server
+
+  集群部署:
+  mkdir -p /home/thomas/server/ceph-cluster/data
+  cd /home/thomas/server/ceph-cluster
+
+  sudo rm /usr/bin/python
+  sudo ln -s /usr/bin/python3.5 /usr/bin/python
+  ls -l /usr/bin/python*
+
+  sudo apt-get install python3-dev python3-pip
+  sudo pip3 install --upgrade pip
+  sudo pip install ceph-deploy
+
+  sudo chmod u+w /etc/sudoers
+  sudo vim /etc/sudoers
+  thomas  ALL=(root) NOPASSWD:ALL
+  sudo chmod u-w /etc/sudoers
+
+  ssh-keygen -t rsa
+  cat ./id_rsa.pub >> ./authorized_keys
+
+  scp /home/thomas/.ssh/id_rsa.pub thomas@node02:/home/thomas/.ssh/id_rsa.pub
+  scp /home/thomas/.ssh/authorized_keys thomas@node02:/home/thomas/.ssh/authorized_keys
+  scp /home/thomas/.ssh/id_rsa.pub thomas@node04:/home/thomas/.ssh/id_rsa.pub
+  scp /home/thomas/.ssh/authorized_keys thomas@node04:/home/thomas/.ssh/authorized_keys
+
+  ssh node01
+  ssh node02
+  ssh node04
+
+  wget -q -O- 'https://download.ceph.com/keys/release.asc' | sudo apt-key add -
+  #echo deb https://download.ceph.com/debian-mimic/ $(lsb_release -sc) main | sudo tee /etc/apt/sources.list.d/ceph.list
+  echo deb https://eu.ceph.com//debian-mimic/ $(lsb_release -sc) main | sudo tee /etc/apt/sources.list.d/ceph.list
+  sudo apt update
+  sudo apt-get install ceph ceph-osd ceph-mds ceph-mon radosgw
+  ll /usr/bin/ceph*
+
+  ceph-deploy --username thomas new node01
+  ceph-deploy --username thomas install node01
+  ceph-deploy --username thomas install node02
+  ceph-deploy --username thomas install node04
+
+  ceph-deploy mon create-initial
+  ceph-deploy admin node01 node02 node04
+  ceph-deploy mgr create node01
+
+  增加磁盘
+  sudo df -hl
+  sudo fdisk -l
+  sudo lsblk -a
+  sudo lsblk -f
+
+  sudo fdisk /dev/sdb
+  n
+  p
+  3
+  +10G
+  t
+  8e
+  p
+  w
+
+  sudo pvcreate /dev/sdb3
+  sudo pvdisplay
+  sudo pvs
+
+  sudo vgcreate vg-ceph /dev/sdb3
+  #sudo vgchange -a y vg-ceph
+  #sudo vgextend vg-ceph /dev/sdc
+  #sudo vgreduce vg-ceph /dev/sdc
+  sudo vgdisplay
+  sudo vgs
+
+  sudo lvcreate -L 8G -n lv-osd vg-ceph
+  sudo lvdisplay
+  sudo lvs
+  #sudo lvremove /dev/vg-ceph/lv-osd
+  #sudo lvextend -L+500M /dev/vg-ceph/lv-osd
+  #sudo resize4fs /dev/vg-ceph/lv-osd
+
+  sudo mkfs.ext4 /dev/vg-ceph/lv-osd
+  #sudo mkdir /lvmdata
+  #sudo mount /dev/vg-ceph/lv-osd /lvmdata
+
+  ceph-deploy osd create --data /dev/vg-ceph/lv-osd node01
+  ceph-deploy osd create --data /dev/vg-ceph/lv-osd node02
+  ceph-deploy osd create --data /dev/vg-ceph/lv-osd node04
+
+  ssh node02 sudo ceph health
+  ssh node02 sudo ceph -s
+  ps -ef | grep ceph
+  ceph-deploy mgr create node02 node04
+
+  增加mon节点:
+  vim /home/thomas/server/ceph-cluster/ceph.conf
+  public network = 192.168.1.0/24
+  ceph-deploy --overwrite-conf config push node01 node02 node04
+  #ceph-deploy --overwrite-conf admin node01 node02 node04
+  ceph-deploy mon add node02
+  ceph-deploy mon add node04
+  sudo ceph quorum_status --format json-pretty
+
+  RGW:
+  ceph-deploy rgw create node01
+  echo "hello ceph haha" > testfile.txt
+  sudo ceph osd pool create pool01 100
+  sudo rados put object01 testfile.txt --pool=pool01
+  sudo rados -p pool01 ls
+  sudo ceph osd map pool01 object01
+  sudo rados rm object01 --pool=pool01
+  sudo ceph osd pool rm pool01 pool01 --yes-i-really-really-mean-it
+
+  常用命令:
+  sudo rbd ls -p pool01
+  sudo rbd rm <image-name> -p pool01
+  sudo rbd create one.img -p pool01 -s <image-size>
+  sudo rbd create pool01/one.img --size <image-size>
+  sudo rbd map pool01/one.img[@<snap-name>]
+  sudo rbd unmap pool01/one.img[@<snap-name>]
+  sudo rbd resize pool01/one.img --size <image-size> --allow-shrink
+
+  sudo rados lspools
+  sudo rados rmpool pool01 pool01 --yes-i-really-really-mean-it
+  sudo rados purge pool01 --yes-i-really-really-mean-it
+  sudo rados df -p pool01
+  sudo rados ls -p pool01
+
+  sudo ceph osd pool ls detail
+  sudo ceph osd stat
+  sudo ceph osd dump
+  sudo ceph osd tree
+  sudo ceph osd down 0
+  sudo ceph osd up 0
+  sudo ceph osd out 0
+  sudo ceph osd in 0
+  sudo ceph osd rm 0
+  sudo ceph stop osd.0
+  sudo ceph osd crush rm osd.0
+  sudo ceph osd crush rm node01
+  sudo ceph osd getmaxosd
+  sudo ceph osd setmaxosd 60
+  sudo ceph osd crush reweight osd.3 1.0
+  sudo ceph osd reweight 3 0.5
+  sudo ceph osd pause
+  sudo ceph osd unpause
+
+  Block Device Storage:
+  sudo ceph osd crush show-tunables
+  sudo ceph osd crush tunables hammer
+  #sudo ceph osd crush tunables jewel
+  #sudo ceph osd crush tunables optimal
+  #sudo ceph osd crush tunables legacy
+  #sudo lsmod | grep ceph
+  #firefly giant hammer infernalis jewel kraken luminous mimic nautilus testing
+
+  Create Pool:
+  sudo ceph osd pool create pool02 100
+  sudo rbd pool init pool02
+  sudo rbd create foo --size 8 --image-feature layering -m 192.168.1.10 -k /etc/ceph/ceph.client.admin.keyring -p pool02
+  sudo rbd map pool02/foo --name client.admin
+  sudo mkfs.ext4 -m0 /dev/rbd/pool02/foo
+  sudo mkdir /mnt/ceph-block-device
+  sudo mount /dev/rbd/pool02/foo /mnt/ceph-block-device
+  cd /mnt/ceph-block-device
+
+  sudo rbd create pool02/xiaoming --size 32
+  sudo rbd -p pool02 ls
+  sudo rbd info pool02/xiaoming
+  sudo rbd resize pool02/xiaoming --size 16 --allow-shrink
+  sudo rbd feature disable pool02/xiaoming exclusive-lock object-map fast-diff deep-flatten
+  sudo rbd map pool02/xiaoming
+  sudo mkfs.ext4 /dev/rbd1
+  sudo mount /dev/rbd1 /home/thomas/server/ceph-cluster/data
+  sudo dd if=/dev/zero of=//home/thomas/server/ceph-cluster/data/testfile01.txt bs=1M count=1
+  sudo rbd snap create --snap mysnap pool02/xiaoming
+  sudo rbd snap ls pool02/xiaoming
+  sudo rm testfile01.txt
+  sudo umount /dev/rbd1
+  sudo rbd snap rollback pool02/xiaoming@mysnap
+  sudo mount /dev/rbd1 /home/thomas/server/ceph-cluster/data
+
+  Delete Pool:
+  #sudo ceph --show-config | grep mon_allow_pool_delete
+  vim /home/thomas/server/ceph-cluster/ceph.conf
+  mon_allow_pool_delete = true
+
+  ceph-deploy --overwrite-conf admin node01 node02 node04
+  cat /etc/ceph/ceph.conf
+
+  systemctl list-units --type=service | grep ceph
+  sudo systemctl restart ceph-mon@node01.service
+  sudo systemctl restart ceph-mon@node02.service
+  sudo systemctl restart ceph-mon@node04.service
+  sudo ceph osd pool rm pool02 pool02 --yes-i-really-really-mean-it
+
+  mon常用命令:
+  cd /var/log/ceph/
+  tail -f ceph-mon.node02.log
+  sudo ceph -s
+  sudo ceph mon stat
+  sudo ceph quorum_status
+  sudo ceph mon dump
+  sudo ceph mon remove mon.node01
+  sudo ceph mon add mon.node02 192.168.1.11:6789
+  sudo ceph mon add mon.node04 192.168.1.13:6789
+  sudo ceph mon getmap -o 1.txt
+  sudo monmaptool --print 1.txt
+  #sudo ceph-mon -i node02 -inject-monmap 1.txt
+  sudo ceph daemon mon.node01 mon_status
+  sudo ceph-conf --name mon.node01 --show-config-value admin_socket
+
+  CephFS:
+  sudo ceph-deploy mds create node01
+  sudo ceph osd pool create cephfs_data 32
+  sudo ceph osd pool create cephfs_meta 32
+  sudo ceph fs new mycephfs cephfs_meta cephfs_data
+  sudo ceph fs ls
+  sudo ceph mds stat
+
+  sudo mkdir /mnt/mycephfs
+  sudo ceph auth get-key client.admin
+  sudo mount -t ceph 192.168.1.10:6789:/ /mnt/mycephfs -o name=admin,secret=AQAoTrZdJkIYARAA4q9zXwfwCD3Ifv57NWAdaQ==
+  sudo df -hT
+  sudo umount /mnt/mycephfs
+
+  sudo mkdir /mnt/myfusecephfs
+  sudo ceph-fuse /mnt/myfusecephfs
+
+  #ssh user@ceph-server
+  #sudo useradd -d /home/{username} -m {username}
+  #sudo passwd {username}
+  #echo "{username} ALL = (root) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/{username}
+  #sudo chmod 0440 /etc/sudoers.d/{username}
+
+  #sudo pip uninstall ceph-deploy
+  #ceph-deploy purge {ceph-node} [{ceph-node}]
+  #ceph-deploy purgedata {ceph-node} [{ceph-node}]
+  #ceph-deploy forgetkeys
+  #rm ceph.*
+
+  #sudo df -hl
+  #sudo fdisk -l
+  #sudo lsblk -a
+  #sudo lsblk -f
+  #dd if=/dev/zero of=/home/thomas/server/ceph-cluster/data/loop0.img bs=1M count=10240
+  #sudo mkfs.ext4 /home/thomas/server/ceph-cluster/data/loop0.img
+  #file /home/thomas/server/ceph-cluster/data/loop0.img
+  #sudo losetup -f
+  #sudo losetup /dev/loop0 /home/thomas/server/ceph-cluster/data/loop0.img
+  #sudo losetup -a
+  #sudo mount /dev/loop0 /mnt/loopback
+  #sudo umount /mnt/loopback
+  #sudo losetup -d /dev/loop0
+
   Minio
-  
+  Swift
+  S3
+  OpenZFS
+  MooseFS
+  MogileFS
+  FastDFS
+  Lustre
+  SeaweedFS
+  HDFS
+  GlusterFS
+
+
 63.NSQ
   tar -xzvf nsq-1.2.0.linux-amd64.go1.12.9.tar.gz
   mkdir /home/thomas/server/nsq-cluster
@@ -2917,7 +3414,101 @@ Envoy:
 
   docker-compose down
 
-65.System
+65.Ansible
+  sudo apt update
+  sudo apt install software-properties-common
+  sudo apt-add-repository --yes --update ppa:ansible/ansible
+  sudo apt install ansible
+  sudo apt remove ansible
+  sudo rm -rf /etc/ansible
+
+  sudo pip install --upgrade pip
+  sudo pip install ansible
+  #sudo pip install paramiko
+  
+  sudo mkdir /etc/ansible
+  cd /etc/ansible/
+  sudo vim /etc/ansible/ansible.cfg
+
+  sudo vim /etc/ansible/hosts
+  [antservers]
+  192.168.1.7
+  192.168.1.10
+  192.168.1.11
+
+  [remote]
+  192.168.1.11 ansible_ssh_user=root ansible_ssh_pass=180498 ansible_python_interpreter=/usr/bin/python2.7
+
+  sudo apt-get install openssh-server
+  ssh 192.168.1.10   #need password
+  exit
+  cd ~/.ssh/
+  ssh-keygen -t rsa
+  cat ./id_rsa.pub >> ./authorized_keys
+  拷贝authorized_keys到其它主机的~/.ssh/
+  ssh 192.168.1.10   #no need password
+  
+  ansible all -m ping
+  ansible remote -m ping
+  ansible all -m ping -u thomas --ask-pass
+  ansible all -m ping -u thomas --become --ask-become-pass
+  ansible all -a "/bin/echo hello"
+  #ansible localhost -m ping -e 'ansible_python_interpreter="/usr/bin/env python"'
+
+  ansible -i ./hosts remote -b --become-user=root -m apt -a 'name=nginx state=installed update_cache=true'
+  ansible remote --become --become-user=root --ask-become-pass -m apt -a 'name=nginx state=installed update_cache=true'
+  ansible remote --become --become-user=root --ask-become-pass -m apt -a 'name=nginx state=absent'
+
+  Playbooks:
+  mkdir -p /home/thomas/server/ansible
+  cd /home/thomas/server/ansible
+  vim nginx.yml
+  - hosts: remote
+    become: yes
+    become_user: root
+    tasks:
+      - name: install nginx
+        apt:
+          name: nginx
+          state: present
+          update_cache: true
+
+  ansible-playbook nginx.yml --ask-become-pass
+
+  roles:
+  mkdir apple
+  cd apple/
+  ansible-galaxy init apple
+  ansible-playbook server.yml --ask-become-pass
+  
+  sudo add-apt-repository ppa:nginx/stable
+  sudo add-apt-repository -r ppa:nginx/stable
+  cd /etc/apt/sources.list.d
+  sudo rm nginx*
+
+  sudo apt install nginx
+  sudo apt remove nginx
+  sudo apt autoremove nginx
+  ps -ef | grep nginx
+  sudo service nginx start
+  sudo service nginx stop
+
+  /usr/lib/systemd/system
+  /etc/systemd/system
+  /lib/systemd/system
+  /etc/init.d
+
+  sudo systemctl start nginx.service
+  sudo systemctl enable nginx.service
+  sudo systemctl disable nginx.service
+  sudo systemctl status nginx.service
+  sudo systemctl restart nginx.service
+  sudo systemctl stop nginx.service
+  sudo systemctl unmask nginx.service
+  sudo systemctl list-units --type=service
+
+
+66.System
   电商系统 淘宝 京东 卖票 买书
   及时通讯 QQ 微信
   社交系统 微博 抖音
@@ -2941,8 +3532,3 @@ Envoy:
   grpcurl -plaintext -d '{"userID":"18931f8fd0134a35bf7fcd2137254fca", "userInfo":{"name":"xiaowang"}}' 127.0.0.1:6068 user.UserService/ModifyUserInfo
   grpcurl -plaintext -d '{"phoneNumber":"12465465461"}' 127.0.0.1:6068 user.UserService/GetUserIdByPhoneNumber
   grpcurl -plaintext -d '{"name":"xiaoming"}' 127.0.0.1:6068 user.UserService/GetUsersByName
-
-  mysql
-  etcd
-  redis
-  mongodb
