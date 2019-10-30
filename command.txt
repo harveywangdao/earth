@@ -909,7 +909,37 @@
 
   存储驱动:
   docker info
-  AUFS Btrfs DeviceMapper Overlay ZFS VFS
+  cat /proc/filesystems
+
+  AUFS: 多层
+  Overlay、Overlay2: 两层、lower只读、upper可写
+  DeviceMapper: 块级存储
+  Btrfs: B-tree filesystem、子卷、快照、压缩、copy-on-write
+  ZFS: 资源池、文件系统、快照、克隆
+  VFS: 虚拟文件系统
+  ramfs: 内存文件系统
+  tmpfs: 内存文件系统、使用swap、固定大小、umount后数据会丢失、
+  ramdisk: 基于虚拟在内存中的其他文件系统(ex2fs)
+  XFS FUSE EXT3/EXT4 NFS/CIFS
+
+  mkdir apple banana union
+  echo "apple a.txt" >> apple/a.txt
+  echo "apple c.txt" >> apple/c.txt
+  echo "banana b.txt" >> banana/b.txt
+  echo "banana c.txt" >> banana/c.txt
+
+  sudo mount -t aufs -o br=./apple=ro:./banana=ro none ./union
+  echo "apple d.txt" >> apple/d.txt
+  sudo umount ./union
+
+  rm -rf *
+  sudo mount -t aufs -o br=./apple=rw:./banana=ro none ./union
+  echo "apple d.txt" >> apple/d.txt
+  echo "union e.txt" >> union/e.txt
+  echo "apple e.txt" >> apple/e.txt
+  echo "union b.txt" >> union/b.txt
+  sudo umount ./union
+
 
 14.scrapy
   scrapy startproject jdspider
@@ -3293,7 +3323,6 @@ InfluxDB:
   sudo mount /dev/rbd1 /home/thomas/server/ceph-cluster/data
 
   Delete Pool:
-  #sudo ceph --show-config | grep mon_allow_pool_delete
   vim /home/thomas/server/ceph-cluster/ceph.conf
   mon_allow_pool_delete = true
 
@@ -3365,17 +3394,140 @@ InfluxDB:
   #sudo umount /mnt/loopback
   #sudo losetup -d /dev/loop0
 
+
+  GlusterFS:
+  sudo add-apt-repository ppa:gluster/glusterfs-6
+  sudo apt-get update
+  sudo apt-get install glusterfs-server
+
+  ps -ef | grep gluster
+  systemctl list-units --type=service | grep gluster
+  sudo service glusterd start
+  sudo service glusterd stop
+
+  sudo gluster peer probe node01
+  sudo gluster peer probe node02
+  sudo gluster peer probe node04
+  sudo gluster peer status
+
+  sudo fdisk -l
+  sudo fdisk /dev/sdb
+  n
+  p
+  1
+  +5G
+  t
+  8e
+  p
+  w
+
+  sudo mkfs.xfs -i size=512 /dev/sdb1
+  mkdir -p /home/thomas/server/glusterfs/data/brick1
+  cd /home/thomas/server/glusterfs/data
+  sudo vim /etc/fstab
+  /dev/sdb1 /home/thomas/server/glusterfs/data/brick1 xfs defaults 1 2
+  sudo mount -a && sudo mount
+  sudo mkdir -p /home/thomas/server/glusterfs/data/brick1/gv0
+
+  sudo gluster volume create gv0 replica 3 node01:/home/thomas/server/glusterfs/data/brick1/gv0 node02:/home/thomas/server/glusterfs/data/brick1/gv0 node04:/home/thomas/server/glusterfs/data/brick1/gv0
+  sudo gluster volume start gv0
+  sudo gluster volume info
+
+  sudo mkdir /mnt/myglusterfs
+  sudo mount -t glusterfs node01:/gv0 /mnt/myglusterfs
+
+  sudo gluster pool list
+  sudo gluster peer detach server4
+
+  sudo gluster volume start mamm-volume
+  sudo gluster volume stop mamm-volume
+  sudo gluster volume delete mamm-volume
+  sudo gluster volume add-brick mamm-volume [strip|repli <count>] brick1...
+  sudo gluster volume remove-brick mamm-volume [repl <count>] brick1...
+
+  #迁移需要完成一系列的事务，假如我们准备将mamm卷中的brick3替换为brick5  
+  #启动迁移过程  
+  sudo gluster volume replace-brick mamm-volume node3:/exp3 node5:/exp5 start
+  #暂停迁移过程  
+  sudo gluster volume replace-brick mamm-volume node3:/exp3 node5:/exp5 pause
+  #中止迁移过程  
+  sudo gluster volume replace-brick mamm-volume node3:/exp3 node5:/exp5 abort
+  #查看迁移状态  
+  sudo gluster volume replace-brick mamm-volume node3:/exp3 node5:/exp5 status
+  #迁移完成后提交完成  
+  sudo gluster volume replace-brick mamm-volume node3:/exp3 node5:/exp5 commit
+
+  sudo gluster volume rebalane mamm-volume start|stop|status
+  sudo gluster volume heal mamm-volume #只修复有问题的文件  
+  sudo gluster volume heal mamm-volume full #修复所有文件  
+  sudo gluster volume heal mamm-volume info#查看自愈详情  
+  sudo gluster volume heal mamm-volume info healed|heal-failed|split-brain
+
+  sudo gluster volume statedump mamm-vol
+  sudo gluster volume set server.statedump-path /var/log/
+  sudo gluster volume info dumpfile
+  sudo gluster volume status [all|volname] [detail|clients|mem|fd|inode|callpoll]
+
+  sudo gluster volume top mamm-vol {open|read|write|opendir|readdir} brick node1:/exp1 list-cnt 1
+  sudo gluster volume top mamm-vol read-perf|write-perf bs 256 count 10 brick node1:/exp1 list-cnt 1
+
+  sudo gluster volume profile mamm-vol start    
+  sudo gluster volume profile info   
+  sudo gluster volume profile mamm-vol stop  
+
+  
+  #sudo apt-get remove glusterfs-server
+  #sudo apt-get autoremove glusterfs*
+  #sudo add-apt-repository -r ppa:gluster/glusterfs-6
+
+  Block卷 FUSE
+  卷管理器管理多个Brick Server
+  Volume:一组bricks的逻辑集合
+  BrickServer、TCP/IP 和 InfiniBand RDMA
+  1.DHT
+  2.AFR 创建volume时带replica
+  gluster volume create test-volume replica 2 transport tcp server1:/exp1 server2:/exp2
+  3.Striped 创建volume时带stripe数量 将文件切割成数据块
+  gluster volume create test-volume stripe 2 transport tcp server1:/exp1 server2:/exp2
+  4.分布式条带模式 是DHT与Striped的组合型
+  5.分布式复制模式 是DHT与AFR的组合型
+  6.条带复制卷模式 是Striped与AFR的组合型
+  7.三种模式混合
+
+  distributed volume:
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  RDMA: Remote Direct Memory Access、Infiniband、RoCE、iWARP
+  iSCSI: Internet小型计算机系统接口，基于TCP/IP，用于通过IP网络仿真SCSI，为远程块存储设备提供数据传输和管理
+  NAS: Network Attached Storage 网络附属存储 网络存储器 openfiler FreeNAS
+  SAN: Storage Area Network 存储区域网络
+  RAID
+  IDE/SATA/M.2 FC CE SCSI SAS microSATA
+  AHCI/NVMe
+
   Minio
   Swift
   S3
   OpenZFS
-  MooseFS
   MogileFS
   FastDFS
-  Lustre
   SeaweedFS
   HDFS
-  GlusterFS
+  Lustre
+  MooseFS
 
 
 63.NSQ
