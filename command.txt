@@ -736,24 +736,17 @@
   sudo lxc-stop -n xiaoming
   sudo lxc-destory -n xiaoming
 
-  chroot，根切换，从容器内的角度来看，仿佛真的有自己的根树
-  namespaces：名称空间，负责将资源隔离，pid，net，mnt，user，uts，ipc
-  CGroups：控制组，负责控制资源的分配 资源限制、优先级分配、资源统计、进程控制
+  chroot:根切换，从容器内的角度来看，仿佛真的有自己的根树
+  namespaces:名称空间，负责将资源隔离，pid，net，mnt，user，uts，ipc
+  CGroups:控制组，负责控制资源的分配 资源限制、优先级分配、资源统计、进程控制
 
   libcontainer:
   libnetwork
   execdriver
   networkdriver
   graphdriver
-
-  network/sandbox/endpoint
-  veth pair
-  none、bridge、joined container 和 多主机的 overlay、macvlan，第三方 Driver 就包括多主机的 flannel、weave、calico
-  Container Network Model，CNM
-  VxLAN VLAN
-  ovs(open vswitch)
-
-  macvlan: (macvtap)
+  
+  macvlan:
   sudo lsmod | grep macvlan
   bridge模式
   sudo ip link add link ens33 dev mac1 type macvlan mode bridge
@@ -776,58 +769,7 @@
 
   sudo ip netns exec ns1 ping 192.168.1.123
 
-  -----------------------------------------------------------
-  docker network ls
-  docker network create -d macvlan --subnet=172.16.10.0/24 --gateway=172.16.10.1 -o parent=ens33 mac3
-  docker run -itd --name c1 --ip=172.16.10.2 --network mac3 busybox
-  docker run -itd --name c2 --ip=172.16.10.3 --network mac3 busybox
-  docker exec c1 ping 172.16.10.3
-
-  sudo vconfig add ens33 100
-  sudo vconfig add ens33 200
-
-  sudo vconfig set_flag ens33.100 1 1
-  sudo vconfig set_flag ens33.200 1 1
-
-  sudo ifconfig ens33.100 up
-  sudo ifconfig ens33.200 up
-
-  docker network create -d macvlan --subnet=172.16.30.0/24 --gateway=172.16.30.1 -o parent=ens33.100 mac10
-  docker network create -d macvlan --subnet=172.16.40.0/24 --gateway=172.16.40.1 -o parent=ens33.200 mac20
-  
-  node1:
-  docker run -itd --name d1 --ip=172.16.30.10 --network mac10 busybox
-  docker run -itd --name d2 --ip=172.16.40.10 --network mac20 busybox
-
-  node2:
-  docker run -itd --name d3 --ip=172.16.30.11 --network mac10 busybox
-  docker run -itd --name d4 --ip=172.16.40.11 --network mac20 busybox
-
-  docker exec d1 ping 172.16.30.10
-  docker exec d1 ping 172.16.40.10
-  docker exec d1 ping 172.16.30.11
-  docker exec d1 ping 172.16.40.11
-
-  node3:
-  #sysctl -w net.ipv4.ip_forward=1
-  cat /proc/sys/net/ipv4/ip_forward
-  sudo vconfig add ens33 100
-  sudo vconfig add ens33 200
-  sudo vconfig set_flag ens33.100 1 1
-  sudo vconfig set_flag ens33.200 1 1
-  sudo ifconfig ens33.100 172.16.30.1 netmask 255.255.255.0 up
-  sudo ifconfig ens33.200 172.16.40.1 netmask 255.255.255.0 up
-
-  sudo iptables -t nat -A POSTROUTING -o ens33.100 -j MASQUERADE
-  sudo iptables -t nat -A POSTROUTING -o ens33.200 -j MASQUERADE
-
-  sudo iptables -A FORWARD -i ens33.100 -o ens33.200 -m state --state RELATED,ESTABLISHED -j ACCEPT
-  sudo iptables -A FORWARD -i ens33.200 -o ens33.100 -m state --state RELATED,ESTABLISHED -j ACCEPT
-
-  sudo iptables -A FORWARD -i ens33.100 -o ens33.200 -j ACCEPT
-  sudo iptables -A FORWARD -i ens33.200 -o ens33.100 -j ACCEPT
-
-  veth-pair:(tap/tun)
+  veth-pair:
   sudo ip netns a ns3
   sudo ip netns a ns4
 
@@ -879,33 +821,6 @@
   route -n
   ping 10.0.0.107
   sudo tcpdump -i ens33 host 192.168.1.12 -s0 -v -w vxlan_vni_1.pcap
-
-  -------------------------------------------------------------------------
-  docker network ls
-  ifconfig docker0
-  docker network create --subnet 172.18.0.0/16 mynetwork
-  docker run -itd --net mynetwork --ip 172.18.0.2 centos
-  docker run -itd --net mynetwork --ip 172.18.0.3 centos
-
-  docker ps -a
-  docker exec -it 5c46961334c6 /bin/bash
-
-  yum whatprovides ifconfig
-  net-tools-2.0-0.51.20160912git.el8.x86_64
-  yum install net-tools -y
-  ifconfig eth0
-
-  brctl show
-  sudo ip link add vxlan_docker type vxlan id 200 remote 192.168.1.12 dstport 4789 dev ens33
-  sudo ip link set vxlan_docker up
-  sudo brctl addif br-69602f5a273c vxlan_docker
-
-  sudo ip link add vxlan_docker type vxlan id 200 remote 192.168.1.11 dstport 4789 dev ens33
-  sudo ip link set vxlan_docker up
-  sudo brctl addif br-7a9721b67697 vxlan_docker
-
-  ping 172.18.0.3
-  ping 172.18.0.1
 
   存储驱动:
   docker info
@@ -2037,29 +1952,21 @@
 
   kubeadm config images list
 
-  k8s.gcr.io/kube-apiserver:v1.15.0
-  k8s.gcr.io/kube-controller-manager:v1.15.0
-  k8s.gcr.io/kube-scheduler:v1.15.0
-  k8s.gcr.io/kube-proxy:v1.15.0
-  k8s.gcr.io/pause:3.1
-  k8s.gcr.io/etcd:3.3.10
-  k8s.gcr.io/coredns:1.3.1
-
-  docker pull registry.cn-hangzhou.aliyuncs.com/google_containers/kube-apiserver-amd64:v1.15.0
-  docker pull registry.cn-hangzhou.aliyuncs.com/google_containers/kube-controller-manager-amd64:v1.15.0
-  docker pull registry.cn-hangzhou.aliyuncs.com/google_containers/kube-scheduler-amd64:v1.15.0
-  docker pull registry.cn-hangzhou.aliyuncs.com/google_containers/kube-proxy-amd64:v1.15.0
+  docker pull registry.cn-hangzhou.aliyuncs.com/google_containers/kube-apiserver-amd64:v1.16.2
+  docker pull registry.cn-hangzhou.aliyuncs.com/google_containers/kube-controller-manager-amd64:v1.16.2
+  docker pull registry.cn-hangzhou.aliyuncs.com/google_containers/kube-scheduler-amd64:v1.16.2
+  docker pull registry.cn-hangzhou.aliyuncs.com/google_containers/kube-proxy-amd64:v1.16.2
   docker pull registry.cn-hangzhou.aliyuncs.com/google_containers/pause-amd64:3.1
   docker pull registry.cn-hangzhou.aliyuncs.com/google_containers/etcd-amd64:3.3.10
-  docker pull registry.cn-hangzhou.aliyuncs.com/google_containers/coredns:1.3.1
+  docker pull registry.cn-hangzhou.aliyuncs.com/google_containers/coredns:1.6.2
 
-  docker tag registry.cn-hangzhou.aliyuncs.com/google_containers/kube-apiserver-amd64:v1.15.0 k8s.gcr.io/kube-apiserver:v1.15.0
-  docker tag registry.cn-hangzhou.aliyuncs.com/google_containers/kube-controller-manager-amd64:v1.15.0 k8s.gcr.io/kube-controller-manager:v1.15.0
-  docker tag registry.cn-hangzhou.aliyuncs.com/google_containers/kube-scheduler-amd64:v1.15.0 k8s.gcr.io/kube-scheduler:v1.15.0
-  docker tag registry.cn-hangzhou.aliyuncs.com/google_containers/kube-proxy-amd64:v1.15.0 k8s.gcr.io/kube-proxy:v1.15.0
+  docker tag registry.cn-hangzhou.aliyuncs.com/google_containers/kube-apiserver-amd64:v1.16.2 k8s.gcr.io/kube-apiserver:v1.16.2
+  docker tag registry.cn-hangzhou.aliyuncs.com/google_containers/kube-controller-manager-amd64:v1.16.2 k8s.gcr.io/kube-controller-manager:v1.16.2
+  docker tag registry.cn-hangzhou.aliyuncs.com/google_containers/kube-scheduler-amd64:v1.16.2 k8s.gcr.io/kube-scheduler:v1.16.2
+  docker tag registry.cn-hangzhou.aliyuncs.com/google_containers/kube-proxy-amd64:v1.16.2 k8s.gcr.io/kube-proxy:v1.16.2
   docker tag registry.cn-hangzhou.aliyuncs.com/google_containers/pause-amd64:3.1 k8s.gcr.io/pause:3.1
   docker tag registry.cn-hangzhou.aliyuncs.com/google_containers/etcd-amd64:3.3.10 k8s.gcr.io/etcd:3.3.10
-  docker tag registry.cn-hangzhou.aliyuncs.com/google_containers/coredns:1.3.1 k8s.gcr.io/coredns:1.3.1
+  docker tag registry.cn-hangzhou.aliyuncs.com/google_containers/coredns:1.6.2 k8s.gcr.io/coredns:1.6.2
 
   docker pull quay.io/coreos/flannel:v0.11.0-amd64
   #docker save -o flannel.tar quay.io/coreos/flannel:v0.11.0-amd64
@@ -2087,9 +1994,9 @@
   free
   sudo swapoff -a
   sudo kubeadm init \
-      --apiserver-advertise-address=192.168.1.10 \
+      --apiserver-advertise-address=192.168.1.11 \
       --image-repository registry.cn-hangzhou.aliyuncs.com/google_containers \
-      --kubernetes-version v1.15.0 \
+      --kubernetes-version v1.16.2 \
       --pod-network-cidr=10.244.0.0/16
 
   mkdir -p $HOME/.kube
@@ -2098,8 +2005,8 @@
 
   kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
 
-  sudo kubeadm join 192.168.1.10:6443 --token wm12nh.xm2zn4w3ghsivcs7 \
-      --discovery-token-ca-cert-hash sha256:21d3124cf1140661c35559da24f4f38f68183780ea769a45a4984640cf06b267
+  sudo kubeadm join 192.168.1.11:6443 --token c3tmhc.b8td7bd0xnp4nxg1 \
+    --discovery-token-ca-cert-hash sha256:59b4c3c5ed3a61b96abeed47ee9d5791b3fbe3b866d525f129ff463426afddaa
 
   kubectl get nodes
   kubectl get cs
@@ -3471,10 +3378,9 @@ InfluxDB:
   sudo gluster volume top mamm-vol {open|read|write|opendir|readdir} brick node1:/exp1 list-cnt 1
   sudo gluster volume top mamm-vol read-perf|write-perf bs 256 count 10 brick node1:/exp1 list-cnt 1
 
-  sudo gluster volume profile mamm-vol start    
-  sudo gluster volume profile info   
-  sudo gluster volume profile mamm-vol stop  
-
+  sudo gluster volume profile mamm-vol start
+  sudo gluster volume profile info
+  sudo gluster volume profile mamm-vol stop
   
   #sudo apt-get remove glusterfs-server
   #sudo apt-get autoremove glusterfs*
@@ -3494,21 +3400,6 @@ InfluxDB:
   6.条带复制卷模式 是Striped与AFR的组合型
   7.三种模式混合
 
-  distributed volume:
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
   RDMA: Remote Direct Memory Access、Infiniband、RoCE、iWARP
   iSCSI: Internet小型计算机系统接口，基于TCP/IP，用于通过IP网络仿真SCSI，为远程块存储设备提供数据传输和管理
@@ -3518,7 +3409,7 @@ InfluxDB:
   IDE/SATA/M.2 FC CE SCSI SAS microSATA
   AHCI/NVMe
 
-  Minio
+  Minio: object storage, storing unstructured data such as photos, videos, log files, backups and container/VM images, Sets Drives Buckets
   Swift
   S3
   OpenZFS
@@ -3659,8 +3550,768 @@ InfluxDB:
   sudo systemctl unmask nginx.service
   sudo systemctl list-units --type=service
 
+66.Serverless
+  fn:
+  mkdir -p /home/thomas/server/serverless
+  cd /home/thomas/server/serverless
+  #curl -LSs https://raw.githubusercontent.com/fnproject/cli/master/install | sh
+  下载https://github.com/fnproject/cli/releases/download/0.5.91/fn_linux
+  chmod +x fn
 
-66.System
+  fn start
+  #export FN_API_URL=http://127.0.0.1:8081
+  #fn start -p 8081
+  fn version
+
+  fn list contexts
+  #fn update context api-url http://localhost:8080
+  fn use context default
+  fn update context registry fndemouser
+  #fn update context registry your-docker-hub-user-name
+
+  fn init --runtime go gofn
+  cd gofn
+  fn create app goapp
+  fn --verbose deploy --app goapp --local
+  fn invoke goapp gofn
+  echo -n '{"name":"Bob"}' | fn invoke goapp gofn --content-type application/json
+
+  fn list apps
+  fn list functions goapp
+  fn inspect function goapp gofn
+  curl -X "POST" -H "Content-Type: application/json" http://localhost:8080/invoke/01DRG45NKQNG8G00GZJ0000002
+  curl -X "POST" -H "Content-Type: application/json" -d '{"name":"Bob"}' http://localhost:8080/invoke/01DRG45NKQNG8G00GZJ0000002
+
+  # update
+  fn --verbose deploy --app goapp --local
+  fn stop
+
+  OpenFaaS:
+  mkdir -p /home/thomas/server/serverless/openfaas
+  cd /home/thomas/server/serverless/openfaas
+  #curl -sL https://cli.openfaas.com | sudo sh
+  手动下载https://github.com/openfaas/faas-cli/releases/download/0.10.3/faas-cli
+  chmod +x ./faas-cli
+  sudo mv ./faas-cli /usr/local/bin
+  sudo ln -sf /usr/local/bin/faas-cli /usr/local/bin/faas
+  echo 'source <(faas-cli completion --shell bash)' >>~/.bashrc
+
+  queue-worker,gateway,nats-streaming,alertmanager,prometheus,faas-swarm,basic-auth-plugin
+
+  git clone https://github.com/openfaas/faas
+  cd /home/thomas/golang/src/github.com/openfaas/faas
+  ./deploy_stack.sh
+  username: admin 
+  password: 2bd4f14cb4cb80cd968e6aa4cc2cb853a6881054a23fa3192223a20cdcb5ee13
+  echo -n 2bd4f14cb4cb80cd968e6aa4cc2cb853a6881054a23fa3192223a20cdcb5ee13 | faas-cli login --username=admin --password-stdin
+
+  http://192.168.1.11:8080/
+
+  #faas-cli store list
+  #faas-cli store deploy figlet
+  #faas-cli list --verbose
+  #echo "OpenFaaS!" | faas-cli invoke figlet
+  #faas-cli template pull
+  #faas-cli template store list
+  #faas-cli new --list
+
+  mkdir -p /home/thomas/golang/src/serverless
+  cd /home/thomas/golang/src/serverless
+  faas-cli new gohash --lang go
+
+  #cd gohash
+  #go get -u github.com/golang/dep/cmd/dep
+  #dep init
+  #dep ensure -add github.com/cnf/structhash
+
+  vim gohash.yml
+  image: 192.168.1.13:5000/gohash:latest
+
+  faas-cli build -f ./gohash.yml
+  faas-cli push -f ./gohash.yml
+  faas-cli deploy -f ./gohash.yml
+  faas-cli list --verbose
+  faas-cli describe gohash
+
+  docker service scale gohash=2
+
+  echo -n "test" | faas-cli invoke gohash
+  docker exec -it go-fn01 sh
+
+  faas-cli remove -f ./gohash.yml
+  docker stack rm func
+  docker network rm func_functions
+  docker rmi gohash
+  docker secret rm basic-auth-password basic-auth-user
+
+  watchdog:
+  监视器提供了一个外部世界和函数之间的非托管的通用接口,它的工作是收集从API网关来的HTTP请求,然后调用程序
+
+  gateway:
+  Gateway作为一个入口,当CLI或者web页面发来要部署或者调用一个函数的时候,Gateway会将请求转发给Provider,同时会将监控指标发给Prometheus,AlterManager会根据需求,调用API自动伸缩函数
+
+  queue-worker:
+  异步函数,docker service logs -f func_queue-worker
+
+  NATS Streaming:
+  消息队列
+
+  prometheus && alertmanager && faas-swarm:
+  监控指标,自动扩容
+
+67.Docker Swarm && Docker Machine && Docker Registry
+  stacks, services, and tasks
+
+  docker swarm init
+  docker node ls
+  #docker swarm join-token worker
+  docker swarm join --token SWMTKN-1-2162pmm7pee9rhqkuzff4v23bo03lnrtqqhrlsxsovqg7sv5sg-ehe51t3b371y7cxmnvdqogxog 192.168.1.7:2377
+  docker info
+
+  mkdir -p /home/thomas/server/swarm
+  cd /home/thomas/server/swarm
+
+  docker service create --replicas 1 --name helloworld alpine ping docker.com
+  docker service ls
+  docker service inspect --pretty helloworld
+  docker service ps helloworld
+  docker service scale helloworld=3
+  docker service rm helloworld
+
+  docker service create \
+    --replicas 3 \
+    --name redis \
+    --update-delay 10s \
+    redis:3.0.6
+  docker service inspect --pretty redis
+  docker service update --image redis:3.0.7 redis
+  docker service ps redis
+
+  docker node update --availability drain node01
+  docker node inspect --pretty node01
+  docker service ps redis
+  docker node update --availability active node01
+
+  docker stack deploy -c stack.yaml samle-stack
+  docker stack ls
+  docker stack services samle-stack
+  docker service ls
+  docker service ps samle-stack_whoami
+  docker service logs samle-stack_whoami
+  docker container rm -f samle-stack_whoami.2.f9l4aktganb8pku5k8iypaso3
+  docker stack rm samle-stack
+  docker service rm samle-stack_whoami
+
+  docker swarm leave --force
+
+  Docker Registry:
+  docker run -d -p 5000:5000 --restart=always --name registry registry:2
+  docker pull ubuntu:16.04
+  docker tag ubuntu:16.04 localhost:5000/my-ubuntu
+  docker push localhost:5000/my-ubuntu
+
+  docker image remove ubuntu:16.04
+  docker image remove localhost:5000/my-ubuntu
+
+  docker pull localhost:5000/my-ubuntu
+
+  docker container stop registry
+  docker container stop registry && docker container rm -v registry
+
+  #docker run -d \
+    -p 5000:5000 \
+    --restart=always \
+    --name registry \
+    -v /mnt/registry:/var/lib/registry \
+    registry:2
+
+  curl -XGET http://127.0.0.1:5000/v2/_catalog
+  sudo vim /etc/docker/daemon.json
+  {
+    "insecure-registries": ["192.168.1.13:5000"]
+  }
+
+  sudo service docker restart
+
+68.Docker网络
+  bridge,overlay,host,macvlan,none
+
+  ip link show docker0
+  ifconfig -a
+  sudo ifconfig br0 down
+  sudo brctl delbr br0
+  ip netns show
+
+  bridge:
+  同一主机上的docker容器相互通信
+  #docker network create \
+    --driver=bridge \
+    --subnet=172.28.0.0/16 \
+    --ip-range=172.28.5.0/24 \
+    --gateway=172.28.5.254 \
+    br0
+
+  docker network create -d bridge my-net
+  docker network ls
+  brctl show
+  docker network inspect my-net
+
+  docker run -itd --name centos01 \
+    --network my-net \
+    centos:latest
+  docker run -itd --name centos02 \
+    --network my-net \
+    centos:latest
+
+  docker exec -it centos01 /bin/bash
+  docker exec -it centos02 /bin/bash
+  ping centos01
+  ping centos02
+
+  docker rm -f centos01 centos02
+  docker network rm my-net
+
+  host:
+  容器与主机在相同的网络命名空间下面
+  docker run -itd --name centos01 \
+    --network host \
+    centos:latest
+  docker run -itd --name centos02 \
+    --network host \
+    centos:latest
+
+  docker exec -it centos01 /bin/bash
+  docker exec -it centos02 /bin/bash
+  docker rm -f centos01 centos02
+
+  none:
+  docker run -itd --name centos01 \
+    --network none \
+    centos:latest
+  docker exec -it centos01 /bin/bash
+  docker run -itd --name centos02 \
+    --network none \
+    centos:latest
+  docker exec -it centos02 /bin/bash
+  ip addr
+  docker rm -f centos01 centos02
+
+  macvlan:
+  自定义容器的mac地址,将容器作为硬件设备,最佳实践是想将容器直接连接到物理网络时,可以考虑使用macvlan的方案
+  macvlan的缺点是需要将主机网卡(NIC)设置为混杂模式(Promiscuous Mode),这在大部分公有云平台上是不允许的
+  
+  四种模式:
+  Private: 所有子设备不能通信
+  VEPA: 子设备虚拟局网内通信,hairpin
+  Bridge: 所有子设备可以通信,也可以与外部通信(docker默认)
+  Passthru: 只有一个设备
+
+  相似的方案:
+  ipvlan: 一个物理网卡所有子设备的mac地址与主机相同,ip地址与主机不同,L2,L3
+  macvtap: MACVTAP是对MACVLAN的改进,MACVLAN与TAP设备的特点综合一下,使用MACVLAN的方式收发数据包,但是收到的包不交给network stack处理,而是生成一个/dev/tapX文件,交给这个文件
+
+  开启混杂模式: sudo ifconfig eth0 promisc
+  关闭混杂模式: sudo ifconfig eth0 -promisc
+  sudo ip -d link show ens33 | grep promisc
+  sudo ip link set ens33 promisc on
+
+  Bridge模式:(公用一块物理网卡)
+  docker network create -d macvlan \
+    --subnet=172.16.86.0/24 \
+    --gateway=172.16.86.1 \
+    -o parent=ens33 \
+    my-macvlan-net
+
+  docker run --rm -dit \
+    --network my-macvlan-net \
+    --name alpine01 \
+    --ip 172.16.86.5 \
+    alpine:latest \
+    ash
+
+  docker run --rm -dit \
+    --network my-macvlan-net \
+    --name alpine02 \
+    --ip 172.16.86.6 \
+    alpine:latest \
+    ash
+
+  docker network ls
+  docker network inspect my-macvlan-net
+
+
+  docker exec alpine01 ping -c 5 172.16.86.6    #通
+  docker exec alpine02 ping -c 5 172.16.86.5    #通
+  docker exec alpine01 ping -c 5 192.168.1.12   #不通
+  docker exec alpine01 ping -c 5 192.168.1.11   #不通
+
+  docker exec alpine01 ip addr
+  docker exec alpine02 ip addr
+  docker exec alpine01 ip route
+  docker exec alpine02 ip route
+
+  docker run --rm -dit \
+    --network my-macvlan-net \
+    --name alpine03 \
+    --ip 172.16.86.7 \
+    alpine:latest \
+    ash
+  docker exec alpine01 ping -c 5 172.16.86.7    #通
+  docker exec alpine02 ping -c 5 172.16.86.7    #通
+
+  docker container stop alpine01 alpine03
+  docker container stop alpine02
+  docker container stop alpine03
+  docker network rm my-macvlan-net
+
+  Bridge模式:(虚拟多块物理网卡)
+  sudo vconfig add ens33 100
+  sudo vconfig add ens33 200
+  sudo vconfig set_flag ens33.100 1 1
+  sudo vconfig set_flag ens33.200 1 1
+  sudo ifconfig ens33.100 up
+  sudo ifconfig ens33.200 up
+  docker network create -d macvlan --subnet=172.16.30.0/24 --gateway=172.16.30.1 -o parent=ens33.100 mac10
+  docker network create -d macvlan --subnet=172.16.40.0/24 --gateway=172.16.40.1 -o parent=ens33.200 mac20
+  
+  node1:
+  docker run -itd --name d1 --ip=172.16.30.10 --network mac10 busybox
+  docker run -itd --name d2 --ip=172.16.40.10 --network mac20 busybox
+
+  node2:
+  docker run -itd --name d3 --ip=172.16.30.11 --network mac10 busybox
+  docker run -itd --name d4 --ip=172.16.40.11 --network mac20 busybox
+
+  docker exec d1 ping 172.16.30.10
+  docker exec d1 ping 172.16.40.10
+  docker exec d1 ping 172.16.30.11
+  docker exec d1 ping 172.16.40.11
+
+  node3:
+  #sysctl -w net.ipv4.ip_forward=1
+  cat /proc/sys/net/ipv4/ip_forward
+  sudo vconfig add ens33 100
+  sudo vconfig add ens33 200
+  sudo vconfig set_flag ens33.100 1 1
+  sudo vconfig set_flag ens33.200 1 1
+  sudo ifconfig ens33.100 172.16.30.1 netmask 255.255.255.0 up
+  sudo ifconfig ens33.200 172.16.40.1 netmask 255.255.255.0 up
+
+  sudo iptables -t nat -A POSTROUTING -o ens33.100 -j MASQUERADE
+  sudo iptables -t nat -A POSTROUTING -o ens33.200 -j MASQUERADE
+  sudo iptables -A FORWARD -i ens33.100 -o ens33.200 -m state --state RELATED,ESTABLISHED -j ACCEPT
+  sudo iptables -A FORWARD -i ens33.200 -o ens33.100 -m state --state RELATED,ESTABLISHED -j ACCEPT
+  sudo iptables -A FORWARD -i ens33.100 -o ens33.200 -j ACCEPT
+  sudo iptables -A FORWARD -i ens33.200 -o ens33.100 -j ACCEPT
+
+  docker exec d1 ping 172.16.40.10
+  docker exec d1 ping 172.16.40.11
+
+  docker exec d1 ip route
+  ip route
+
+  VEPA模式:(同主机不同容器不能通信,增加hairpin才能通讯)
+  docker network create -d macvlan \
+    --subnet=172.16.86.0/24 \
+    --gateway=172.16.86.1 \
+    -o parent=ens33 \
+    -o macvlan_mode=vepa \
+    my-macvlan-vepa-net
+
+  docker run --rm -dit \
+    --network my-macvlan-vepa-net \
+    --name alpine01 \
+    --ip 172.16.86.5 \
+    alpine:latest \
+    ash
+
+  docker run --rm -dit \
+    --network my-macvlan-vepa-net \
+    --name alpine02 \
+    --ip 172.16.86.6 \
+    alpine:latest \
+    ash
+
+  docker network ls
+  docker network inspect my-macvlan-vepa-net
+
+  docker exec alpine01 ping -c 5 172.16.86.6   #通
+  docker exec alpine02 ping -c 5 172.16.86.5   #通
+  docker exec alpine01 ip addr
+  docker exec alpine02 ip addr
+  docker exec alpine01 ip route
+  docker exec alpine02 ip route
+
+  docker run --rm -dit \
+    --network my-macvlan-vepa-net \
+    --name alpine03 \
+    --ip 172.16.86.7 \
+    alpine:latest \
+    ash
+  docker exec alpine01 ping -c 5 172.16.86.7    #不通
+  docker exec alpine02 ping -c 5 172.16.86.7    #通
+
+  docker container stop alpine01 alpine03
+  docker container stop alpine02
+  docker container stop alpine03
+  docker network rm my-macvlan-vepa-net
+
+  Private模式:(同主机不同容器不能通信,增加hairpin也不能通讯)
+  docker network create -d macvlan \
+    --subnet=172.16.86.0/24 \
+    --gateway=172.16.86.1 \
+    -o parent=ens33 \
+    -o macvlan_mode=private \
+    my-macvlan-private-net
+
+  docker run --rm -dit \
+    --network my-macvlan-private-net \
+    --name alpine01 \
+    --ip 172.16.86.5 \
+    alpine:latest \
+    ash
+
+  docker run --rm -dit \
+    --network my-macvlan-private-net \
+    --name alpine02 \
+    --ip 172.16.86.6 \
+    alpine:latest \
+    ash
+
+  docker network ls
+  docker network inspect my-macvlan-private-net
+
+  docker exec alpine01 ping -c 5 172.16.86.6   #通
+  docker exec alpine02 ping -c 5 172.16.86.5   #通
+
+  docker run --rm -dit \
+    --network my-macvlan-private-net \
+    --name alpine03 \
+    --ip 172.16.86.7 \
+    alpine:latest \
+    ash
+  docker exec alpine01 ping -c 5 172.16.86.7    #不通
+  docker exec alpine02 ping -c 5 172.16.86.7    #通
+
+  docker container stop alpine01 alpine03
+  docker container stop alpine02
+  docker network rm my-macvlan-private-net
+
+  Passthru模式:(虚拟mac只能有一个,虚拟mac地址和主机mac地址一样)
+  docker network create -d macvlan \
+    --subnet=172.16.86.0/24 \
+    --gateway=172.16.86.1 \
+    -o parent=ens33 \
+    -o macvlan_mode=passthru \
+    my-macvlan-passthru-net
+
+  docker run --rm -dit \
+    --network my-macvlan-passthru-net \
+    --name alpine01 \
+    --ip 172.16.86.5 \
+    alpine:latest \
+    ash
+
+  docker run --rm -dit \
+    --network my-macvlan-passthru-net \
+    --name alpine02 \
+    --ip 172.16.86.6 \
+    alpine:latest \
+    ash
+
+  docker network ls
+  docker network inspect my-macvlan-passthru-net
+
+  docker exec alpine01 ping -c 5 172.16.86.6   #通
+  docker exec alpine02 ping -c 5 172.16.86.5   #通
+
+  docker run --rm -dit \
+    --network my-macvlan-passthru-net \
+    --name alpine03 \
+    --ip 172.16.86.7 \
+    alpine:latest \
+    ash       #创建失败
+
+  docker container stop alpine01
+  docker container stop alpine02
+  docker network rm my-macvlan-passthru-net
+
+  overlay:
+  使用VXLAN协议,VXLAN可以封装L2/L3协议数据,是一种隧道协议,用于不同容器在多个host上进行通信
+
+  不使用swarm:
+  docker network create -d bridge --subnet 172.18.0.0/16 my-overlay-net
+  #docker network create -d overlay --subnet 172.18.20.0/16 my-overlay-net2  #只能swarm用
+
+  docker run --rm -dit \
+    --network my-overlay-net \
+    --name centos01 \
+    --ip 172.18.0.2 \
+    centos:latest
+
+  docker run --rm -dit \
+    --network my-overlay-net \
+    --name centos02 \
+    --ip 172.18.0.3 \
+    centos:latest
+
+  docker exec centos01 ip addr
+  docker exec centos02 ip addr
+
+  docker exec centos01 ping 172.18.0.3     #不通
+  docker exec centos01 ping 192.168.1.11   #通
+  docker exec centos01 ping 192.168.1.12   #通
+  docker exec -it centos01 /bin/bash
+
+  brctl show
+  sudo ip link add vxlan_docker type vxlan id 200 remote 192.168.1.12 dstport 4789 dev ens33
+  sudo ip link set vxlan_docker up
+  ifconfig
+  sudo brctl addif br-07492132d7b3 vxlan_docker
+
+  sudo ip link add vxlan_docker type vxlan id 200 remote 192.168.1.11 dstport 4789 dev ens33
+  sudo ip link set vxlan_docker up
+  ifconfig
+  sudo brctl addif br-372b985ef56a vxlan_docker
+
+  docker exec centos01 ping 172.18.0.3    #通
+
+  docker stop centos01
+  docker stop centos02
+  docker network rm my-overlay-net
+  sudo ip link delete vxlan_docker
+
+  #yum whatprovides ifconfig
+  #net-tools-2.0-0.51.20160912git.el8.x86_64
+  #yum install net-tools -y
+  #ifconfig eth0
+
+  使用swarm:
+  docker swarm init
+  docker swarm join --token SWMTKN-1-2162pmm7pee9rhqkuzff4v23bo03lnrtqqhrlsxsovqg7sv5sg-ehe51t3b371y7cxmnvdqogxog 192.168.1.7:2377
+  docker node ls
+
+  docker network create -d overlay --subnet 172.18.23.0/16 my-overlay-net2
+
+  docker service create --name ubuntu-srv \
+  --network my-overlay-net2 \
+  --replicas 2 \
+  ubuntu sleep infinity
+
+  docker service ls
+  docker service ps ubuntu-srv
+  docker network inspect my-overlay-net2
+
+  docker exec -it ubuntu-srv.1.tmcljalyz3a7r2x79nu6vb27m /bin/bash
+  docker exec -it ubuntu-srv.2.q2aaudoef8f6iegp6t24g0sd2 /bin/bash
+
+  apt-get update
+  apt-get install net-tools iputils-ping iproute2
+  ifconfig
+  ping 172.18.0.3
+  ping 172.18.0.4
+  ping 192.168.1.11
+  ping 192.168.1.12
+
+  docker service rm ubuntu-srv
+  docker network rm my-overlay-net2
+
+  unshare:
+  sudo unshare --fork --pid --mount-proc bash
+
+  ipvlan:
+  l3:
+  sudo ip link add link ens33 ipvlan1 type ipvlan mode l3
+  sudo ip link add link ens33 ipvlan2 type ipvlan mode l3
+  sudo ip netns add ns1
+  sudo ip netns add ns2
+  sudo ip link set ipvlan1 netns ns1
+  sudo ip link set ipvlan2 netns ns2
+  sudo ip netns exec ns1 ip addr add 10.0.2.18/24 dev ipvlan1
+  sudo ip netns exec ns2 ip addr add 10.0.3.19/24 dev ipvlan2
+  sudo ip netns exec ns1 ip link set ipvlan1 up
+  sudo ip netns exec ns2 ip link set ipvlan2 up
+  sudo ip netns exec ns1 route add default dev ipvlan1
+  sudo ip netns exec ns2 route add default dev ipvlan2
+
+  sudo ip netns exec ns1 ping 10.0.3.19      #通
+  sudo ip netns exec ns2 ping 10.0.2.18      #通
+  sudo ip netns exec ns1 ping 192.168.1.11   #不通
+  sudo ip netns exec ns1 ping 192.168.1.12   #不通
+
+  sudo ip netns exec ns1 tcpdump -ni ipvlan1 -p arp  #无数据
+
+  l2:
+  sudo ip link add link ens33 ipvlan3 type ipvlan mode l2
+  sudo ip link add link ens33 ipvlan4 type ipvlan mode l2
+  sudo ip netns add ns3
+  sudo ip netns add ns4
+  sudo ip link set ipvlan3 netns ns3
+  sudo ip link set ipvlan4 netns ns4
+  sudo ip netns exec ns3 ip addr add 10.0.4.20/24 dev ipvlan3
+  sudo ip netns exec ns4 ip addr add 10.0.5.21/24 dev ipvlan4
+  sudo ip netns exec ns3 ip link set ipvlan3 up
+  sudo ip netns exec ns4 ip link set ipvlan4 up
+  sudo ip netns exec ns3 route add default dev ipvlan3
+  sudo ip netns exec ns4 route add default dev ipvlan4
+
+  sudo ip netns exec ns3 ping 10.0.5.21      #通
+  sudo ip netns exec ns4 ping 10.0.4.20      #通
+  sudo ip netns exec ns3 ping 192.168.1.11   #不通
+  sudo ip netns exec ns3 ping 192.168.1.12   #不通
+
+  sudo ip netns exec ns3 tcpdump -ni ipvlan3 -p arp  #有数据
+
+  macvtap:
+  "private", "vepa", "bridge" or "passthru"
+  sudo ip link add link ens33 macvtap1 type macvtap mode bridge
+  sudo ip link add link ens33 macvtap2 type macvtap mode bridge
+  sudo ip netns add ns5
+  sudo ip netns add ns6
+  sudo ip link set macvtap1 netns ns5
+  sudo ip link set macvtap2 netns ns6
+  sudo ip netns exec ns5 ip addr add 10.0.6.22/24 dev macvtap1
+  sudo ip netns exec ns6 ip addr add 10.0.7.23/24 dev macvtap2
+  sudo ip netns exec ns5 ip link set macvtap1 up
+  sudo ip netns exec ns6 ip link set macvtap2 up
+  sudo ip netns exec ns5 route add default dev macvtap1
+  sudo ip netns exec ns6 route add default dev macvtap2
+
+  sudo ip netns exec ns5 ping 10.0.7.23      #通
+  sudo ip netns exec ns6 ping 10.0.6.22      #通
+  sudo ip netns exec ns5 ping 192.168.1.11   #不通
+  sudo ip netns exec ns5 ping 192.168.1.12   #不通
+
+
+69.Kubernetes网络 && Linux网络
+  Open vSwitch: 虚拟交换机,支持OpenFlow协议,支持gre/vxlan/IPsec等隧道技术,ovs-vswitchd,ovsdb-server,kernel datapath,OpenFlow控制器
+  iptables: 
+  GRE: 
+
+  tap/tun: 虚拟网卡,字符设备驱动和网卡驱动,/dev/tap*,/dev/net/tun,用户空间通过tap/tun与内核交互,用于隧道通信VPN/tunnel/IPsec/openvpn/VTun,tap是二层设备处理以太网帧,tun是三层设备处理IP数据包
+
+  CNM(Container Network Model):
+  network/sandbox/endpoint
+  CNI(Container Networking Interface):
+  ADD/DELETE
+
+  kubernetes网络: 
+  Flannel,Calico,Weave,Canal,Contiv,Cilium,Romana,kube-router,cni-genie,Pipework; Kuryr,Open vSwitch
+  Ingress: ingress-nginx,Traefik,Kong,kubernetes-ingress,Gloo,Ambassador
+
+  云原生: 
+  Jaeger,Fluentd,Containerd,CoreDNS,Envoy,Prometheus,OpenTracing,CNI,vitess,rook,NATS,Linkerd,Notary,Harbor,Helm,Etcd,OpenPolicyAgent,CRI-O,TiKV,rkt
+
+  Flannel:
+  UDP,Vxlan,host-gw
+  L3 Overlay模式设计,etcd用于存储整个集群的网络配置,flanneld,flannel0网桥,docker0,UDP,subnet
+  kubectl run nginx --image=nginx --replicas=2
+
+  #kubectl exec -it nginx-6db489d4b7-6m6xl -- bash             #选择第一个容器
+  #docker exec -it 95e38378da31 /bin/bash
+
+  kubectl exec -it nginx-6db489d4b7-kzgwt -c nginx -- bash
+  kubectl exec -it nginx-6db489d4b7-6m6xl -c nginx -- bash
+  apt-get update
+  apt-get install net-tools iputils-ping iproute2
+
+  kubectl get pods --all-namespaces -o wide
+  kubectl describe pod kube-flannel-ds-amd64-5mqv7 --namespace=kube-system
+  kubectl get cm --all-namespaces -o wide
+  kubectl get cm -n kube-system -o yaml kube-flannel-cfg
+  kubectl logs -f -n kube-system kube-flannel-ds-amd64-5mqv7
+  kubectl exec -it -n kube-system kube-flannel-ds-amd64-5mqv7 -- bash
+
+  kubectl exec -it -n kube-system etcd-node02 -c etcd -- sh
+  export ETCDCTL_API=3
+  apt-get update
+  apt-get install net-tools
+  etcdctl --cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/peer.crt --key=/etc/kubernetes/pki/etcd/peer.key get /registry/namespaces/default -w=json | jq .
+  etcdctl --cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/peer.crt --key=/etc/kubernetes/pki/etcd/peer.key member list
+  etcdctl --cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/peer.crt --key=/etc/kubernetes/pki/etcd/peer.key get /coreos.com/network/subnets --prefix
+  etcdctl --cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/peer.crt --key=/etc/kubernetes/pki/etcd/peer.key get / --prefix --keys-only=true | grep net
+  etcdctl --cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/peer.crt --key=/etc/kubernetes/pki/etcd/peer.key get /registry/services/endpoints/default/kubernetes -w=json | jq .
+
+
+  #sudo su
+  #cd /home/thomas/server/etcd-v3.3.13-linux-amd64
+  #export ETCDCTL_API=3
+  #./etcdctl --cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/peer.crt --key=/etc/kubernetes/pki/etcd/peer.key get /registry/namespaces/default -w=json | jq .
+
+  UDP:
+  两次用户态内核态切换,flannel0是TUN设备
+  容器A -- cni0 -- flannel0 -- flanneld:8285 -- eth0 
+  eth0 -- flanneld:8285 -- flannel0 -- cni0 -- 容器B
+
+  VxLan:
+  一次用户态内核态切换,udp 8472,
+  sudo route -n
+  sudo arp -n
+  sudo bridge fdb show dev flannel.1
+  sudo netstat -anp | grep 8472
+  ip -d link show flannel.1
+
+  容器A -- cni0 -- flannel.1 -- eth0 
+  eth0 -- flannel.1 -- cni0 -- 容器B
+
+  host-gw:
+  只能局域网内部同一个网段,flanneld负责主机上路由表的动态更新,路由表更新压力大
+  容器A -- cni0 -- eth0 
+  eth0 -- cni0 -- 容器B
+
+  Calico:
+  纯三层,数据包都是通过路由的形式找到对应的主机和容器的,通过BGP 协议来将所有路由同步到所有的机器或数据中心,从而完成整个网络的互联。
+  veth pair,其中一端在主机上,另一端在容器的网络命名空间里
+  使用虚拟路由代替虚拟交换
+  BGP(Border Gateway Protocol),边界网关协议,在大规模网络中实现节点路由信息共享的一种协议,每一台虚拟路由通过BGP协议传播可达信息,BGP协议,就是大规模网络中,共享节点路由信息的协议
+  没有使用CNI的网桥模式,calico的CNI插件还需要在host机器上为每个容器的veth pair配置一条路由规则,cni插件是calico与kubernetes对接部分
+  
+  Felix,BGP Client(BIRD),BGP Route Reflector
+  容器A -- cali0000 -- routes -- eth0 
+  eth0 -- routes -- cali1111 -- 容器B
+
+  网段不一样时:
+  IPIP:
+  容器A -- cali0000 -- tunl0 -- eth0 -- Router1
+  Router2 -- eth0 -- tunl0 -- cali1111 -- 容器B
+
+  将宿主机网关也加入到BGP Mesh里:
+  第一种方案就是所有宿主机都跟宿主机网关建立BGP Peer关系,Dynamic Neighbors 的 BGP 配置方式
+  第二种方案是使用一个或多个独立组件负责搜集整个集群里的所有路由信息，然后通过BGP协议同步给网关
+
+  sudo ifconfig lxcbr0 down
+  sudo brctl delbr lxcbr0
+
+  kubectl delete -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
+
+  mkdir -p /home/thomas/server/calico
+  cd /home/thomas/server/calico
+  curl https://docs.projectcalico.org/v3.10/manifests/calico.yaml -O
+  POD_CIDR="10.244.0.0/16"
+  sed -i -e "s?192.168.0.0/16?$POD_CIDR?g" calico.yaml
+  kubectl apply -f calico.yaml
+
+  kubectl get pods --all-namespaces -o wide
+  kubectl get deployments.apps --all-namespaces -o wide
+  kubectl delete deployments.apps nginx
+
+  sudo ip -d link show tunl0
+  kubectl run nginx-deploy --image=nginx --replicas=2
+  kubectl exec -it nginx-deploy-dc9ff4b8c-cxp6c -- bash
+  kubectl exec -it nginx-deploy-dc9ff4b8c-zwcbl -- bash
+  apt-get update && apt-get install net-tools iputils-ping iproute2
+
+  ip route
+  ip neigh
+  当ARP请求目标跨网段时,网关设备收到此ARP请求,会用自己的MAC地址返回给请求者,这便是代理ARP(Proxy ARP)
+  cat /proc/sys/net/ipv4/conf/calib00075ae01c/proxy_arp
+  sudo tcpdump -i calib00075ae01c -e -nn
+
+  kubectl apply -f https://docs.projectcalico.org/v3.10/manifests/calicoctl.yaml
+  kubectl exec -ti -n kube-system calicoctl -- /calicoctl get profiles -o wide
+  kubectl exec -ti -n kube-system calicoctl -- /calicoctl get nodes
+
+70.System
   电商系统 淘宝 京东 卖票 买书
   及时通讯 QQ 微信
   社交系统 微博 抖音
