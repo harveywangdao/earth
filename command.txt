@@ -2005,8 +2005,8 @@
 
   kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
 
-  sudo kubeadm join 192.168.1.11:6443 --token c3tmhc.b8td7bd0xnp4nxg1 \
-    --discovery-token-ca-cert-hash sha256:59b4c3c5ed3a61b96abeed47ee9d5791b3fbe3b866d525f129ff463426afddaa
+  sudo kubeadm join 192.168.1.11:6443 --token t5dmmc.z4ko35k3lt710xxs \
+    --discovery-token-ca-cert-hash sha256:f512b981b1d1526cfdb65b6d46e366cc6063c6006749843ad965d5174839f79a
 
   kubectl get nodes
   kubectl get cs
@@ -2041,7 +2041,6 @@
   sudo kubeadm reset
   sudo rm -rf /etc/kubernetes
   sudo rm -rf /var/lib/kubelet
-  sudo rm -rf /var/lib/etcd
   rm -rf $HOME/.helm
   rm -rf $HOME/.kube
 
@@ -2052,8 +2051,13 @@ Helm:
   tar -xzvf helm-v2.12.3-linux-amd64.tar.gz
   sudo cp linux-amd64/helm /usr/local/bin
 
-  sudo apt-get install socat
-  kubectl config view
+  helm version #注意tiller版本
+  kubectl create serviceaccount --namespace kube-system tiller
+  kubectl create clusterrolebinding tiller-cluster-rule --clusterrole=cluster-admin --serviceaccount=kube-system:tiller
+  helm init --service-account tiller --upgrade -i registry.cn-hangzhou.aliyuncs.com/google_containers/tiller:v2.12.3  --stable-repo-url https://kubernetes.oss-cn-hangzhou.aliyuncs.com/charts
+
+  #sudo apt-get install socat
+  #kubectl config view
 
   #create a role and service account name
   vim ~/helm/rbac-config.yaml
@@ -2079,27 +2083,17 @@ Helm:
   #kubectl create -f rbac-config.yaml
   #helm init --service-account tiller
 
-  helm version #注意tiller版本
-  kubectl create serviceaccount --namespace kube-system tiller
-  kubectl create clusterrolebinding tiller-cluster-rule --clusterrole=cluster-admin --serviceaccount=kube-system:tiller
-
-  helm init --service-account tiller --upgrade -i registry.cn-hangzhou.aliyuncs.com/google_containers/tiller:v2.12.3  --stable-repo-url https://kubernetes.oss-cn-hangzhou.aliyuncs.com/charts
-
-  kubectl get pods -n kube-system
-  kubectl describe pod tiller-deploy-5687f55748-gbxwg --namespace=kube-system
-  
-  helm repo remove stable
+  kubectl get pods --all-namespaces -o wide
   helm repo add stable https://kubernetes.oss-cn-hangzhou.aliyuncs.com/charts
   helm repo add incubator https://aliacs-app-catalog.oss-cn-hangzhou.aliyuncs.com/charts-incubator/
   helm repo update
+  helm repo remove stable
   helm repo list
-
   helm search
-  helm search incubator
-  helm list
+  helm ls
 
-  helm reset --force
-  rm -rf $HOME/.helm
+  #helm reset --force
+  #rm -rf $HOME/.helm
 
   #helm mysql
   sudo /etc/init.d/mysql stop
@@ -2972,15 +2966,8 @@ InfluxDB:
   kubectl exec -it $POD_NAME -n ingress-nginx -- /nginx-ingress-controller --version
 
 60.Istio
-  control plane
-  data plane
-  Envoy
-  sidecar
-  Mixer
-  Pilot
-  Galley
-  Citadel
-  inbound and outbound
+  control plane,data plane,Envoy,sidecar,Mixer,Pilot,Galley,Citadel
+  iostat -k -x 1 3
 
   Envoy:
   docker pull envoyproxy/envoy:v1.11.1
@@ -2988,31 +2975,61 @@ InfluxDB:
   curl -v localhost:10000
 
   Istio集群:
-  curl -L https://git.io/getLatestIstio | ISTIO_VERSION=1.3.3 sh -
+  mkdir -p /home/thomas/server/servicemesh/istio
+  cd /home/thomas/server/servicemesh/istio
+  #curl -L https://git.io/getLatestIstio | ISTIO_VERSION=1.3.3 sh -
+  curl -L https://istio.io/downloadIstio | sh -
   cd istio-1.3.3
   sudo cp bin/istioctl /usr/bin/
   sudo chmod 755 /usr/bin/istioctl
 
-  for i in install/kubernetes/helm/istio-init/files/crd*yaml; do kubectl apply -f $i; done
-  kubectl apply -f install/kubernetes/istio-demo.yaml
-  kubectl get svc -n istio-system
-  kubectl get pods -n istio-system
+  #for i in install/kubernetes/helm/istio-init/files/crd*yaml; do kubectl apply -f $i; done
+  #kubectl apply -f install/kubernetes/istio-demo.yaml
+
+  istioctl manifest apply --set values.grafana.enabled=true \
+                          --set values.kiali.enabled=true \
+                          --set values.prometheus.enabled=true \
+                          --set values.tracing.enabled=true
+
+  istioctl manifest generate --set values.grafana.enabled=true \
+                             --set values.kiali.enabled=true \
+                             --set values.prometheus.enabled=true \
+                             --set values.tracing.enabled=true \
+                             > ./generated-manifest.yaml
+
+  istioctl verify-install -f ./generated-manifest.yaml
+
+  #docker pull docker.io/istio/citadel:1.4.0
+  #docker pull docker.io/istio/galley:1.4.0
+  #docker pull docker.io/istio/proxyv2:1.4.0
+  #docker pull docker.io/istio/pilot:1.4.0
+  #docker pull docker.io/istio/mixer:1.4.0
+  #docker pull docker.io/istio/sidecar_injector:1.4.0
+  #docker pull grafana/grafana:6.4.3
+  #docker pull docker.io/jaegertracing/all-in-one:1.14
+  #docker pull quay.io/kiali/kiali:v1.9
+  #docker pull docker.io/prom/prometheus:v2.12.0
+
+  #docker pull docker.io/istio/examples-bookinfo-details-v1:1.15.0
+  #docker pull docker.io/istio/examples-bookinfo-ratings-v1:1.15.0
+  #docker pull docker.io/istio/examples-bookinfo-reviews-v1:1.15.0
+  #docker pull docker.io/istio/examples-bookinfo-reviews-v2:1.15.0
+  #docker pull docker.io/istio/examples-bookinfo-reviews-v3:1.15.0
+  #docker pull docker.io/istio/examples-bookinfo-productpage-v1:1.15.0
 
   kubectl label namespace default istio-injection=enabled
   kubectl apply -f samples/bookinfo/platform/kube/bookinfo.yaml
-  kubectl get services
-  kubectl get pods
-  kubectl get pod --all-namespaces -o wide
   kubectl exec -it $(kubectl get pod -l app=ratings -o jsonpath='{.items[0].metadata.name}') -c ratings -- curl productpage:9080/productpage | grep -o "<title>.*</title>"
+  kubectl get pod --all-namespaces -o wide
 
   kubectl apply -f samples/bookinfo/networking/bookinfo-gateway.yaml
   kubectl get gateway
   kubectl get virtualservices
   kubectl get destinationrules
 
-  kubectl apply -f samples/httpbin/httpbin.yaml
+  #kubectl apply -f samples/httpbin/httpbin.yaml
   export INGRESS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="http2")].nodePort}')
-  #export SECURE_INGRESS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="https")].nodePort}')
+  export SECURE_INGRESS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="https")].nodePort}')
   export INGRESS_HOST=$(kubectl get po -l istio=ingressgateway -n istio-system -o jsonpath='{.items[0].status.hostIP}')
   
   export GATEWAY_URL=$INGRESS_HOST:$INGRESS_PORT
@@ -3021,6 +3038,258 @@ InfluxDB:
   #samples/bookinfo/platform/kube/cleanup.sh
   #kubectl delete -f install/kubernetes/istio-demo.yaml
   #for i in install/kubernetes/helm/istio-init/files/crd*yaml; do kubectl delete -f $i; done
+
+  流量治理:
+  kubectl apply -f samples/bookinfo/networking/destination-rule-all.yaml
+  kubectl get destinationrules -o yaml
+
+  流量切到v1
+  kubectl apply -f samples/bookinfo/networking/virtual-service-all-v1.yaml
+  kubectl get virtualservices -o yaml
+
+  流量切到v2
+  kubectl apply -f samples/bookinfo/networking/virtual-service-reviews-test-v2.yaml
+
+  故障注入
+  kubectl apply -f samples/bookinfo/networking/virtual-service-ratings-test-delay.yaml
+  kubectl apply -f samples/bookinfo/networking/virtual-service-ratings-test-abort.yaml
+
+  按比例切流量
+  kubectl apply -f samples/bookinfo/networking/virtual-service-reviews-50-v3.yaml
+  kubectl apply -f samples/bookinfo/networking/virtual-service-reviews-v3.yaml
+
+  Circuit Breaking
+  kubectl apply -f samples/httpbin/httpbin.yaml
+
+  kubectl apply -f - <<EOF
+  apiVersion: networking.istio.io/v1alpha3
+  kind: DestinationRule
+  metadata:
+    name: httpbin
+  spec:
+    host: httpbin
+    trafficPolicy:
+      connectionPool:
+        tcp:
+          maxConnections: 1
+        http:
+          http1MaxPendingRequests: 1
+          maxRequestsPerConnection: 1
+      outlierDetection:
+        consecutiveErrors: 1
+        interval: 1s
+        baseEjectionTime: 3m
+        maxEjectionPercent: 100
+  EOF
+
+  kubectl get destinationrule httpbin -o yaml
+
+  kubectl apply -f samples/httpbin/sample-client/fortio-deploy.yaml
+  FORTIO_POD=$(kubectl get pod | grep fortio | awk '{ print $1 }')
+  kubectl exec -it $FORTIO_POD  -c fortio /usr/bin/fortio -- load -curl  http://httpbin:8000/get
+  kubectl exec -it $FORTIO_POD  -c fortio /usr/bin/fortio -- load -c 2 -qps 0 -n 20 -loglevel Warning http://httpbin:8000/get
+  kubectl exec -it $FORTIO_POD  -c fortio /usr/bin/fortio -- load -c 3 -qps 0 -n 30 -loglevel Warning http://httpbin:8000/get
+  kubectl exec $FORTIO_POD -c istio-proxy -- pilot-agent request GET stats | grep httpbin | grep pending
+
+  #kubectl delete destinationrule httpbin
+  #kubectl delete deploy httpbin fortio-deploy
+  #kubectl delete svc httpbin
+  #kubectl delete -f samples/bookinfo/networking/virtual-service-all-v1.yaml
+
+  Gateway
+  export INGRESS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="http2")].nodePort}')
+  export SECURE_INGRESS_PORT=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.spec.ports[?(@.name=="https")].nodePort}')
+  export INGRESS_HOST=$(kubectl get po -l istio=ingressgateway -n istio-system -o jsonpath='{.items[0].status.hostIP}')
+
+  kubectl apply -f - <<EOF
+  apiVersion: networking.istio.io/v1alpha3
+  kind: Gateway
+  metadata:
+    name: httpbin-gateway
+  spec:
+    selector:
+      istio: ingressgateway # use Istio default gateway implementation
+    servers:
+    - port:
+        number: 80
+        name: http
+        protocol: HTTP
+      hosts:
+      - "httpbin.example.com"
+  EOF
+
+  kubectl apply -f - <<EOF
+  apiVersion: networking.istio.io/v1alpha3
+  kind: VirtualService
+  metadata:
+    name: httpbin
+  spec:
+    hosts:
+    - "httpbin.example.com"
+    gateways:
+    - httpbin-gateway
+    http:
+    - match:
+      - uri:
+          prefix: /status
+      - uri:
+          prefix: /delay
+      route:
+      - destination:
+          port:
+            number: 8000
+          host: httpbin
+  EOF
+
+  curl -I -HHost:httpbin.example.com http://$INGRESS_HOST:$INGRESS_PORT/status/200
+  curl -I -HHost:httpbin.example.com http://$INGRESS_HOST:$INGRESS_PORT/headers
+
+  kubectl apply -f - <<EOF
+  apiVersion: networking.istio.io/v1alpha3
+  kind: Gateway
+  metadata:
+    name: httpbin-gateway
+  spec:
+    selector:
+      istio: ingressgateway # use Istio default gateway implementation
+    servers:
+    - port:
+        number: 80
+        name: http
+        protocol: HTTP
+      hosts:
+      - "*"
+  ---
+  apiVersion: networking.istio.io/v1alpha3
+  kind: VirtualService
+  metadata:
+    name: httpbin
+  spec:
+    hosts:
+    - "*"
+    gateways:
+    - httpbin-gateway
+    http:
+    - match:
+      - uri:
+          prefix: /headers
+      route:
+      - destination:
+          port:
+            number: 8000
+          host: httpbin
+  EOF
+
+  curl http://$INGRESS_HOST:$INGRESS_PORT/headers
+
+  Jaeger:
+  #http://<IP ADDRESS OF CLUSTER INGRESS>:15032/
+  #istioctl dashboard jaeger
+
+  kubectl -n istio-system port-forward --address 0.0.0.0 $(kubectl -n istio-system get pod -l app=jaeger -o jsonpath='{.items[0].metadata.name}') 15032:16686
+  for i in `seq 1 100`; do curl -s -o /dev/null http://$GATEWAY_URL/productpage; done
+  kubectl exec -it -n istio-system istio-ingressgateway-76c6d6485c-kbrq7 -- bash
+
+  Kiali:
+  #http://<IP ADDRESS OF CLUSTER INGRESS>:15029/
+
+  KIALI_USERNAME=$(read -p 'Kiali Username: ' uval && echo -n $uval | base64)
+  KIALI_PASSPHRASE=$(read -sp 'Kiali Passphrase: ' pval && echo -n $pval | base64)
+
+  kubectl -n istio-system port-forward --address 0.0.0.0 $(kubectl -n istio-system get pod -l app=kiali -o jsonpath='{.items[0].metadata.name}') 20001:20001
+
+  Prometheus:
+  #http://<IP ADDRESS OF CLUSTER INGRESS>:15030/
+  #istioctl dashboard prometheus
+  
+  kubectl -n istio-system port-forward --address 0.0.0.0 $(kubectl -n istio-system get pod -l app=prometheus -o jsonpath='{.items[0].metadata.name}') 9090:9090
+
+  istio_requests_total
+  istio_requests_total{destination_service="productpage.default.svc.cluster.local"}
+  istio_requests_total{destination_service="reviews.default.svc.cluster.local", destination_version="v3"}
+  rate(istio_requests_total{destination_service=~"productpage.*", response_code="200"}[5m])
+
+  Grafana:
+  #http://<IP ADDRESS OF CLUSTER INGRESS>:15031/
+
+  kubectl -n istio-system port-forward --address 0.0.0.0 $(kubectl -n istio-system get pod -l app=grafana -o jsonpath='{.items[0].metadata.name}') 3000:3000
+
+  http://192.168.1.11:3000/dashboard/db/istio-mesh-dashboard
+  http://192.168.1.11:3000/dashboard/db/istio-service-dashboard
+  http://192.168.1.11:3000/dashboard/db/istio-workload-dashboard
+
+  kubectl -n istio-system delete gateway grafana-gateway kiali-gateway prometheus-gateway tracing-gateway
+  kubectl -n istio-system delete virtualservice grafana-vs kiali-vs prometheus-vs tracing-vs
+
+
+  Pod
+  Replica Set/Replication Controller
+  Deployment
+  Service
+  Horizontal Pod Autoscaler
+  StatefulSet
+  DaemonSet
+  Job
+  Cronjob
+  Volume
+  Persistent Volume
+  Persistent Volume Claim
+  StorageClass
+  VolumeSnapshotClass
+  Namespace
+  CustomResourceDefinition
+  Ingress
+  NetworkPolicy
+  Secret
+  LimitRange
+  ConfigMap
+  Node
+  Role
+  ClusterRole
+  RoleBinding
+  ClusterRoleBinding
+  ServiceAccount
+  ResourceQuota
+
+  CSI
+  
+  VirtualService
+  DestinationRule
+  Gateway
+  ServiceEntry
+  Sidecar
+  EnvoyFilter
+
+  kubernetes CRD
+  istio ServiceEntry
+  用istio部署自己的应用
+  
+  k8s灰度发布/滚动升级
+  1.部署第一版
+  kubectl create deployment nginx-test --image=nginx:1.14
+  kubectl scale deployment nginx-test --replicas 10
+  #kubectl autoscale deployment nginx-test --min=5 --max=15 --cpu-percent=80
+
+  kubectl apply -f nginx-test-v1.yaml
+  kubectl get pod --all-namespaces -o wide
+  kubectl get deployments.apps -o wide
+  kubectl get rs -w
+
+  2.部署第二版
+  kubectl set image deployment/nginx-test nginx=nginx:1.15 --record
+  #kubectl edit deployments.apps nginx-test
+
+  kubectl apply -f nginx-test-v2.yaml
+
+  3.回退到第一版
+  kubectl rollout history deployment/nginx-test
+  kubectl rollout history deployment nginx-test --revision=1
+
+  #kubectl rollout undo deployment/nginx-test
+  kubectl rollout undo deployment/nginx-test --to-revision=1
+
+  kubectl rollout status deployment/nginx-test
+  kubectl delete deployment nginx-test
 
 
 61.Go Module
