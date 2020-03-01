@@ -3185,6 +3185,26 @@ InfluxDB:
   Jaeger:
   #http://<IP ADDRESS OF CLUSTER INGRESS>:15032/
   #istioctl dashboard jaeger
+  
+  实现了OpenTracing
+  trace_id，span_id，parentId
+  span:单次调用
+  trace:一条完整的调用,多个span组成
+
+  Span:
+  An operation name，操作名称
+  A start timestamp，起始时间
+  A finish timestamp，结束时间
+  Span Tag，一组键值对构成的Span标签集合。键值对中，键必须为string，值可以是字符串，布尔，或者数字类型
+  Span Log，一组span的日志集合
+
+  jaeger-client(send spans to agent in UDP)
+  jarger-agent(recv from client push to collector)
+  jaeger-collector(recv agent to DB or kafka)
+  jaeger-ingester(from kafka to DB)
+  jaeger-query
+  web ui
+  DB(Cassandra/Elasticsearch)
 
   kubectl -n istio-system port-forward --address 0.0.0.0 $(kubectl -n istio-system get pod -l app=jaeger -o jsonpath='{.items[0].metadata.name}') 15032:16686
   for i in `seq 1 100`; do curl -s -o /dev/null http://$GATEWAY_URL/productpage; done
@@ -3192,6 +3212,10 @@ InfluxDB:
 
   Kiali:
   #http://<IP ADDRESS OF CLUSTER INGRESS>:15029/
+
+  
+
+
 
   KIALI_USERNAME=$(read -p 'Kiali Username: ' uval && echo -n $uval | base64)
   KIALI_PASSPHRASE=$(read -sp 'Kiali Passphrase: ' pval && echo -n $pval | base64)
@@ -4545,7 +4569,7 @@ InfluxDB:
   Router2 -- eth0 -- tunl0 -- cali1111 -- 容器B
 
   将宿主机网关也加入到BGP Mesh里:
-  第一种方案就是所有宿主机都跟宿主机网关建立BGP Peer关系,Dynamic Neighbors 的 BGP 配置方式
+  第一种方案就是所有宿主机都跟宿主机网关建立BGP Peer关系,Dynamic Neighbors的BGP配置方式
   第二种方案是使用一个或多个独立组件负责搜集整个集群里的所有路由信息，然后通过BGP协议同步给网关
 
   sudo ifconfig lxcbr0 down
