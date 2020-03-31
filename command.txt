@@ -2786,42 +2786,187 @@ Elasticsearch:
   sudo systemctl stop elasticsearch.service
 
   sudo /etc/init.d/elasticsearch start
-
-  curl -X GET "localhost:9200/"
-
   /etc/elasticsearch
   /usr/share/elasticsearch
-  /var/log/elasticsearch/
+  sudo journalctl --unit elasticsearch
 
-  path.data: /var/lib/elasticsearch
-  path.logs: /var/log/elasticsearch
+  tar -xzvf elasticsearch-7.6.1-linux-x86_64.tar.gz -C ../server/
+  mkdir data logs
 
-Kibana:
-  sudo dpkg -i kibana-7.2.0-amd64.deb
-  sudo systemctl daemon-reload
-  sudo systemctl enable kibana.service
-  sudo systemctl start kibana.service
-  sudo systemctl stop kibana.service
+  vim config/elasticsearch.yml
+  cluster.name: es-cluster01
+  node.name: es-node01
+  path.data: /home/thomas/server/elasticsearch-7.6.1/data
+  path.logs: /home/thomas/server/elasticsearch-7.6.1/logs
+  node.master: true
+  node.data: true
+  http.port: 9200
+  #network.bind_host: 0.0.0.0
+  #network.publish_host: 192.168.1.10
+  network.host: 192.168.1.10
+  #discovery.zen.ping.unicast.hosts: ["192.168.1.10:9300","192.168.1.11:9300","192.168.1.13:9300"]
+  #discovery.zen.minimum_master_nodes: 2
+  #http.cors.enabled: true
+  #http.cors.allow-origin: "*"
+  discovery.seed_hosts: ["192.168.1.10", "192.168.1.11", "192.168.1.13"]
+  cluster.initial_master_nodes: ["es-node01", "es-node02", "es-node04"]
+  
+  sudo vim /etc/sysctl.conf
+  vm.max_map_count=655360
+  sudo sysctl -p
 
-  /var/log/kibana/
-  /etc/kibana/kibana.yml
-  /var/lib/kibana path.data
+  cd /home/thomas/server/elasticsearch-7.6.1
+  rm -rf data/*
+  ./bin/elasticsearch -d
+  sudo lsof -i tcp:9200
 
-  192.168.1.7:5601
+  curl -X GET 192.168.1.10:9200
+  curl -X GET 192.168.1.10:9200/_cluster/health?pretty
+  curl -X GET 192.168.1.10:9200/_cluster/stats?pretty
+  curl -X GET 192.168.1.10:9200/_cat/health?v
+  curl -X GET 192.168.1.10:9200/_cat/nodes?v
+  curl -X GET 192.168.1.10:9200/_nodes/process?pretty
+  curl -X GET 192.168.1.10:9200/_stats?pretty
 
-Metricbeat:
-  sudo dpkg -i metricbeat-7.2.0-amd64.deb
+  curl -X GET 192.168.1.10:9200/logstash-2018.10.21/_stats?pretty
+  curl -X GET 192.168.1.10:9200/logstash-2018.10.21/_mapping?pretty
 
-  sudo metricbeat modules enable system
-  sudo metricbeat setup -e
-  sudo service metricbeat start
-  sudo service metricbeat stop
-  sudo service metricbeat restart
+  curl -X GET 192.168.1.10:9200/index_name/_settings?pretty
+  curl -X GET 192.168.1.10:9200/index_name/_mapping?pretty
 
-  ps -ef | grep metricbeat
-  sudo vim /etc/metricbeat/metricbeat.yml
+  curl -X POST -H "Content-Type:application/json" 192.168.1.10:9200/index_name/index_type/1 -d '{"name":"wes"}'
 
-  http://192.168.1.7:5601/app/kibana#/dashboard/Metricbeat-system-overview-ecs
+  curl -X POST -H "Content-Type:application/json" 192.168.1.10:9200/index_name/_delete_by_query -d '{"query":{"match":{"message":"some message"}}}'
+
+  curl -X PUT -H "Content-Type:application/json" 192.168.1.10:9200/index_name/type1/1 -d '{"counter":1,"tags":["red"]}'
+
+
+  创建索引
+  curl -X PUT 192.168.1.10:9200/customer?pretty
+
+  查询所有索引
+  curl -X GET 192.168.1.10:9200/_cat/indices?v
+
+  插入数据
+  curl -X PUT -H "Content-Type:application/json" 192.168.1.10:9200/customer/external/1?pretty -d '{"name":"Xiaoming"}'
+
+  查询数据
+  curl -X GET 192.168.1.10:9200/customer/external/1?pretty
+  curl -X GET 192.168.1.10:9200/customer/external/1/_source?pretty
+
+  删除索引
+  curl -X DELETE 192.168.1.10:9200/customer?pretty
+
+  修改数据
+  curl -X PUT -H "Content-Type:application/json" 192.168.1.10:9200/customer/external/1?pretty -d '{"name":"HuangXiaoming"}'
+
+  更新数据
+  curl -X POST -H "Content-Type:application/json" 192.168.1.10:9200/customer/external/1/_update?pretty -d '{"doc":{"name":"xiaohong"}}'
+  curl -X POST -H "Content-Type:application/json" 192.168.1.10:9200/customer/external/1/_update?pretty -d '{"doc":{"name":"xiaohong2", "age":33}}'
+  curl -X POST -H "Content-Type:application/json" 192.168.1.10:9200/customer/external/1/_update?pretty -d '{"script":"ctx._source.age += 5"}'
+
+  删除数据
+  curl -X PUT -H "Content-Type:application/json" 192.168.1.10:9200/customer/external/2?pretty -d '{"length":"secret"}'
+  curl -X DELETE 192.168.1.10:9200/customer/external/2?pretty
+
+  批处理
+  curl -X POST -H "Content-Type:application/json" 192.168.1.10:9200/customer/external/_bulk?pretty -d '
+  {"index":{"_id":"1"}}
+  {"name":"Johnsdfcsd Doe"}
+  {"index":{"_id":"2"}}
+  {"name":"Jane sdfvsdDoe"}
+  '
+
+  curl -X POST -H "Content-Type:application/json" 192.168.1.10:9200/customer/external/_bulk?pretty -d '
+  {"update":{"_id":"1"}}
+  {"doc": { "name": "John Doe becomes Jane Doe" } }
+  {"delete":{"_id":"2"}}
+  '
+
+  curl -X POST -H "Content-Type:application/json" 192.168.1.10:9200/bank/_bulk?pretty --data-binary "@accounts.json"
+  curl -X POST -H "Content-Type:application/json" 192.168.1.10:9200/bank/account/_bulk?pretty --data-binary "@accounts.json"
+  curl -X POST -H "Content-Type:application/json" "192.168.1.10:9200/bank/_bulk?pretty&refresh" --data-binary "@accounts.json"
+
+  curl -X GET "192.168.1.10:9200/bank/_search?q=*&pretty"
+
+  curl -X POST -H "Content-Type:application/json" 192.168.1.10:9200/bank/_search?pretty -d '{"query":{"match_all":{}}}'
+  curl -X POST -H "Content-Type:application/json" 192.168.1.10:9200/bank/_search?pretty -d '{"query":{"match_all":{}}, "size":1}'
+  curl -X POST -H "Content-Type:application/json" 192.168.1.10:9200/bank/_search?pretty -d '{"query":{"match_all":{}}, "from":10, "size":4}'
+
+  curl -X POST -H "Content-Type:application/json" 192.168.1.10:9200/bank/_search?pretty -d '{"query":{"match_all":{}}, "sort":{"balance":{"order":"desc"}}}'
+
+  curl -X POST -H "Content-Type:application/json" 192.168.1.10:9200/bank/_search?pretty -d '{"query":{"match_all":{}}, "_source":["account_number", "balance"]}'
+  curl -X POST -H "Content-Type:application/json" 192.168.1.10:9200/bank/_search?pretty -d '{"query":{"match":{"account_number":20}}}'
+  curl -X POST -H "Content-Type:application/json" 192.168.1.10:9200/bank/_search?pretty -d '{"query":{"match":{"address":"mill"}}}'
+  curl -X POST -H "Content-Type:application/json" 192.168.1.10:9200/bank/_search?pretty -d '{"query":{"match":{"address":"mill lane"}}}'
+  curl -X POST -H "Content-Type:application/json" 192.168.1.10:9200/bank/_search?pretty -d '{"query":{"match_phrase":{"address":"mill lane"}}}'
+
+  curl -X POST -H "Content-Type:application/json" 192.168.1.10:9200/bank/_search?pretty -d '{"query":{"bool":{"must":[{"match":{"address":"mill"}}, {"match":{"address":"lane"}}]}}}'
+  curl -X POST -H "Content-Type:application/json" 192.168.1.10:9200/bank/_search?pretty -d '{"query":{"bool":{"should":[{"match":{"address":"mill"}}, {"match":{"address":"lane"}}]}}}'
+  curl -X POST -H "Content-Type:application/json" 192.168.1.10:9200/bank/_search?pretty -d '{"query":{"bool":{"must_not":[{"match":{"address":"mill"}}, {"match":{"address":"lane"}}]}}}'
+
+  curl -X POST -H "Content-Type:application/json" 192.168.1.10:9200/bank/_search?pretty -d '{"query": {"bool": {"must": [{"match": {"age": "40"}}],"must_not": [{"match": {"state": "ID"}}]}}}'
+
+  curl -X POST -H "Content-Type:application/json" 192.168.1.10:9200/bank/_search?pretty -d '{"query": {"bool": {"must": { "match_all": {} },"filter": {"range": {"balance": {"gte": 20000,"lte": 30000}}}}}}'
+
+  curl -X POST -H "Content-Type:application/json" 192.168.1.10:9200/bank/_search?pretty -d '{"size": 0,"aggs": {"group_by_state": {"terms": {"field": "state.keyword"}}}}'
+  curl -X POST -H "Content-Type:application/json" 192.168.1.10:9200/bank/_search?pretty -d '{"size": 0,"aggs": {"group_by_state": {"terms": {"field": "state.keyword"},"aggs": {"average_balance": {"avg": {"field": "balance"}}}}}}'
+  curl -X POST -H "Content-Type:application/json" 192.168.1.10:9200/bank/_search?pretty -d '{"size": 0,"aggs": {"group_by_state": {"terms": {"field": "state.keyword","order":{"average_balance":"desc"}},"aggs": {"average_balance": {"avg": {"field": "balance"}}}}}}'
+
+  模板 mapping 快照 仓库
+  curl -X GET 192.168.1.10:9200/_template?pretty
+  curl -X DELETE 192.168.1.10:9200/_template/no_analyzed
+
+  curl -X PUT -H "Content-Type:application/json" 192.168.1.10:9200/_template/t1 -d '{"template" : "*", "settings": {"number_of_replicas": "0"}}'
+  curl -X PUT -H "Content-Type:application/json" 192.168.1.10:9200/_template/no_analyzed -d '
+  {"template": "*","mappings": {"_default_": {"dynamic_templates": [{"strings": {"match_mapping_type": "string","mapping": {"type": "keyword"}}}]}}}'
+  curl -X GET 192.168.1.10:9200/_cat/repositories?v
+
+  curl -X POST -H "Content-Type:application/json" 192.168.1.10:9200/logstash-2020.03.14-000001/_search?pretty -d '{"query":{"match_all":{}}}'
+
+Logstash:
+  sudo -E dpkg -i logstash-7.2.0.deb
+  #sudo /etc/init.d/logstash start
+  #sudo systemctl start logstash.service
+
+  ps -ef | grep logstash
+  ps aux | grep pid
+  netstat -tunlp | grep port
+  
+  vim /etc/logstash/metrics-pipelines.conf
+  cd /usr/share/logstash
+  sudo -E ./bin/logstash -f /etc/logstash/metrics-pipelines.conf
+
+  tar -xzvf logstash-7.6.1.tar.gz -C ../server/
+  cd /home/thomas/server/logstash-7.6.1
+  bin/logstash -e 'input { stdin { } } output { stdout {} }'
+
+  vim config/logstash.conf
+  input {
+      file {
+          path => ["/home/thomas/server/logstash-7.6.1/logs/apple.log"]
+          type => "file_monitor"
+          tags => ["有用的","标识用的"]
+          start_position => "beginning"
+      }
+  }
+  input {
+      beats {
+          port => "5044"
+      }
+  }
+  output {
+     stdout { codec => rubydebug }
+  }
+
+  output {
+    elasticsearch { hosts => ["192.168.1.10:9200"] }
+    stdout { codec => rubydebug }
+  }
+
+  bin/logstash -f config/logstash.conf
+  nohup bin/logstash -f config/logstash.conf >/dev/null 2>&1 &
+  echo "this is a cat" >> apple.log
 
 Filebeat:
   sudo dpkg -i filebeat-7.2.0-amd64.deb
@@ -2840,42 +2985,84 @@ Filebeat:
     -E output.elasticsearch.password=YOUR_PASSWORD \
     -E setup.kibana.host=localhost:5601
 
-  ps -ef | grep filebeat
+  tar -xzvf filebeat-7.6.1-linux-x86_64.tar.gz -C ../server/
+  cd /home/thomas/server/filebeat-7.6.1-linux-x86_64
+  vim filebeat.yml
+  enabled: true
 
-Logstash:
-  sudo -E dpkg -i logstash-7.2.0.deb
-  #sudo /etc/init.d/logstash start
-  #sudo systemctl start logstash.service
+  nohup ./filebeat -e -c filebeat.yml >/dev/null 2>&1 &
 
-  ps -ef | grep logstash
-  ps aux | grep pid
-  netstat -tunlp | grep port
-  
-  vim /etc/logstash/metrics-pipelines.conf
-  cd /usr/share/logstash
-  sudo -E ./bin/logstash -f /etc/logstash/metrics-pipelines.conf
+
+Kibana:
+  sudo dpkg -i kibana-7.2.0-amd64.deb
+  sudo systemctl daemon-reload
+  sudo systemctl enable kibana.service
+  sudo systemctl start kibana.service
+  sudo systemctl stop kibana.service
+
+  /var/log/kibana/
+  /etc/kibana/kibana.yml
+  /var/lib/kibana path.data
+
+  192.168.1.7:5601
+
+  tar -xzvf kibana-7.6.1-linux-x86_64.tar.gz -C ../server/
+  cd /home/thomas/server/kibana-7.6.1-linux-x86_64
+  vim config/kibana.yml
+  server.host: "192.168.1.10"
+  elasticsearch.hosts: ["http://192.168.1.10:9200"]
+
+  bin/kibana
+  http://192.168.1.10:5601
+
+
+Metricbeat:
+  sudo dpkg -i metricbeat-7.2.0-amd64.deb
+
+  sudo metricbeat modules enable system
+  sudo metricbeat setup -e
+  sudo service metricbeat start
+  sudo service metricbeat stop
+  sudo service metricbeat restart
+
+  ps -ef | grep metricbeat
+  sudo vim /etc/metricbeat/metricbeat.yml
+
+  http://192.168.1.7:5601/app/kibana#/dashboard/Metricbeat-system-overview-ecs
+
 
 57.Prometheus
-  tar -xzvf prometheus-2.11.1.linux-amd64.tar.gz -C /home/thomas/server/
+  tar -xzvf prometheus-2.16.0.linux-amd64.tar.gz -C /home/thomas/server/
+  cd /home/thomas/server/prometheus-2.16.0.linux-amd64
   vim prometheus.yml
   ./prometheus --config.file=prometheus.yml
 
-  192.168.1.7:9090
-  192.168.1.7:9090/metrics
-  192.168.1.7:9090/graph
-
-  git clone https://github.com/prometheus/client_golang.git
-  cd client_golang/examples/random
-  go get -d
-  go build
-
-  ./random -listen-address=:8080
-  ./random -listen-address=:8081
-  ./random -listen-address=:8082
+  192.168.1.10:9090
+  192.168.1.10:9090/metrics
+  192.168.1.10:9090/graph
 
   docker run -p 9090:9090 prom/prometheus
   docker run -p 9090:9090 -v /tmp/prometheus.yml:/etc/prometheus/prometheus.yml prom/prometheus
   docker run --name prometheus -d -p 127.0.0.1:9090:9090 prom/prometheus
+
+  tar -xzvf node_exporter-0.18.1.linux-amd64.tar.gz -C /home/thomas/server/
+  cd /home/thomas/server/node_exporter-0.18.1.linux-amd64
+  ./node_exporter
+  curl http://192.168.1.10:9100/metrics
+
+  100-irate(node_cpu_seconds_total{job="linux-node",mode="idle"}[5m])*100
+  100 - (avg by (instance) (irate(node_cpu_seconds_total{instance="192.168.1.10:9100", mode="idle"}[5m])) * 100)
+  avg by (instance, mode) (irate(node_cpu_seconds_total{instance="192.168.1.10:9100"}[5m])) * 100
+  node_load1{instance="192.168.1.10:9100"}
+
+  // 入包量
+  sum by (instance) (rate(node_network_receive_bytes_total{instance="192.168.1.10:9100",device!="lo"}[5m]))
+  // 出包量
+  sum by (instance) (rate(node_network_transmit_bytes_total{instance="192.168.1.10:9100",device!="lo"}[5m]))
+
+  100-(node_memory_MemFree_bytes+node_memory_Cached_bytes+node_memory_Buffers_bytes)/node_memory_MemTotal_bytes*100
+  100-node_filesystem_free_bytes{mountpoint="/"}/node_filesystem_size_bytes{mountpoint="/"}*100
+
 
 Grafana:
   sudo dpkg -i grafana_6.2.5_amd64.deb
@@ -2894,6 +3081,11 @@ Grafana:
   http://192.168.1.7:3000/
 
   docker run -d -p 3000:3000 --name grafana grafana/grafana
+
+  wget https://dl.grafana.com/oss/release/grafana-6.6.2.linux-amd64.tar.gz
+  tar -xzvf grafana-6.6.2.linux-amd64.tar.gz -C ../server/
+  cd /home/thomas/server/grafana-6.6.2
+  ./bin/grafana-server web
 
 InfluxDB:
 
@@ -4604,7 +4796,43 @@ InfluxDB:
   kubectl exec -ti -n kube-system calicoctl -- /calicoctl get profiles -o wide
   kubectl exec -ti -n kube-system calicoctl -- /calicoctl get nodes
 
-70.System
+70.systemctl
+  sudo /etc/init.d/mysql status
+  sudo /etc/init.d/mysql start
+  sudo /etc/init.d/mysql stop
+
+  sudo systemctl status mysql.service
+  sudo systemctl start mysql.service
+  sudo systemctl stop mysql.service
+
+  sudo service mysql status
+  sudo service mysql start
+  sudo service mysql stop
+
+  sudo vim /etc/rc.local
+  +/etc/init.d/mysql start
+
+  sudo mv startBlog /etc/init.d/
+  sudo update-rc.d startBlog defaults 99
+  sudo update-rc.d -f startBlog remove
+
+  cd /etc/systemd/system
+  cd /lib/systemd/system
+  cd /usr/lib/systemd/system
+
+  # 开机启动 && 开机不启动
+  sudo systemctl enable mysql.service
+  sudo systemctl disable mysql.service
+
+  systemd-analyze blame
+
+  sudo systemctl show mysql.service
+  multi-user.target.wants
+
+  sudo systemctl list-units -all
+  sudo systemctl --failed
+
+71.System
   电商系统 淘宝 京东 卖票 买书
   及时通讯 QQ 微信
   社交系统 微博 抖音
