@@ -1,0 +1,87 @@
+C/C++、Go、Python、Java、Node.js、Rust、Scala、Kotlin、TypeScript、Dart
+多进程、多线程(线程池)、协程、IPC(共享内存/管道/FIFO/消息队列/unix域套接字/mmap/dbus)、同步(信号量/互斥锁/读写锁/条件变量/自旋锁)、socket(tcp/udp)、文件io(fopen/fclose/fread/fwrite/open/create/close/lseek/read/write/stat/fstat)、io多路复用(epoll/select/poll)、fcntl、ioctl、dup/dup2、sendfile
+linux、shell、基本命令(查进程/查网络)
+数据结构、算法、链表、栈、二叉树、队列、图、排序、查找、红黑树、平衡二叉树、B树、B+树、布隆过滤器、KMP算法、LRU、倒排索引、最大堆和最小堆、深度优先遍历、广度优先遍历
+Go、Gin、Beego、go-micro
+C++、STL、Boost、Boost.Asio、libevent、libev、libuv、libco、web后台、Boost.Beast
+Python、Django、Flask、Tornado、SQLAlchemy
+Java、Spring Boot、Spring Cloud、Spring、Mybatis、Struts2、Hibernate、Eureka、Ribbon、Hystrix、Zuul、Feign、Dubbo
+NewSQL、TiDB
+数据库、MySQL、PostgreSQL、MariaDB
+NoSQL、Mongodb、Cassandra、Neo4j、LevelDB、goleveldb、RocksDB、CouchDB、Couchbase、ClickHouse、OceanBase、BigTable、tikv
+消息队列、Kafka、ActiveMQ、ZeroMQ、RabbitMQ、RocketMQ、NSQ、CMQ(kafka scala、RabbitMQ Erlang AMQP、RocketMQ Java、ActiveMQ Java、ZeroMQ C、CMQ 腾讯云)(高可用、单点问题、热备；负载均衡、高并发；数据丢失问题、持久化；消息回搠；延时消费)
+缓存、Redis
+云计算、Paas、边缘计算、虚拟化、容器技术、Docker、Kubernetes、Swarm、Mesos、OpenStack、KVM、QEMU、XEN、libvirt、GPU虚拟化、Terraform、Rancher、Serverless、Knative、KubeVirt、Tekton、Envoy
+网络代理、负载均衡、DNS、Nginx、Haproxy、LVS(NAT/DR/TUN)、Keepalived
+日志、Elasticsearch、Logstash、Kibana、FileBeat、Flume
+监控、Prometheus、Grafana、Influxdb、OpenTSDB
+微服务、Service Mesh、Istio、RESTful、gRPC、Etcd、Consul、Zookeeper、Zipkin、Kong、Thrift
+高并发、秒杀(库存,超卖现象,redis乐观锁watch,redis悲观锁 阻塞式(超时) 非阻塞式 setnx expire,mysql乐观锁version,mysql悲观锁select for update用到索引)
+分布式存储、Ceph、GlusterFS、MinIO、Swift、OpenZFS、MogileFS、FastDFS、SeaweedFS、Lustre、MooseFS、S3
+分布式一致性、2PC、3PC、TCC、Paxos、ZAB、Raft、CAP
+大数据、Hadoop、HBase、Hive、Spark、Storm、Flink、Kylin
+网络、TCP、UDP、IP、netlink、netfilter、HTTP、HTTP2、HTTPS、websocket、VPP、DNS、NFS、DHCP、路由器、交换机、iptables、LAN、VLAN、VxLAN、IPsec、SMTP、FTP、TFTP、Telnet、SNMP、IGMP、广播、多播、组播、RIP、CIDR、ICMP、ARP、RARP、BGP、OSPF、NAT、VPN、SDN、NFV、Overlay、Openvswitch、OpenDaylight、OpenFlow、DPDK、SPDK、NUMA、RDMA
+运维、DevOps、Ansible、Jenkins、Nagios、Zabbix
+人工智能、AI、机器学习、深度学习、Numpy、Pandas、Matplotlib、Caffe、Keras、Tensorflow、PyTorch、OpenCV、Scikit-learn、Theano、MXNet
+音视频图片、流媒体、FFmpeg、H.264、H.265、RTSP、RTMP、RTP、RTCP、VOIP、SIP、OpenGL、FLV、MP4、HLV、HLS、WebRTC、MPEG-4、AAC、MP3
+前端技术、js/html/css、Vue、React、Flutter、Electron、小程序
+CDN、搜索引擎、浏览器内核、推荐系统、网络安全、密码学
+磁盘、IDE、SATA、mSATA、M.2、SCSI、PCIe、机械硬盘、SSD、AHCI、NVMe、iSCSI、SAN、NAS、RAID
+容器注册表
+VFS、OpenZFS、XFS、EXT2、EXT3、EXT4、NFS、CIFS、FUSE
+Ramdisk、tmpfs、ramfs
+UnionFS、AUFS、Overlay2、DeviceMapper、Btrfs
+
+后台组件(MySQL、TiDB、MongoDB、Kafka、NSQ、Redis)、Docker、Kubernetes、Ceph、Glusterfs、Istio、Serverless、虚拟化(KVM、QEMU、OpenStack)、大数据(Hadoop、Spark、HBase、Hive、Storm、Flink)、人工智能(机器学习、深度学习、TensorFlow、PyTorch)、Rancher、Terraform、边缘计算、PaaS、LeetCode、图、RTC
+
+1.设计一个系统
+学技术、赚钱
+新颖的
+有趣的
+挣钱的
+运用到所有技术
+
+安全通讯
+安全存储
+学史记
+教别人如何学习
+推广数学和自然科学的教育
+
+智能机器人
+自动制造
+自动建筑
+智能医疗
+自动种植
+智能援救
+个人飞行器
+太空飞行器
+星际旅行
+星际移民
+
+地质学:
+普通地质学 结晶学及矿物学 矿床学 地球科学概论 岩石学 古生物学 地球化学 地球重力学 磁层物理学 空间等离子体物理基础 地理信息系统原理 结晶学与矿物学 地史学 构造地质学 遥感技术 地球物理及勘探方法 地层学 地球物理学 晶体光学和光性矿物学 矿物物理学 多晶X射线衍射应用 沉积学 海洋地质学 遥感地质学 第四纪地质学与地貌学 沉积学与古地理学 区域大地构造学基础 变质岩岩石学 沉积岩岩石学 岩浆岩岩石学 晶体光学 地质微生物学 水文地质学 地球生物学 宝石学 大气科学 海洋科学
+岩浆作用理论概述 微量元素地球化学 粘性流体力学 行星科学概论 空间探测 空间天气学及与预报 数字地形模型 数字地球导论 遥感应用 大地构造学 地貌学与第四纪地质学 古生态学与古环境分析 古植物学及孢粉学 环境矿物学 高温高压物质科学 岩石力学 电离层物理学与电波传播 地图学 油气有机地球化学 油气储层地质学基础 油气地球化学 环境与生态科学 测量学概论 地球历史概要 地震概论 地球物理流体动力学 地球系统模式 大气遥感 生态学 地球系统科学 气候 晶体光学及造岩矿物学 资源地质学 环境地质学 地理信息系统
+
+生物学:
+普通生物学 植物学 动物学 昆虫学 海洋生物学 微生物学 鸟类学 生物工程 高级微生物学 生物化学 分子生物学 基因分子生物学 细胞生物学 遗传学 免疫学 神经生物学 病原生物学 生物信息学 生物统计学 生态学 计算分子生物学 生命科学 生理学 发育生物学 生物物理学 蛋白质的结构 生物检测技术与仪器概论 基因组学 系统生物学 病毒与蛋白质结构 应用蛋白质晶体学 基因工程 植物激素作用机制 脑疾病的生物学研究 生物大分子结构与功能 生物波谱学 脑与认知科学 酶作用原理 生物转化 蛋白质晶体学 药理学 生物药学 分子免疫学 膜蛋白的结构生物学研究 分子遗传学 肿瘤生物学 细胞自噬 细胞内膜系统 钙离子信号传导 蛋白质组学 模式生物学 应用生物药剂学 高级认知的神经生物学 病毒结构生物学 高等药理学 高等毒理学 染色质生物学 免疫受体的分子细胞生物学 表观遗传学 化学生物学 真核基因转录与调控 植物生物学 高级植物生物学 RNA生物学 基因表达调控 发育神经生物学 医学病毒学 干细胞生物学 高等杂环化学 高等药物化学 药物递送原理与技术 发育细胞生物学 细胞通讯与细胞信号 衰老学说及研究 免疫信号转导与疾病 现代药物化学 植物分子遗传 肝脏分子生理学与病理学 细胞骨架和植物发育 B淋巴细胞生物学 转录因子与细胞命运 肿瘤表观遗传学 叶绿体生物学 植物信号转导 核糖核酸生物化学与结构生物学 单分子生物物理学 转化研究 海洋生物信息技术 计算生物学 造血干细胞研究 肿瘤代谢研究 神经细胞兴奋性研究 神经系统疾病的分子基础 黏膜与区域免疫学 生物大分子小角x射线散射 核酸分子设计及其在生命科学中的应用
+
+天文学:
+天文学导论 天文技术与方法 天体物理 理论天体物理 引力波天体物理学 高能天体物理 天体物理动力学 广义相对论与天体物理 流体与等离子体天体物理 天体物理前沿 宇宙概论 宇宙学 星系物理 核天体物理 恒星物理学 恒星结构和演化 天体光谱学 大气物理学 天气学 大气科学导论 大气动力学 大气探测原理 恒星大气与天体光谱 物理宇宙学 流体物理基础 强关联体系理论 弥散介质天体物理学 天体物理中的辐射机制 星系物理学 天文文献阅读 宇宙学及星系形成 活动星系核 致密星物理 行星天文 射电天文学 天体物理吸积过程 等离子体天文导论 天文测距导论 天文数据处理 星际介质 恒星 行星
+
+化学:
+有机化学 无机化学 分析化学 物理化学 高分子化学 合成有机化学 高等有机化学 高等无机化学 高等分析化学 有机波谱学 生命科学研究中的蛋白质相互作用 高等物理化学 理论化学物理 功能高分子化学
+磷与生命化学 碳原子 催化剂 超分子化学 纳米化学 计算化学 化学原理 结构化学 物理有机化学 材料化学 分离原理与技术 有机合成 催化动力学 有机电子学 天然产物化学 绿色化学 化学生物学 催化化学 固体化学 配位化学 光化学原理 X射线晶体结构分析 化学动力学 电化学原理 天然有机化学 元素有机化学 电子能谱学 材料分析化学 功能晶体材料导论 生物有机化学 生命分析化学 有机光电材料与器件 高分子合成化学
+
+数学:
+数学分析 高等代数 泛函分析 复变函数论 实变函数论 常微分方程 偏微分方程 微分几何 黎曼几何 抽象代数 复分析 实分析 微分流形 黎曼曲面 群论 李群与李代数 (微积分 概率论) 模糊数学 拓扑学 非线性泛函分析 初等数论 交换代数 同调代数 调和分析 代数数论 多复变函数论 群表示论 无限维李代数 代数几何 复几何 数理逻辑 组合数学 模形式 代数拓扑 几何拓扑 二阶椭圆形方程 双曲方程 动力系统 遍历论 变分学 同调论 同伦论 有限域 微分拓扑 纤维丛 辛几何 双曲几何 低维流形 几何群论 非线性分析 几何表示论 代数表示论 齐性流 模空间 表示论 离散数学 代数学 范畴论 线性代数 分形几何 几何分析 差分方法 偏微分方程数值解 测度与积分 测度论 几何测度论 几何与对称 无界区域上偏微分方程数值解及应用 非线性双曲偏微分方程 算子代数
+随机过程 应用随机过程 不确定规划 计算复杂性理论 数学规划 数学模型 算法分析与设计 对策论及其应用 现代优化方法 网络优化 有限元方法 数值分析 高等数值分析 矩阵计算 统计推断 线性回归 统计计算 时间序列分析 多元统计 随机分析 应用统计 分析学 应用分析 统计咨询 金融统计 高等统计 函数型数据分析 时空模型方法与理论 面板数据分析 生存分析 网络数据统计分析 因果推断和图模型 数据挖掘中的统计方法 高维统计分析 非参数统计 纵向数据分析 计算金融学 金融数学 蒙特卡罗方法 位势理论与边界元方法 理论生物学 系统生物学的数学方法 随机算法 多层规划 生物信息学中的数学方法 统计力学的数学方法 数学物理中的渐近方法 可积系统理论 孤立子与可积系统 高等概率 量子群 不确定系统 贝叶斯方法和计算 奇点理论 高等统计计算 高等统计方法 组合优化
+
+物理:
+(费曼物理学 力学 热学 电磁学 电动力学 光学) (近代物理学/原子物理学 分析力学 数学物理方程 统计力学/统计物理学 量子力学 狭义相对论 广义相对论 粒子物理)
+核物理与粒子物理 原子分子物理 核结构与核反应理论 原子分子理论
+量子场论 量子规范场论 高等量子力学 量子电动力学 量子统计 量子光学和原子光学 量子多体物理 规范场论 量子信息物理 量子计算 有限温度量子场论 波尔兹曼方程及其应用 量子统计理论的格林函数方法 量子材料 非平衡态统计物理 非平衡态热力学 非线性动力学与混沌 第一原理计算方法 量子系统的非平衡多体理论
+激光与近代光学 光子学的物理基础 激光物理学 光谱理论基础 激光光谱和检测技术 光电子学 拉曼光谱学导论 非线性光学 现代辐射探测与测量 声学原理及其应用 物理声学 应用声学 近代声学导论
+凝聚态物理 超导物理学 低温物理学 等离子体物理 理论物理 固体物理 固体理论 计算物理 半导体物理学 高等半导体物理 材料物理 固体光谱 固体力学 流体力学 材料力学 理论力学 结构力学 弹性力学 空气动力学 拓扑绝缘体 相变与重正化群
+引力 黑洞 量子黑洞 宇宙线粒子探测与物理实验 弦论 超对称与超引力 生物物理导论 物理中的莫比乌斯逆变换
+
+勒让德函数 贝塞尔函数 狄拉克δ函数 格林函数 傅里叶变换 拉普拉斯变换
