@@ -1,39 +1,3 @@
-C/C++、Go、Python、Java、Node.js、Rust、Scala、Kotlin、TypeScript、Dart
-多进程、多线程(线程池)、协程、IPC(共享内存/管道/FIFO/消息队列/unix域套接字/mmap/dbus)、同步(信号量/互斥锁/读写锁/条件变量/自旋锁)、socket(tcp/udp)、文件io(fopen/fclose/fread/fwrite/open/create/close/lseek/read/write/stat/fstat)、io多路复用(epoll/select/poll)、fcntl、ioctl、dup/dup2、sendfile
-linux、shell、基本命令(查进程/查网络)
-数据结构、算法、链表、栈、二叉树、队列、图、排序、查找、红黑树、平衡二叉树、B树、B+树、布隆过滤器、KMP算法、LRU、倒排索引、最大堆和最小堆、深度优先遍历、广度优先遍历
-Go、Gin、Beego、go-micro
-C++、STL、Boost、Boost.Asio、libevent、libev、libuv、libco、web后台、Boost.Beast
-Python、Django、Flask、Tornado、SQLAlchemy
-Java、Spring Boot、Spring Cloud、Spring、Mybatis、Struts2、Hibernate、Eureka、Ribbon、Hystrix、Zuul、Feign、Dubbo
-NewSQL、TiDB
-数据库、MySQL、PostgreSQL、MariaDB
-NoSQL、Mongodb、Cassandra、Neo4j、LevelDB、goleveldb、RocksDB、CouchDB、Couchbase、ClickHouse、OceanBase、BigTable、tikv
-消息队列、Kafka、ActiveMQ、ZeroMQ、RabbitMQ、RocketMQ、NSQ、CMQ(kafka scala、RabbitMQ Erlang AMQP、RocketMQ Java、ActiveMQ Java、ZeroMQ C、CMQ 腾讯云)(高可用、单点问题、热备；负载均衡、高并发；数据丢失问题、持久化；消息回搠；延时消费)
-缓存、Redis
-云计算、Paas、边缘计算、虚拟化、容器技术、Docker、Kubernetes、Swarm、Mesos、OpenStack、KVM、QEMU、XEN、libvirt、GPU虚拟化、Terraform、Rancher、Serverless、Knative、KubeVirt、Tekton、Envoy
-网络代理、负载均衡、DNS、Nginx、Haproxy、LVS(NAT/DR/TUN)、Keepalived
-日志、Elasticsearch、Logstash、Kibana、FileBeat、Flume
-监控、Prometheus、Grafana、Influxdb、OpenTSDB
-微服务、Service Mesh、Istio、RESTful、gRPC、Etcd、Consul、Zookeeper、Zipkin、Kong、Thrift
-高并发、秒杀(库存,超卖现象,redis乐观锁watch,redis悲观锁 阻塞式(超时) 非阻塞式 setnx expire,mysql乐观锁version,mysql悲观锁select for update用到索引)
-分布式存储、Ceph、GlusterFS、MinIO、Swift、OpenZFS、MogileFS、FastDFS、SeaweedFS、Lustre、MooseFS、S3
-分布式一致性、2PC、3PC、TCC、Paxos、ZAB、Raft、CAP
-大数据、Hadoop、HBase、Hive、Spark、Storm、Flink、Kylin
-网络、TCP、UDP、IP、netlink、netfilter、HTTP、HTTP2、HTTPS、websocket、VPP、DNS、NFS、DHCP、路由器、交换机、iptables、LAN、VLAN、VxLAN、IPsec、SMTP、FTP、TFTP、Telnet、SNMP、IGMP、广播、多播、组播、RIP、CIDR、ICMP、ARP、RARP、BGP、OSPF、NAT、VPN、SDN、NFV、Overlay、Openvswitch、OpenDaylight、OpenFlow、DPDK、SPDK、NUMA、RDMA
-运维、DevOps、Ansible、Jenkins、Nagios、Zabbix
-人工智能、AI、机器学习、深度学习、Numpy、Pandas、Matplotlib、Caffe、Keras、Tensorflow、PyTorch、OpenCV、Scikit-learn、Theano、MXNet
-音视频图片、流媒体、FFmpeg、H.264、H.265、RTSP、RTMP、RTP、RTCP、VOIP、SIP、OpenGL、FLV、MP4、HLV、HLS、WebRTC、MPEG-4、AAC、MP3
-前端技术、js/html/css、Vue、React、Flutter、Electron、小程序
-CDN、搜索引擎、浏览器内核、推荐系统、网络安全、密码学
-磁盘、IDE、SATA、mSATA、M.2、SCSI、PCIe、机械硬盘、SSD、AHCI、NVMe、iSCSI、SAN、NAS、RAID
-容器注册表
-VFS、OpenZFS、XFS、EXT2、EXT3、EXT4、NFS、CIFS、FUSE
-Ramdisk、tmpfs、ramfs
-UnionFS、AUFS、Overlay2、DeviceMapper、Btrfs
-
-后台组件(MySQL、TiDB、MongoDB、Kafka、NSQ、Redis)、Docker、Kubernetes、Ceph、Glusterfs、Istio、Serverless、虚拟化(KVM、QEMU、OpenStack)、大数据(Hadoop、Spark、HBase、Hive、Storm、Flink)、人工智能(机器学习、深度学习、TensorFlow、PyTorch)、Rancher、Terraform、边缘计算、PaaS、LeetCode、图、RTC
-
 1.设计一个系统
 学技术、赚钱
 新颖的
