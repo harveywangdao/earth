@@ -948,9 +948,15 @@
   sudo service ssh start
   
   /etc/init.d/ssh start
-  sudo/etc/init.d/ssh restart
+  sudo /etc/init.d/ssh restart
   
-  /etc/ssh/sshd_config
+  cat >> /etc/ssh/sshd_config << EOF
+  ClientAliveInterval 60
+  ClientAliveCountMax 8888
+  TCPKeepAlive yes
+  EOF
+
+  sudo service ssh restart
 
 20.JDK:
   http://www.oracle.com/technetwork/java/javase/downloads/index.html
@@ -2621,6 +2627,9 @@ Helm:
 
   cd /home/thomas/server/etcd-v3.3.13-linux-amd64
   rm -rf data.etcd
+
+  nohup ./etcd --data-dir=data.etcd >>etcd.log 2>&1 &
+  nohup ./src/redis-server redis.conf &
 
   nohup ./etcd --data-dir=data.etcd --name et-wang-1 \
     --initial-advertise-peer-urls http://192.168.1.7:2380 --listen-peer-urls http://192.168.1.7:2380 \
@@ -4856,3 +4865,21 @@ InfluxDB:
   grpcurl -plaintext -d '{"userID":"18931f8fd0134a35bf7fcd2137254fca", "userInfo":{"name":"xiaowang"}}' 127.0.0.1:6068 user.UserService/ModifyUserInfo
   grpcurl -plaintext -d '{"phoneNumber":"12465465461"}' 127.0.0.1:6068 user.UserService/GetUserIdByPhoneNumber
   grpcurl -plaintext -d '{"name":"xiaoming"}' 127.0.0.1:6068 user.UserService/GetUsersByName
+
+72.小程序
+  1.部署后台
+  2.https部署
+  3.https证书
+  4.域名
+
+  119.23.8.126
+
+  go build -o ping_service fish.go
+  ./ping_service
+  curl http://192.168.1.10:4596/ping
+  curl http://119.23.8.126:4596/ping
+  scp ping_service thomas@119.23.8.126:/home/thomas/server
+
+  appid: wx374a0f37b50eb5ce
+  appsecret: 1ffa637e5224634a85228c825289c548
+  
