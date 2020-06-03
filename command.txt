@@ -163,6 +163,211 @@
   cat /etc/passwd | cut -f 1 -d:
   grep bash /etc/passwd
 
+1.RabbitMQ && Erlang
+#sudo dpkg -i esl-erlang_22.2.2-1~ubuntu~xenial_amd64.deb
+
+wget https://packages.erlang-solutions.com/erlang-solutions_2.0_all.deb
+sudo dpkg -i erlang-solutions_2.0_all.deb
+
+wget https://packages.erlang-solutions.com/ubuntu/erlang_solutions.asc
+sudo apt-key add erlang_solutions.asc
+
+sudo apt-get update
+sudo apt-get install esl-erlang
+
+erl --version
+
+#wget https://packagecloud.io/install/repositories/rabbitmq/rabbitmq-server/script.deb.sh | sudo bash
+sudo dpkg -i rabbitmq-server_3.8.2-1_all.deb
+
+sudo service rabbitmq-server stop
+sudo service rabbitmq-server start
+
+sudo rabbitmqctl status
+sudo rabbitmqctl list_queues
+
+sudo rabbitmq-plugins enable rabbitmq_management
+
+rabbitmqctl list_users
+rabbitmqctl list_user_permissions test
+rabbitmqctl list_permissions -p /test
+rabbitmqctl clear_permissions -p  /test  test
+rabbitmqctl delete_user test
+rabbitmqctl delete_vhost /test
+
+集群部署:
+普通模式:
+sudo vim .erlang.cookie
+chmod 600 .erlang.cookie
+sudo rabbitmqctl stop_app
+sudo rabbitmqctl join_cluster rabbit@node01
+sudo rabbitmqctl start_app
+sudo rabbitmqctl cluster_status
+
+高可用镜像: Quorum Queues:durable replicated raft
+sudo rabbitmqctl set_policy ha-all "^" '{"ha-mode":"all"}'
+
+
+2.Maven
+sudo mkdir /usr/local/maven
+sudo tar -xzvf apache-maven-3.6.3-bin.tar.gz -C /usr/local/maven/
+
+sudo vim /etc/profile
+export M2_HOME=/usr/local/maven/apache-maven-3.6.3
+export CLASSPATH=$CLASSPATH:$M2_HOME/lib
+export PATH=$PATH:$M2_HOME/bin
+
+mkdir -p /home/thomas/java/maven
+sudo vim /usr/local/maven/apache-maven-3.6.3/conf/settings.xml
+<localRepository>/home/thomas/java/maven</localRepository>
+
+<mirror>
+  <id>nexus-aliyun</id>
+  <mirrorOf>central</mirrorOf>
+  <name>Nexus aliyun</name>
+  <url>http://maven.aliyun.com/nexus/content/groups/public</url>
+</mirror>
+
+3.RocketMQ
+mkdir -p /home/thomas/java/rocketmq
+cp rocketmq-all-4.6.0-source-release.zip /home/thomas/java/rocketmq/
+cd /home/thomas/java/rocketmq
+unzip rocketmq-all-4.6.0-source-release.zip
+rm rocketmq-all-4.6.0-source-release.zip
+cd /home/thomas/java/rocketmq/rocketmq-all-4.6.0-source-release
+
+mvn -Prelease-all -DskipTests clean install -U
+
+cd distribution/target/rocketmq-4.6.0/rocketmq-4.6.0
+vim bin/runbroker.sh
+vim bin/runserver.sh
+vim bin/tools.sh
+JAVA_OPT="${JAVA_OPT} -server -Xms128m -Xmx256m -Xmn256m"
+
+nohup sh bin/mqnamesrv &
+nohup sh bin/mqbroker -n localhost:9876 &
+
+export NAMESRV_ADDR=localhost:9876
+sh bin/tools.sh org.apache.rocketmq.example.quickstart.Producer
+sh bin/tools.sh org.apache.rocketmq.example.quickstart.Consumer
+
+sh bin/mqshutdown broker
+sh bin/mqshutdown namesrv
+
+4.tar
+tar xvf file.tar
+tar xzvf file.tar.gz
+tar xjvf file.tar.bz2
+unrar e file.rar
+unzip file.zip
+
+tar cvf xxx.tar dir
+tar czf xxx.tar.gz dir
+tar cjf xxx.tar.bz2 dir
+rar a xxx.rar dir
+zip xxx.zip dir
+
+
+5.apt-get
+cat <<EOF >/etc/apt/sources.list
+deb http://mirrors.aliyun.com/ubuntu/ xenial main
+deb-src http://mirrors.aliyun.com/ubuntu/ xenial main
+deb http://mirrors.aliyun.com/ubuntu/ xenial-updates main
+deb-src http://mirrors.aliyun.com/ubuntu/ xenial-updates main
+deb http://mirrors.aliyun.com/ubuntu/ xenial universe
+deb-src http://mirrors.aliyun.com/ubuntu/ xenial universe
+deb http://mirrors.aliyun.com/ubuntu/ xenial-updates universe
+deb-src http://mirrors.aliyun.com/ubuntu/ xenial-updates universe
+deb http://mirrors.aliyun.com/ubuntu/ xenial-security main
+deb-src http://mirrors.aliyun.com/ubuntu/ xenial-security main
+deb http://mirrors.aliyun.com/ubuntu/ xenial-security universe
+deb-src http://mirrors.aliyun.com/ubuntu/ xenial-security universe
+EOF
+
+6.yum
+mv /etc/yum.repos.d/CentOS-Base.repo /etc/yum.repos.d/CentOS-Base.repo.backup
+wget -O /etc/yum.repos.d/CentOS-Base.repo http://mirrors.aliyun.com/repo/Centos-7.repo
+curl -o /etc/yum.repos.d/CentOS-Base.repo http://mirrors.aliyun.com/repo/Centos-7.repo
+yum clean all
+yum makecache
+yum install -y epel-release
+yum install -y nginx
+yum install -y supervisor
+
+yum repolist all
+yum repolist enabled
+yum list | grep epel-release
+#yum -y update
+#yum -y upgrade
+echo "export LC_ALL=en_US.UTF-8"  >>  /etc/profile
+source /etc/profile
+
+7.sz
+#tar czf lib.tar.gz lib
+#sz lib.tar.gz
+#telnet 10.13.82.101 873
+
+
+8.ls du
+ls -l --block-size=g
+ls -hl
+sudo du -sh
+sudo du -sh * | sort -nr | head
+sudo du -h --max-depth=1
+sudo df -hl
+
+9.pprof
+http://192.168.197.128:6060/debug/pprof/
+http://192.168.197.128:5651/ui/flamegraph
+go tool pprof http://192.168.197.128:6060/debug/pprof/profile?seconds=10
+go tool pprof http://192.168.197.128:6060/debug/pprof/heap
+go tool pprof http://192.168.197.128:6060/debug/pprof/goroutine
+go tool pprof http://192.168.197.128:6060/debug/pprof/block
+go tool pprof -http="0.0.0.0:5651" /home/thomas/golang/src/test/ppproftest/dangdang /home/thomas/pprof/pprof.dangdang.samples.cpu.002.pb.gz
+lsof -i tcp:6060
+
+10.tcpdump
+sudo tcpdump -i ens160
+sudo tcpdump -i ens160 host account.wps.cn
+sudo tcpdump -i ens160 host account.wps.cn and \(node2 or node3\)
+sudo tcpdump -i ens160 dst host account.wps.cn
+
+sudo tcpdump -s 0 -A -i ens160 'tcp[((tcp[12:1] & 0xf0) >> 2):4] = 0x47455420'
+sudo tcpdump -s 0 -A -i ens160 'tcp dst port 80 and (tcp[((tcp[12:1] & 0xf0) >> 2):4] = 0x504f5354)'
+tcpdump过滤HTTP的请求和响应头信息,以及请求和响应消息体信息:
+sudo tcpdump -A -s 0 -i ens160 'tcp port 80 and (((ip[2:2] - ((ip[0]&0xf)<<2)) - ((tcp[12]&0xf0)>>2)) != 0)'
+sudo tcpdump -X -s 0 -i ens160 'tcp port 80 and (((ip[2:2] - ((ip[0]&0xf)<<2)) - ((tcp[12]&0xf0)>>2)) != 0)'
+
+GET
+sudo tcpdump -vvennSs 0 -i ens160 'tcp[((tcp[12:1]&0xf0) >> 2):4]=0x47455420' and host account.wps.cn
+POST
+sudo tcpdump -vvennSs 0 -i ens160 'tcp[((tcp[12:1]&0xf0) >> 2):4]=0x504f5354' and host account.wps.cn
+
+sudo tcpdump -vvennSs 0 -i ens160 \('tcp[((tcp[12:1] & 0xf0) >> 2):4]=0x47455420' or 'tcp[((tcp[12:1]&0xf0) >> 2):4]=0x504f5354'\) and host account.wps.cn
+sudo tcpdump -vvennSs 0 -i ens160 \('tcp[((tcp[12:1] & 0xf0) >> 2):4]=0x47455420' or 'tcp[((tcp[12:1]&0xf0) >> 2):4]=0x504f5354'\) and host 110.43.90.34
+
+nslookup
+nslookup account.wps.cn
+nslookup www.wps.cn
+
+11.openssl
+#openssl genrsa -out server.key 2048
+openssl ecparam -genkey -name secp384r1 -out server.key
+openssl req -new -x509 -sha256 -key server.key -out server.pem -days 36500
+
+openssl genrsa -out ca.key 2048
+openssl req -new -x509 -key ca.key -out ca.pem -days 7200
+
+openssl ecparam -genkey -name secp384r1 -out server.key
+openssl req -new -key server.key -out server.csr
+openssl x509 -req -sha256 -CA ca.pem -CAkey ca.key -CAcreateserial -days 3650 -in server.csr -out server.pem
+
+openssl ecparam -genkey -name secp384r1 -out client.key
+openssl req -new -key client.key -out client.csr
+openssl x509 -req -sha256 -CA ca.pem -CAkey ca.key -CAcreateserial -days 3650 -in client.csr -out client.pem
+
+12.mysql
+mysqldump -u root -p123456 --add-drop-table db1 | mysql -u root -p123456 newdb
 
 
 11.Redis
