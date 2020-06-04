@@ -24,14 +24,14 @@ func main() {
 		fmt.Println("taskid:", c.Param("taskid"))
 		fmt.Println("filename:", c.Param("filename"))
 
-		os.Mkdir("/home/thomas/dd/ss/"+c.Param("taskid"), os.ModePerm)
+		os.Mkdir("/home/thomas/test/files/"+c.Param("taskid"), os.ModePerm)
 
-		if err := c.SaveUploadedFile(file, "/home/thomas/dd/ss/"+c.Param("taskid")+"/"+c.Param("filename")); err != nil {
+		if err := c.SaveUploadedFile(file, "/home/thomas/test/files/"+c.Param("taskid")+"/"+c.Param("filename")); err != nil {
 			c.String(http.StatusBadRequest, "保存失败 Error:%s", err.Error())
 			return
 		}
 
-		data, err := ioutil.ReadFile("/home/thomas/dd/ss/" + c.Param("taskid") + "/" + c.Param("filename"))
+		data, err := ioutil.ReadFile("/home/thomas/test/files/" + c.Param("taskid") + "/" + c.Param("filename"))
 		if err != nil {
 			c.String(http.StatusBadRequest, "读取文件失败")
 			return

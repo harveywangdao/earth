@@ -42,7 +42,7 @@ func main() {
 	fmt.Println(string(data))
 
 	md5Data := md5.Sum(data)
-	req.Header.Set("ss-MD5", base64.StdEncoding.EncodeToString(md5Data[:]))
+	req.Header.Set("file-md5", base64.StdEncoding.EncodeToString(md5Data[:]))
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
