@@ -1,19 +1,75 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"github.com/coreos/etcd/clientv3"
+	"log"
+	"time"
 )
 
-func main() {
-	config := clientv3.Config{
-		Endpoints: []string{"http://192.168.1.10:2764"},
-	}
-	c, err := clientv3.New(config)
+func do1(cli *clientv3.Client) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	putResp, err := cli.Put(ctx, "sample_key", "sample_value")
+	cancel()
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
+		return
+	}
+	log.Printf("%+v\n", *putResp)
+
+	ctx, cancel = context.WithTimeout(context.Background(), 10*time.Second)
+	getResp, err := cli.Get(ctx, "sample_key")
+	cancel()
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	log.Printf("%+v\n", *getResp)
+
+	for _, ev := range getResp.Kvs {
+		log.Printf("%s : %s\n", ev.Key, ev.Value)
+	}
+}
+
+func do2(cli *clientv3.Client) {
+	for i := 0; i < 10; i++ {
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		_, err := cli.Put(ctx, fmt.Sprintf("sample_key_%d", i), "sample_value")
+		cancel()
+		if err != nil {
+			log.Println(err)
+			return
+		}
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	getResp, err := cli.Get(ctx, "sample_key", clientv3.WithPrefix())
+	cancel()
+	if err != nil {
+		log.Println(err)
 		return
 	}
 
-	fmt.Println(c)
+	for _, ev := range getResp.Kvs {
+		log.Printf("%s : %s\n", ev.Key, ev.Value)
+	}
+}
+
+func main() {
+	log.SetFlags(log.Lshortfile | log.LstdFlags)
+
+	config := clientv3.Config{
+		Endpoints: []string{"http://127.0.0.1:2379"},
+	}
+	cli, err := clientv3.New(config)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	defer cli.Close()
+	log.Printf("%+v\n", *cli)
+
+	//do1(cli)
+	do2(cli)
 }

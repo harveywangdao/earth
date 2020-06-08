@@ -23,6 +23,9 @@ openssl req -x509 -new -nodes -key ca.key -subj "/CN=abc.com" -days 5000 -out ca
 openssl genrsa -out server.key 2048
 openssl req -new -key server.key -subj "/CN=localhost" -out server.csr
 openssl x509 -req -in server.csr -CA ca.crt -CAkey ca.key -CAcreateserial -out server.crt -days 5000
+
+openssl x509 -in 4033637_www.wangpear.top.pem -noout -text
+openssl x509 -in 4033637_www.wangpear.top.pem -noout -subject
 */
 
 func handler(w http.ResponseWriter, r *http.Request) {

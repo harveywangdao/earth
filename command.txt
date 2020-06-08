@@ -5077,14 +5077,8 @@ InfluxDB:
   3.https证书
   4.域名
 
-  119.23.8.126
-
-  go build -o ping_service fish.go
-  ./ping_service
-  curl http://192.168.1.10:4596/ping
-  curl http://119.23.8.126:4596/ping
-  scp ping_service thomas@119.23.8.126:/home/thomas/server
+  curl http://119.23.8.126/ping
+  curl https://119.23.8.126/ping
 
   appid: wx374a0f37b50eb5ce
   appsecret: 1ffa637e5224634a85228c825289c548
-  
