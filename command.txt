@@ -5082,3 +5082,10 @@ InfluxDB:
 
   appid: wx374a0f37b50eb5ce
   appsecret: 1ffa637e5224634a85228c825289c548
+
+  go build -o gateway main.go
+  go build -o user main.go
+  go build -o article main.go
+  nohup ./gateway >>gateway.log 2>&1 &
+  nohup ./user >>user.log 2>&1 &
+  nohup ./article >>article.log 2>&1 &
