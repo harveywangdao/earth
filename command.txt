@@ -5071,7 +5071,22 @@ InfluxDB:
   grpcurl -plaintext -d '{"phoneNumber":"12465465461"}' 127.0.0.1:6068 user.UserService/GetUserIdByPhoneNumber
   grpcurl -plaintext -d '{"name":"xiaoming"}' 127.0.0.1:6068 user.UserService/GetUsersByName
 
-72.小程序
+72.memcached
+  tar -xzvf memcached-1.6.6.tar.gz
+  cd memcached-1.6.6
+  sudo apt-get install libevent libevent-dev
+  ./configure && make && make test && sudo make install
+  #sudo apt-get install memcached
+
+  ./memcached -p 11211 -m 64m -vvv
+  ./memcached -p 11211 -m 64m -d
+
+  telnet 192.168.197.128 11211
+  set key01 0 900 7
+  value01
+  get key01
+
+73.小程序
   1.部署后台
   2.https部署
   3.https证书
@@ -5089,3 +5104,15 @@ InfluxDB:
   nohup ./gateway >>gateway.log 2>&1 &
   nohup ./user >>user.log 2>&1 &
   nohup ./article >>article.log 2>&1 &
+
+  独立sql磁盘 mysql
+  独立sql内存 ramsql memsql
+  独立kv磁盘  foundationdb tikv tidis etcd
+  独立kv内存  redis summitdb
+  嵌入sql磁盘 sqlite go-sqlite3
+  嵌入sql内存 genji
+  嵌入kv磁盘  leveldb goleveldb RocksDB Pebble BadgerDB boltdb
+  嵌入kv内存  BuntDB go-memdb map cache
+  
+  工具类 (学习成本低,能够拿来就用)
+  原理类 (需要学原理并实践)
