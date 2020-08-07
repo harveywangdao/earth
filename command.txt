@@ -350,6 +350,125 @@ nslookup
 nslookup account.wps.cn
 nslookup www.wps.cn
 
+sysctl
+sysctl -a
+
+cd /proc/sys
+
+永久修改:
+vim /etc/sysctl.conf
+net.ipv4.ip_forward=1
+sysctl -p
+
+临时修改:
+sysctl -w net.ipv4.ip_forward=1
+echo 1 > /proc/sys/net/ipv4/ip_forward
+
+sysctl -a | grep "net.ipv4.ip_forward"
+
+/proc/sys/net/ipv4/tcp_max_syn_backlog 对于还未获得对方确认的连接请求，可保存在队列中的最大数目。如果服务器经常出现过载，可以尝试增加这个数字
+/proc/sys/net/ipv4/tcp_fin_timeout 本端断开的socket连接，TCP保持在FIN-WAIT-2状态的时间秒,对方可能会断开连接或一直不结束连接或不可预料的进程死亡
+/proc/sys/net/ipv4/tcp_tw_recycle 能够更快地回收TIME-WAIT套接字
+/proc/sys/net/ipv4/tcp_timestamps 启用时间戳,一般不开启
+/proc/sys/net/ipv4/tcp_tw_reuse 表示是否允许将处于TIME-WAIT状态的socket（TIME-WAIT的端口）用于新的TCP连接
+
+http-ping
+
+ulimit
+ulimit -a
+ulimit -n
+进程可以打开的文件数目: ulimit -n 4096
+数据段长度: ulimit -d unlimited
+最大内存大小: ulimit -m unlimited
+堆栈大小: ulimit -s unlimited
+CPU 时间: ulimit -t unlimited
+虚拟内存: ulimit -v unlimited
+-u 用户最多可启动的进程数目
+
+netstat:
+yum install net-tools -y
+apt-get install net-tools -y
+
+netstat -s | grep -i listen
+
+netstat -r 路由信息
+
+traceroute
+sudo apt-get install traceroute
+traceroute www.baidu.com
+traceroute -n -m 5 -q 4 -w 3 www.baidu.com
+
+nslookup
+nslookup
+www.sohu.com
+
+nslookup www.baidu.com
+nslookup www.baidu.com 114.114.114.114
+
+nslookup -qt=type domain [dns-server]
+A 地址记录(Ipv4)
+AAAA 地址记录（Ipv6）
+AFSDB Andrew文件系统数据库服务器记录
+ATMA ATM地址记录
+CNAME 别名记录
+HINFO 硬件配置记录，包括CPU、操作系统信息
+ISDN 域名对应的ISDN号码
+MB 存放指定邮箱的服务器
+MG 邮件组记录
+MINFO 邮件组和邮箱的信息记录
+MR 改名的邮箱记录
+MX 邮件服务器记录
+NS 名字服务器记录
+PTR 反向记录
+RP 负责人记录
+RT 路由穿透记录
+SRV TCP服务器信息记录
+TXT 域名对应的文本信息
+X25 域名对应的X.25地址记录
+
+nslookup -qt=mx www.baidu.com 8.8.8.8
+nslookup -qt=ns www.baidu.com
+nslookup –qt=ptr 14.18.240.22 ???
+
+dig
+dig baidu.com
+dig baidu.com CNAME
+dig @8.8.8.8 abc.filterinto.com
+cat /etc/resolv.conf
+
+dig -x 8.8.8.8 +short
+dig -x 39.156.69.79
+
+dig +trace baidu.com
+dig baidu.com NS +noall +answer
+dig baidu.com ANY +noall +answer
+
+telnet
+yum install telnet –y
+telnet 192.168.1.2 8080
+
+route
+cat /etc/rc.local
+route -n
+
+ffmpeg
+ffmpeg -i wind.mp3 what.mp3
+ffmpeg -i wind.mp3 -f mp3 what.mp3
+ffmpeg -i ./wind.mp3 -f mp3 -acodec libmp3lame ./what.mp3
+ffmpeg -i foo.mp4 foobar.mp3
+ffmpeg -i wind.mp3 what.wav
+ffmpeg -i what.wav wind2.mp3
+
+linux版本
+cat /etc/os-release
+cat /etc/issue
+cat /etc/redhat-release
+cat /proc/version
+lsb_release -a
+cat /etc/lsb-release
+uname -a
+
+
 11.openssl
 #openssl genrsa -out server.key 2048
 openssl ecparam -genkey -name secp384r1 -out server.key
@@ -365,6 +484,49 @@ openssl x509 -req -sha256 -CA ca.pem -CAkey ca.key -CAcreateserial -days 3650 -i
 openssl ecparam -genkey -name secp384r1 -out client.key
 openssl req -new -key client.key -out client.csr
 openssl x509 -req -sha256 -CA ca.pem -CAkey ca.key -CAcreateserial -days 3650 -in client.csr -out client.pem
+
+keytool -genkey -alias test -keyalg RSA -keystore testKeyStore.jks -validity 3650 -keysize 2048
+keytool -list  -v -keystore testKeyStore.jks
+keytool -export -alias test -keystore testKeyStore.jks -file testKeyStore.crt
+keytool -export -alias test -keystore testKeyStore.jks -rfc -file testKeyStorePem.crt
+keytool -alias test -v -importkeystore -srckeystore testKeyStore.jks -srcstoretype jks -destkeystore testKeyStore.pfx -deststoretype pkcs12
+openssl pkcs12 -in testKeyStore.pfx -nocerts -nodes -out testKeyStore.key
+
+keytool -genkey -alias test -keysize 2048 -validity 3650 -keyalg RSA -dname "CN=Aclie, OU=Developer,O=Iwgame, L=Shanghai, S=Shanghai, C=CH" -keypass 123456 -storepass 123456 -keystore clientKeys.jks
+keytool -export -alias test -keystore clientKeys.jks -file client.cer -storepass 123456
+keytool -export -alias test -keystore clientKeys.jks -rfc -file clientpem.cer -storepass 123456
+
+keytool -genkey -alias test -keysize 2048 -validity 3650 -keyalg RSA -dname "CN=Aclie, OU=Developer,O=Iwgame, L=Shanghai, S=Shanghai, C=CH" -keypass 123456 -storepass 123456 -keystore serverKeys.jks
+keytool -export -alias test -keystore serverKeys.jks -file server.cer -storepass 123456
+keytool -export -alias test -keystore serverKeys.jks -rfc -file serverpem.cer -storepass 123456
+
+keytool -import -alias test -keystore clientTrust.jks -file server.cer -keypass 123456 -storepass 123456
+keytool -import -alias test -keystore serverTrust.jks -file client.cer -keypass 123456 -storepass 123456
+
+keytool -genkey -alias test -keypass 123456 -keyalg RSA -keysize 1024 -validity 120 -storetype PKCS12 -keystore client.keystore -storepass 123456
+keytool -export -alias test -keystore client.keystore -storetype PKCS12 -keypass 123456 -file client.cer
+keytool -import -v -file client.cer -keystore server.keystore -storepass 123456
+
+keytool -genkeypair -alias ddssingsong -keyalg RSA -keysize 2048 -keypass 123456 -sigalg SHA256withRSA -dname "cn=www.ddssingsong.com,ou=xxx,o=xxx,l=Beijing,st=Beijing,c=CN" -validity 3650 -keystore ddssingsong.p12 -storetype PKCS12 -storepass 123456
+keytool -list -v -keystore ddssingsong.p12 -storepass 123456
+keytool -list -rfc -keystore ddssingsong.p12 -storepass 123456
+keytool -export -alias ddssingsong -keystore ddssingsong.p12 -file rootca.crt -storepass 123456
+keytool -printcert -file rootca.crt
+
+生成请求证书:
+keytool -certreq -keyalg RSA -alias ddssingsong -keystore ddssingsong.p12 -storetype PKCS12 -storepass 123456 -file certreq.csr
+keytool -printcertreq -file certreq.csr
+
+openssl s_server -msg -verify -tls1_2 -state -cert server.crt -key server.key -accept 18444
+openssl s_client -msg -verify -tls1_2 -state -showcerts -cert server.crt -key server.key -connect localhost:18444
+
+openssl genrsa -out client.key 2048
+openssl req -new -key client.key -out client.csr
+openssl x509 -req -days 365 -in client.csr -signkey client.key -out client.crt
+openssl genrsa -out ca.key 2048
+openssl req -x509 -new -nodes -key ca.key -subj "/CN=abc.com" -days 5000 -out ca.crt
+openssl req -new -x509 -newkey rsa:2048 -keyout client.key -out client.crt
+
 
 12.mysql
 mysqldump -u root -p123456 --add-drop-table db1 | mysql -u root -p123456 newdb
@@ -1648,6 +1810,83 @@ mysqldump -u root -p123456 --add-drop-table db1 | mysql -u root -p123456 newdb
   ./zkServer.sh status
   ./zkServer.sh stop
 
+  cp conf/zoo_sample.cfg conf/zoo.cfg
+  vim conf/zoo.cfg
+  dataDir=/home/thomas/server/zookeeper/data
+  dataLogDir=/home/thomas/server/zookeeper/logs
+  server.1=localhost:2888:3888
+  clientPort=2181
+  admin.enableServer=false
+  #admin.serverPort=8499
+  secureClientPort=2281
+
+  mkdir data logs
+  echo 1 >> data/myid
+
+  ./bin/zkServer.sh start
+  ./bin/zkServer.sh status
+  ./bin/zkServer.sh stop
+  ./bin/zkCli.sh -server localhost:2181
+  ./bin/zkCli.sh -server localhost:2281
+
+  create /dubbo 1
+  create /dubbo/apple 1
+  create /dubbo/apple/haha 1
+
+  create /dubbo/apple/haha/a 1
+  delete /dubbo/apple/haha/a
+
+  ls /dubbo/apple/haha
+
+  world:
+  setAcl /dubbo/apple/haha world:anyone:cdrwa
+
+  super:超级管理员
+  ip:
+  setAcl /dubbo/apple/haha ip:192.168.197.128:cdrwa
+
+  auth:
+  addauth digest xiaoming:xiaohong-pw
+  setAcl /dubbo/apple/haha auth:xiaoming:xiaohong-pw:cdrwa
+
+  digest:
+  addauth digest xiaoming:xiaohong-pw
+  echo -n xiaoming:xiaohong-pw | openssl dgst -binary -sha1 | openssl base64
+  setAcl /dubbo/apple/haha digest:xiaoming:kwGy568vH63lusu4sj65Alb13ms=:cdrwa
+  getAcl /dubbo/apple/haha
+
+  vim bin/zkServer.sh
+  export SERVER_JVMFLAGS="
+  -Dzookeeper.serverCnxnFactory=org.apache.zookeeper.server.NettyServerCnxnFactory
+  -Dzookeeper.ssl.keyStore.location=/home/thomas/server/zookeeper/ca/testKeyStore.jks 
+  -Dzookeeper.ssl.keyStore.password=testpass 
+  -Dzookeeper.ssl.trustStore.location=/home/thomas/server/zookeeper/ca/testTrustStore.jks 
+  -Dzookeeper.ssl.trustStore.password=testpass"
+
+  vim bin/zkCli.sh
+  export CLIENT_JVMFLAGS="
+  -Dzookeeper.clientCnxnSocket=org.apache.zookeeper.ClientCnxnSocketNetty 
+  -Dzookeeper.client.secure=true 
+  -Dzookeeper.ssl.keyStore.location=/home/thomas/server/zookeeper/ca/testKeyStore.jks 
+  -Dzookeeper.ssl.keyStore.password=testpass 
+  -Dzookeeper.ssl.trustStore.location=/home/thomas/server/zookeeper/ca/testTrustStore.jks 
+  -Dzookeeper.ssl.trustStore.password=testpass"
+
+  生成zk证书 testKeyStore.jks 和 testTrustStore.jks:
+  keytool -genkey -alias test -keysize 2048 -validity 3650 -keyalg RSA -dname "CN=localhost, OU=ZooKeeper, O=Apache, L=Unknown, ST=Unknown, C=Unknown" -keypass testpass -storepass testpass -keystore testKeyStore.jks
+  keytool -export -alias test -keystore testKeyStore.jks -file testKeyStore.cer -storepass testpass
+  keytool -import -alias test -keystore testTrustStore.jks -file testKeyStore.cer -keypass testpass -storepass testpass
+  keytool -list -v -keystore testKeyStore.jks -storepass testpass
+
+  通过testKeyStore.jks生成私钥和证书:
+  keytool -export -alias test -keystore testKeyStore.jks -rfc -file testKeyStore.crt -storepass testpass
+  keytool -alias test -importkeystore -srckeystore testKeyStore.jks -destkeystore testKeyStore.pfx -deststoretype pkcs12
+  openssl pkcs12 -in testKeyStore.pfx -nocerts -nodes -out testKeyStore.key
+  openssl rsa -in testKeyStore.key -check  输出到stdout复制
+
+  keytool --list -keystore testKeyStore.jks -storepass testpass
+  keytool --list -rfc -keystore testKeyStore.jks -storepass testpass
+  keytool --list -rfc -keystore testTrustStore.jks -storepass testpass
 
 29.kafka
   tar -xzvf kafka_2.12-1.0.0.tgz -C /home/thomas/server/
@@ -1664,6 +1903,8 @@ mysqldump -u root -p123456 --add-drop-table db1 | mysql -u root -p123456 newdb
 
   bin/kafka-console-producer.sh --broker-list localhost:9092 --topic my-replicated-topic
   bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --from-beginning --topic my-replicated-topic
+
+  kafka-console-consumer.sh --bootstrap-server kafka:9092 --from-beginning --topic test --group group01
 
   vim server.properties
   vim zookeeper.properties
@@ -1690,14 +1931,19 @@ mysqldump -u root -p123456 --add-drop-table db1 | mysql -u root -p123456 newdb
   broker.id=1
   listeners=PLAINTEXT://192.168.1.7:9092
   zookeeper.connect=192.168.1.7:2181,192.168.1.10:2181,192.168.1.11:2181
+  log.dirs=/home/thomas/server/kafka/data
 
   broker.id=2
   listeners=PLAINTEXT://192.168.1.10:9092
   zookeeper.connect=192.168.1.7:2181,192.168.1.10:2181,192.168.1.11:2181
+  log.dirs=/home/thomas/server/kafka/data
 
   broker.id=3
   listeners=PLAINTEXT://192.168.1.11:9092
   zookeeper.connect=192.168.1.7:2181,192.168.1.10:2181,192.168.1.11:2181
+  log.dirs=/home/thomas/server/kafka/data
+
+  mkdir data
 
   cd /home/thomas/server/kafka_2.12-2.2.1/bin
   ./kafka-server-start.sh -daemon ../config/server.properties
@@ -1709,6 +1955,108 @@ mysqldump -u root -p123456 --add-drop-table db1 | mysql -u root -p123456 newdb
 
   ./kafka-consumer-groups.sh --new-consumer --bootstrap-server 192.168.1.7:9092 --list
   ./kafka-consumer-groups.sh --new-consumer --bootstrap-server 192.168.1.7:9092 --group groupid1 --describe
+  ./kafka-consumer-groups.sh --bootstrap-server 192.168.1.7:9092 --describe --group groupid1 --state
+  ./kafka-consumer-groups.sh --bootstrap-server 192.168.1.7:9092 --describe --group groupid1 --members
+
+
+  ./bin/kafka-server-start.sh -daemon config/server.properties
+
+  ./bin/kafka-topics.sh --create --zookeeper 192.168.197.128:2181 --replication-factor 1 --partitions 3 --topic xiaoming
+  ./bin/kafka-console-producer.sh --broker-list 192.168.197.128:9092 --topic xiaoming
+
+  ./bin/kafka-topics.sh --zookeeper 192.168.197.128:2181 --list
+  ./bin/kafka-topics.sh --zookeeper 192.168.197.128:2181 --topic xiaoming --describe
+  ./bin/kafka-topics.sh --zookeeper 192.168.197.128:2181 --describe --under-replicated-partitions
+
+  ./bin/kafka-console-consumer.sh --bootstrap-server 192.168.197.128:9092 --from-beginning --topic xiaoming
+  ./bin/kafka-console-consumer.sh --bootstrap-server 192.168.197.128:9092 --topic xiaoming
+  ./bin/kafka-console-consumer.sh --bootstrap-server 192.168.197.128:9092 --from-beginning --topic xiaoming --group groupaa01
+
+  ./bin/kafka-consumer-groups.sh --bootstrap-server 192.168.197.128:9092 --list
+  ./bin/kafka-consumer-groups.sh --bootstrap-server 192.168.197.128:9092 --group groupaa01 --describe
+
+  ./bin/kafka-run-class.sh kafka.tools.GetOffsetShell --broker-list 192.168.197.128:9092 --topic xiaoming
+
+  ./bin/kafka-console-consumer.sh --bootstrap-server 192.168.197.128:9092 --from-beginning --topic __consumer_offsets --formatter "kafka.coordinator.group.GroupMetadataManager\$OffsetsMessageFormatter"
+
+  ./bin/kafka-server-stop.sh
+
+  get /kafka/consumers/zoo-consumer-group/offsets/my-topic/0
+
+  ./bin/kafka-configs.sh --zookeeper localhost:2182 --alter --add-config 'SCRAM-SHA-256=[iterations=8192,password=alice-secret],SCRAM-SHA-512=[password=alice-secret]' --entity-type users --entity-name alice
+  ./bin/kafka-configs.sh --zookeeper localhost:2182 --describe --entity-type users --entity-name alice
+  ./bin/kafka-configs.sh --zookeeper localhost:2182 --alter --add-config 'SCRAM-SHA-256=[password=admin-secret],SCRAM-SHA-512=[password=admin-secret]' --entity-type users --entity-name admin
+  ./bin/kafka-configs.sh --zookeeper localhost:2182 --alter --delete-config 'SCRAM-SHA-512' --entity-type users --entity-name alice
+
+
+  vim config/kafka_server_jaas.conf
+  KafkaServer {
+          org.apache.kafka.common.security.scram.ScramLoginModule required
+          username="admin"
+          password="admin-secret";
+      };
+
+  vim bin/kafka-server-start.sh
+  #exec $base_dir/kafka-run-class.sh $EXTRA_ARGS kafka.Kafka "$@"
+  exec $base_dir/kafka-run-class.sh $EXTRA_ARGS -Djava.security.auth.login.config=$base_dir/../config/kafka_server_jaas.conf kafka.Kafka "$@"
+
+  vim config/server.properties
+  listeners=SASL_PLAINTEXT://192.168.197.128:9092
+  security.inter.broker.protocol=SASL_PLAINTEXT
+  sasl.mechanism.inter.broker.protocol=SCRAM-SHA-256 #(or SCRAM-SHA-512)
+  sasl.enabled.mechanisms=SCRAM-SHA-256 #(or SCRAM-SHA-512)
+
+  allow.everyone.if.no.acl.found=false
+  super.users=User:admin
+  authorizer.class.name=kafka.security.auth.SimpleAclAuthorizer
+
+  vim config/kafka_client_jaas_admin.conf
+  KafkaClient {
+    org.apache.kafka.common.security.scram.ScramLoginModule required
+    username="admin"
+    password="admin-secret";
+  };
+
+  vim config/producer.properties
+  vim config/consumer.properties
+  security.protocol=SASL_PLAINTEXT
+  sasl.mechanism=SCRAM-SHA-256
+
+  vim bin/kafka-console-producer.sh
+  #exec $(dirname $0)/kafka-run-class.sh kafka.tools.ConsoleProducer "$@"
+  exec $(dirname $0)/kafka-run-class.sh -Djava.security.auth.login.config=$(dirname $0)/../config/kafka_client_jaas_admin.conf kafka.tools.ConsoleProducer "$@"
+
+  vim bin/kafka-console-consumer.sh
+  #exec $(dirname $0)/kafka-run-class.sh kafka.tools.ConsoleConsumer "$@"
+  exec $(dirname $0)/kafka-run-class.sh -Djava.security.auth.login.config=$(dirname $0)/../config/kafka_client_jaas_admin.conf kafka.tools.ConsoleConsumer "$@"
+
+  ./bin/kafka-console-producer.sh --broker-list 192.168.197.128:9092 --topic xiaoming --producer.config config/producer.properties
+  ./bin/kafka-console-consumer.sh --bootstrap-server 192.168.197.128:9092 --from-beginning --topic xiaoming --consumer.config config/consumer.properties
+
+  vim config/kafka_client_jaas_alice.conf
+  KafkaClient {
+    org.apache.kafka.common.security.scram.ScramLoginModule required
+    username="alice"
+    password="alice-secret";
+  };
+
+  cp bin/kafka-console-producer.sh bin/kafka-console-producer-alice.sh
+  cp bin/kafka-console-consumer.sh bin/kafka-console-consumer-alice.sh
+  vim bin/kafka-console-producer-alice.sh
+  exec $(dirname $0)/kafka-run-class.sh -Djava.security.auth.login.config=$(dirname $0)/../config/kafka_client_jaas_alice.conf kafka.tools.ConsoleProducer "$@"
+
+  vim bin/kafka-console-consumer-alice.sh
+  exec $(dirname $0)/kafka-run-class.sh -Djava.security.auth.login.config=$(dirname $0)/../config/kafka_client_jaas_alice.conf kafka.tools.ConsoleConsumer "$@"
+
+  ./bin/kafka-acls.sh --authorizer kafka.security.auth.SimpleAclAuthorizer --authorizer-properties zookeeper.connect=localhost:2182 --add --allow-principal User:alice --operation All --topic xiaoming
+  ./bin/kafka-acls.sh --authorizer kafka.security.auth.SimpleAclAuthorizer --authorizer-properties zookeeper.connect=localhost:2182 --add --allow-principal User:alice --operation All --group test-consumer-group
+  ./bin/kafka-acls.sh --authorizer kafka.security.auth.SimpleAclAuthorizer --authorizer-properties zookeeper.connect=localhost:2182 --add --allow-principal User:alice --operation All --group apple-group-03
+
+  ./bin/kafka-acls.sh --authorizer kafka.security.auth.SimpleAclAuthorizer --authorizer-properties zookeeper.connect=localhost:2182 --list
+  ./bin/kafka-acls.sh --authorizer kafka.security.auth.SimpleAclAuthorizer --authorizer-properties zookeeper.connect=localhost:2182 --remove --allow-principal User:alice --operation Read --topic xiaoming --allow-host *
+
+  ./bin/kafka-console-producer-alice.sh --broker-list 192.168.197.128:9092 --topic xiaoming --producer.config config/producer.properties
+  ./bin/kafka-console-consumer-alice.sh --bootstrap-server 192.168.197.128:9092 --from-beginning --topic xiaoming --consumer.config config/consumer.properties
 
 30.netstat
   netstat -a
