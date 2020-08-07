@@ -5105,12 +5105,12 @@ InfluxDB:
   nohup ./user >>user.log 2>&1 &
   nohup ./article >>article.log 2>&1 &
 
-  独立sql磁盘 mysql
-  独立sql内存 ramsql memsql
+  独立sql磁盘 mysql rqlite
+  独立sql内存 rqlite ramsql memsql
   独立kv磁盘  foundationdb tikv tidis etcd
   独立kv内存  redis summitdb
   嵌入sql磁盘 sqlite go-sqlite3
-  嵌入sql内存 genji
+  嵌入sql内存 genji go-memdb
   嵌入kv磁盘  leveldb goleveldb RocksDB Pebble BadgerDB boltdb
   嵌入kv内存  BuntDB go-memdb map cache
   
