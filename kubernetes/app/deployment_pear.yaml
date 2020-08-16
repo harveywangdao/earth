@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pear-test
+  namespace: pear-test-ns
+  labels:
+    app: pear
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: pear
+  template:
+    metadata:
+      namespace: pear-test-ns
+      labels:
+        app: pear
+    spec:
+      containers:
+        - name: pear-test
+          image: ants/pear:v3.0
+          ports:
+            - containerPort: 6666

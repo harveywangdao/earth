@@ -2597,7 +2597,7 @@ mysqldump -u root -p123456 --add-drop-table db1 | mysql -u root -p123456 newdb
   #kubectl drain slave01 --delete-local-data --force --ignore-daemonsets
   #kubectl delete node slave01
 
-  sudo kubeadm reset
+  sudo kubeadm reset --force
   sudo rm -rf /etc/kubernetes
   sudo rm -rf /var/lib/kubelet
   rm -rf $HOME/.helm
@@ -4775,10 +4775,20 @@ InfluxDB:
   curl -XGET http://127.0.0.1:5000/v2/_catalog
   sudo vim /etc/docker/daemon.json
   {
-    "insecure-registries": ["192.168.1.13:5000"]
+    "insecure-registries": [
+      "192.168.1.13:5000",
+    ],
+    "registry-mirrors": [
+      "https://docker.mirrors.ustc.edu.cn",
+      "http://ovfftd6p.mirror.aliyuncs.com",
+      "https://registry.docker-cn.com",
+      "http://hub-mirror.c.163.com",
+      "https://cr.console.aliyun.com"
+    ]
   }
-
   sudo service docker restart
+  
+  docker pull hub.c.163.com/library/ubuntu:latest
 
 68.Docker网络
   bridge,overlay,host,macvlan,none
@@ -4842,6 +4852,49 @@ InfluxDB:
   docker exec -it centos02 /bin/bash
   ip addr
   docker rm -f centos01 centos02
+
+  bridge default: 不能用名字访问
+  docker run -it --rm --name busybox01 busybox:latest sh
+  docker run -it --rm --name busybox02 busybox:latest sh
+
+  bridge private: 可以用名字访问
+  docker network create --driver bridge bridge02
+  docker run -it --rm --name busybox03 --network bridge02 busybox:latest sh
+  docker run -it --rm --name busybox04 --network bridge02 busybox:latest sh
+  sudo brctl show
+
+  host:
+  docker run -it --rm --name busybox05 --net=host busybox:latest sh
+  none:
+  docker run -it --rm --name busybox06 --net=none busybox:latest sh
+  container:
+  docker run -it --rm --name busybox07 --net=container:busybox03  busybox:latest sh
+
+  --link:
+  docker run -it --rm --name busybox08 --link busybox01 busybox:latest sh
+  docker run -it --rm --name busybox09 --network bridge02 --link busybox03 busybox:latest sh
+
+  docker network connect bridge02 busybox02
+  docker network inspect bridge02
+
+  -p 指定端口
+  -P 随机端口 要有EXPOSE
+
+  无EXPOSE:
+  docker build -t ants/pear:v2.0 .
+  docker run -d --name pear01 --net=host ants/pear:v2.0    能自动监听主机端口6666
+  docker run -d --name pear02 ants/pear:v2.0               不能
+  docker run -d --name pear03 -p 7777:6666 ants/pear:v2.0  能自动监听主机端口7777
+  docker run -d --name pear04 -P ants/pear:v2.0            不能
+
+  有EXPOSE:
+  docker run -d --name pear05 --net=host ants/pear:v1.0    能自动监听主机端口6666
+  docker run -d --name pear06 ants/pear:v1.0               不能
+  docker run -d --name pear07 -p 8888:6666 ants/pear:v1.0  能自动监听主机端口8888
+  docker run -d --name pear08 -P ants/pear:v1.0            监听主机随机端口
+
+  docker run -d --name pear09 -p 6666 ants/pear:v1.0       监听主机随机端口
+  docker run -d --name pear10 -p 6666 ants/pear:v2.0       监听主机随机端口
 
   macvlan:
   自定义容器的mac地址,将容器作为硬件设备,最佳实践是想将容器直接连接到物理网络时,可以考虑使用macvlan的方案
@@ -5237,6 +5290,16 @@ InfluxDB:
 
   tap/tun: 虚拟网卡,字符设备驱动和网卡驱动,/dev/tap*,/dev/net/tun,用户空间通过tap/tun与内核交互,用于隧道通信VPN/tunnel/IPsec/openvpn/VTun,tap是二层设备处理以太网帧,tun是三层设备处理IP数据包
 
+  sudo ip tunnel help
+  sudo modinfo tun
+  sudo lsmod | grep tun
+  sudo lsmod | grep ip
+  sudo modprobe tun
+  sudo modprobe ipip
+  sudo mknod /dev/net/tun c 10 200
+  sudo ip addr show
+
+
   CNM(Container Network Model):
   network/sandbox/endpoint
   CNI(Container Networking Interface):
@@ -5270,20 +5333,18 @@ InfluxDB:
   kubectl exec -it -n kube-system kube-flannel-ds-amd64-5mqv7 -- bash
 
   kubectl exec -it -n kube-system etcd-node02 -c etcd -- sh
+  sudo su
+  cd /home/thomas/server/etcd-v3.3.13-linux-amd64
   export ETCDCTL_API=3
-  apt-get update
-  apt-get install net-tools
-  etcdctl --cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/peer.crt --key=/etc/kubernetes/pki/etcd/peer.key get /registry/namespaces/default -w=json | jq .
-  etcdctl --cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/peer.crt --key=/etc/kubernetes/pki/etcd/peer.key member list
-  etcdctl --cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/peer.crt --key=/etc/kubernetes/pki/etcd/peer.key get /coreos.com/network/subnets --prefix
-  etcdctl --cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/peer.crt --key=/etc/kubernetes/pki/etcd/peer.key get / --prefix --keys-only=true | grep net
-  etcdctl --cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/peer.crt --key=/etc/kubernetes/pki/etcd/peer.key get /registry/services/endpoints/default/kubernetes -w=json | jq .
+  ./etcdctl --cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/peer.crt --key=/etc/kubernetes/pki/etcd/peer.key get / --prefix --keys-only | grep -Ev "^$" | grep "flannel"
 
+  ./etcdctl --cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/peer.crt --key=/etc/kubernetes/pki/etcd/peer.key get /registry/configmaps/kube-system/kube-flannel-cfg -w=json | jq .
 
-  #sudo su
-  #cd /home/thomas/server/etcd-v3.3.13-linux-amd64
-  #export ETCDCTL_API=3
-  #./etcdctl --cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/peer.crt --key=/etc/kubernetes/pki/etcd/peer.key get /registry/namespaces/default -w=json | jq .
+  ./etcdctl --cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/peer.crt --key=/etc/kubernetes/pki/etcd/peer.key get /registry/namespaces/default -w=json | jq .
+  ./etcdctl --cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/peer.crt --key=/etc/kubernetes/pki/etcd/peer.key member list
+  ./etcdctl --cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/peer.crt --key=/etc/kubernetes/pki/etcd/peer.key get /coreos.com/network/subnets --prefix
+  ./etcdctl --cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/peer.crt --key=/etc/kubernetes/pki/etcd/peer.key get / --prefix --keys-only=true | grep net
+  ./etcdctl --cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/peer.crt --key=/etc/kubernetes/pki/etcd/peer.key get /registry/services/endpoints/default/kubernetes -w=json | jq .
 
   UDP:
   两次用户态内核态切换,flannel0是TUN设备
@@ -5297,6 +5358,7 @@ InfluxDB:
   sudo bridge fdb show dev flannel.1
   sudo netstat -anp | grep 8472
   ip -d link show flannel.1
+  ip neigh show dev flannel.1
 
   容器A -- cni0 -- flannel.1 -- eth0 
   eth0 -- flannel.1 -- cni0 -- 容器B

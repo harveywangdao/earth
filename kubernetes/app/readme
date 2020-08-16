@@ -1,0 +1,68 @@
+docker save -o ubuntu.tar ubuntu:latest
+scp ubuntu.tar thomas@node01:/home/thomas/images
+scp ubuntu.tar thomas@node02:/home/thomas/images
+scp ubuntu.tar thomas@node04:/home/thomas/images
+docker load -i ubuntu.tar
+
+CGO_ENABLED=0 go build -o pear main.go
+docker build -t ants/pear:v1.0 .
+
+docker save -o pear.tar ants/pear:v1.0
+scp pear.tar thomas@node02:/home/thomas/images
+scp pear.tar thomas@node04:/home/thomas/images
+docker load -i pear.tar
+
+scp * thomas@node02:/home/thomas/project
+
+kubectl create namespace pear-test-ns
+kubectl apply -f deployment_pear.yaml
+kubectl apply -f service_pear.yaml
+
+kubectl get nodes
+kubectl get pods --all-namespaces -o wide
+kubectl get deployment --all-namespaces -o wide
+kubectl get service --all-namespaces -o wide
+kubectl get configmaps --all-namespaces
+kubectl get configmaps -n kube-system kube-flannel-cfg -o yaml
+
+kubectl exec -it -n pear-test-ns pear-deployment-ff6c445b9-28tjk -- sh
+curl http://192.168.1.10:30006/ping
+
+kubectl get configmaps kube-proxy -o yaml -n kube-system | grep mode
+cat  /etc/cni/net.d/10-flannel.conflist
+
+"Directrouting": true
+
+sudo brctl show
+sudo ip route show
+sudo route -n
+
+kubectl exec -it -n pear-test-ns pear-test-fcfdc7dc8-86jrx -- sh
+kubectl exec -it -n pear-test-ns pear-test-fcfdc7dc8-mw9r6 -- sh
+kubectl exec -it -n pear-test-ns pear-test-fcfdc7dc8-r9xb8 -- sh
+
+Vxlan:
+容器A -- cni0 -- flannel.1 -- ens33 
+ens33 -- flannel.1 -- cni0 -- 容器B
+
+sudo tcpdump -i veth198a61d0 -p icmp -nn
+sudo tcpdump -i cni0 -p icmp -nn
+sudo tcpdump -i flannel.1 -p icmp -nn
+sudo tcpdump -i ens33 -p udp -nn
+
+Directrouting:
+容器A -- cni0 -- ens33 
+ens33 -- cni0 -- 容器B
+
+sudo tcpdump -i veth198a61d0 -p icmp -nn
+sudo tcpdump -i cni0 -p icmp -nn
+#sudo tcpdump -i flannel.1 -p icmp -nn
+sudo tcpdump -i ens33 -p icmp -nn
+
+host-gw:
+容器A -- cni0 -- ens33 
+ens33 -- cni0 -- 容器B
+
+sudo tcpdump -i veth8da8c1c0 -p icmp -nn
+sudo tcpdump -i cni0 -p icmp -nn
+sudo tcpdump -i ens33 -p icmp -nn
