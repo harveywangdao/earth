@@ -15,6 +15,8 @@ docker load -i pear.tar
 scp * thomas@node02:/home/thomas/project
 
 kubectl create namespace pear-test-ns
+kubectl apply -f pv_pear.yaml
+kubectl apply -f pvc_pear.yaml
 kubectl apply -f deployment_pear.yaml
 kubectl apply -f service_pear.yaml
 
@@ -25,44 +27,60 @@ kubectl get service --all-namespaces -o wide
 kubectl get configmaps --all-namespaces
 kubectl get configmaps -n kube-system kube-flannel-cfg -o yaml
 
+kubectl get pv --all-namespaces -o wide
+kubectl get pvc --all-namespaces -o wide
+
+kubectl delete -f deployment_pear.yaml
+kubectl delete -f pvc_pear.yaml
+kubectl delete -f pv_pear.yaml
+kubectl delete -f service_pear.yaml
+
 kubectl exec -it -n pear-test-ns pear-deployment-ff6c445b9-28tjk -- sh
 curl http://192.168.1.10:30006/ping
 
-kubectl get configmaps kube-proxy -o yaml -n kube-system | grep mode
-cat  /etc/cni/net.d/10-flannel.conflist
+Secret:
+kubectl get secrets --all-namespaces -o wide
 
-"Directrouting": true
+Opaque:
+echo -n "xiaoming" | base64
+echo -n "123456" | base64
+echo 'eGlhb2hvbmc=' | base64 --decode
 
-sudo brctl show
-sudo ip route show
-sudo route -n
+kubectl apply -f secrets.yaml
+kubectl create secret generic mysecret2 --from-file=./username.txt --from-file=pw.txt
+kubectl create secret generic mysecret3 --from-file=username=./username.txt --from-file=password=./pw.txt
+kubectl describe secrets/mysecret2
+kubectl get secret mysecret2 -o yaml
 
-kubectl exec -it -n pear-test-ns pear-test-fcfdc7dc8-86jrx -- sh
-kubectl exec -it -n pear-test-ns pear-test-fcfdc7dc8-mw9r6 -- sh
-kubectl exec -it -n pear-test-ns pear-test-fcfdc7dc8-r9xb8 -- sh
 
-Vxlan:
-容器A -- cni0 -- flannel.1 -- ens33 
-ens33 -- flannel.1 -- cni0 -- 容器B
+ServiceAccount:
+kubectl create serviceaccount pear-sa -n pear-test-ns
+kubectl get serviceaccount --all-namespaces -o wide
+kubectl get serviceaccount -n pear-test-ns -o wide
 
-sudo tcpdump -i veth198a61d0 -p icmp -nn
-sudo tcpdump -i cni0 -p icmp -nn
-sudo tcpdump -i flannel.1 -p icmp -nn
-sudo tcpdump -i ens33 -p udp -nn
+kubectl describe serviceaccounts default -n pear-test-ns
+kubectl describe serviceaccounts pear-sa -n pear-test-ns
 
-Directrouting:
-容器A -- cni0 -- ens33 
-ens33 -- cni0 -- 容器B
+kubectl describe pod pear-test-f67464f56-24p8d -n pear-test-ns
 
-sudo tcpdump -i veth198a61d0 -p icmp -nn
-sudo tcpdump -i cni0 -p icmp -nn
-#sudo tcpdump -i flannel.1 -p icmp -nn
-sudo tcpdump -i ens33 -p icmp -nn
+/var/run/secrets/kubernetes.io/serviceaccount
 
-host-gw:
-容器A -- cni0 -- ens33 
-ens33 -- cni0 -- 容器B
+Role:
+kubectl create role pods-reader --verb=get,list,watch --resource=pods --dry-run -o yaml
+kubectl apply -f rbac.yaml
+kubectl get role
+kubectl describe role pods-reader
 
-sudo tcpdump -i veth8da8c1c0 -p icmp -nn
-sudo tcpdump -i cni0 -p icmp -nn
-sudo tcpdump -i ens33 -p icmp -nn
+RoleBinding:
+kubectl create rolebinding magedu-read-pods --role=pods-reader --user=magedu --dry-run -o yaml
+kubectl get rolebindings
+kubectl describe rolebindings magedu-read-pods
+
+ClusterRole:
+
+ClusterRoleBinding:
+
+StorageClass:
+ConfigMap:
+
+kubectl config view

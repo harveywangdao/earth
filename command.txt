@@ -5368,6 +5368,38 @@ InfluxDB:
   容器A -- cni0 -- eth0 
   eth0 -- cni0 -- 容器B
 
+  sudo brctl show
+  sudo ip route show
+  sudo route -n
+
+  Vxlan:
+  容器A -- cni0 -- flannel.1 -- ens33 
+  ens33 -- flannel.1 -- cni0 -- 容器B
+
+  sudo tcpdump -i veth198a61d0 -p icmp -nn
+  sudo tcpdump -i cni0 -p icmp -nn
+  sudo tcpdump -i flannel.1 -p icmp -nn
+  sudo tcpdump -i ens33 -p udp -nn
+
+  Directrouting:
+  "Directrouting": true
+
+  容器A -- cni0 -- ens33 
+  ens33 -- cni0 -- 容器B
+
+  sudo tcpdump -i veth198a61d0 -p icmp -nn
+  sudo tcpdump -i cni0 -p icmp -nn
+  #sudo tcpdump -i flannel.1 -p icmp -nn
+  sudo tcpdump -i ens33 -p icmp -nn
+
+  host-gw:
+  容器A -- cni0 -- ens33 
+  ens33 -- cni0 -- 容器B
+
+  sudo tcpdump -i veth8da8c1c0 -p icmp -nn
+  sudo tcpdump -i cni0 -p icmp -nn
+  sudo tcpdump -i ens33 -p icmp -nn
+  
   Calico:
   纯三层,数据包都是通过路由的形式找到对应的主机和容器的,通过BGP 协议来将所有路由同步到所有的机器或数据中心,从而完成整个网络的互联。
   veth pair,其中一端在主机上,另一端在容器的网络命名空间里
@@ -5496,7 +5528,23 @@ InfluxDB:
   value01
   get key01
 
-73.小程序
+73.nfs
+  sudo apt-get install nfs-kernel-server
+  sudo apt-get install nfs-common
+  sudo vim /etc/exports
+  /home/thomas/nfsroot *(rw,sync,no_root_squash)
+
+  sudo /etc/init.d/nfs-kernel-server start
+  sudo /etc/init.d/nfs-kernel-server restart
+
+  sudo mount -t nfs 192.168.1.12:/home/thomas/nfsroot /mnt -o nolock
+  sudo umount /mnt
+
+  sudo exportfs -arv
+  sudo showmount -e
+  nfsstat -s
+
+74.小程序
   1.部署后台
   2.https部署
   3.https证书

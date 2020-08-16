@@ -18,6 +18,41 @@ spec:
     spec:
       containers:
         - name: pear-test
-          image: ants/pear:v3.0
+          image: ants/pear:v5.0
           ports:
             - containerPort: 6666
+          volumeMounts:
+            - mountPath: /data/pear
+              name: pear-volume
+            - mountPath: /data/pear_pvc
+              name: pear-store
+            - mountPath: /data/pear_secret
+              name: pear-secret
+              readOnly: true
+          env:
+            - name: ENV01
+              value: "1"
+            - name: ENV02
+              value: "2"
+            - name: USERNAME1
+              valueFrom:
+                secretKeyRef:
+                  name: mysecret2
+                  key: username
+            - name: PASSWORD1
+              valueFrom:
+                secretKeyRef:
+                  name: mysecret2
+                  key: password
+      volumes:
+        - name: pear-volume
+          hostPath:
+            path: /home/data
+            type: Directory
+        - name: pear-store
+          persistentVolumeClaim:
+            claimName: nfs-pvc
+        - name: pear-secret
+          secret:
+            secretName: mysecret1
+      serviceAccountName: pear-sa
