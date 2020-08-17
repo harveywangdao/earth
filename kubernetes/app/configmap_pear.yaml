@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: myconfig2
+  name: myconfig1
   namespace: pear-test-ns
 data:
   cache_host: memcached-gcxt
@@ -18,7 +18,7 @@ data:
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: myconfig4
+  name: myconfig2
   namespace: pear-test-ns
 data:
   special.how: very

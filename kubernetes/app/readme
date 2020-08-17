@@ -24,7 +24,6 @@ kubectl get nodes
 kubectl get pods --all-namespaces -o wide
 kubectl get deployment --all-namespaces -o wide
 kubectl get service --all-namespaces -o wide
-kubectl get configmaps --all-namespaces
 kubectl get configmaps -n kube-system kube-flannel-cfg -o yaml
 
 kubectl get pv --all-namespaces -o wide
@@ -41,7 +40,6 @@ curl http://192.168.1.10:30006/ping
 Secret:
 kubectl get secrets --all-namespaces -o wide
 
-Opaque:
 echo -n "xiaoming" | base64
 echo -n "123456" | base64
 echo 'eGlhb2hvbmc=' | base64 --decode
@@ -51,6 +49,16 @@ kubectl create secret generic mysecret2 --from-file=./username.txt --from-file=p
 kubectl create secret generic mysecret3 --from-file=username=./username.txt --from-file=password=./pw.txt
 kubectl describe secrets/mysecret2
 kubectl get secret mysecret2 -o yaml
+
+ConfigMap:
+kubectl config view
+kubectl apply -f configmap_pear.yaml
+kubectl create configmap myconfig3 --from-file=./myconfig.yaml -n pear-test-ns
+kubectl create configmap myconfig4 --from-literal=special.how=very --from-literal=special.type=charm -n pear-test-ns
+kubectl get configmaps --all-namespaces
+kubectl get configmaps -n pear-test-ns
+kubectl get configmaps -n pear-test-ns myconfig1 -o yaml
+kubectl delete -f configmap_pear.yaml
 
 
 ServiceAccount:
@@ -80,18 +88,9 @@ kubectl create rolebinding bob-admin-binding --clusterrole=admin --user=bob --na
 kubectl create rolebinding myapp-view-binding --clusterrole=view --serviceaccount=acme:myapp --namespace=acme
 
 ClusterRole:
-
 ClusterRoleBinding:
 kubectl create clusterrolebinding root-cluster-admin-binding --clusterrole=cluster-admin --user=root
 kubectl create clusterrolebinding kubelet-node-binding --clusterrole=system:node --user=kubelet
 kubectl create clusterrolebinding myapp-view-binding --clusterrole=view --serviceaccount=acme:myapp
 
-
 StorageClass:
-
-ConfigMap:
-kubectl config view
-kubectl create configmap myconfig1 --from-file=./myconfig.yaml
-kubectl apply -f configmap_pear.yaml
-kubectl create configmap myconfig3 --from-literal=special.how=very --from-literal=special.type=charm
-kubectl get configmaps myconfig1 -o yaml

@@ -19,6 +19,7 @@ spec:
       containers:
         - name: pear-test
           image: ants/pear:v5.0
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 6666
           volumeMounts:
@@ -31,6 +32,9 @@ spec:
               readOnly: true
             - mountPath: /data/pear_config
               name: pear-config
+              readOnly: true
+            - mountPath: /data/pear_config2
+              name: pear-config2
               readOnly: true
           env:
             - name: ENV01
@@ -50,7 +54,7 @@ spec:
             - name: SPECIAL_LEVEL_KEY
               valueFrom:
                 configMapKeyRef:
-                  name: myconfig4
+                  name: myconfig2
                   key: special.how
       volumes:
         - name: pear-volume
@@ -66,4 +70,7 @@ spec:
         - name: pear-config
           configMap:
             name: myconfig1
+        - name: pear-config2
+          configMap:
+            name: myconfig2
       serviceAccountName: pear-sa
