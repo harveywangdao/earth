@@ -29,6 +29,9 @@ spec:
             - mountPath: /data/pear_secret
               name: pear-secret
               readOnly: true
+            - mountPath: /data/pear_config
+              name: pear-config
+              readOnly: true
           env:
             - name: ENV01
               value: "1"
@@ -44,6 +47,11 @@ spec:
                 secretKeyRef:
                   name: mysecret2
                   key: password
+            - name: SPECIAL_LEVEL_KEY
+              valueFrom:
+                configMapKeyRef:
+                  name: myconfig4
+                  key: special.how
       volumes:
         - name: pear-volume
           hostPath:
@@ -55,4 +63,7 @@ spec:
         - name: pear-secret
           secret:
             secretName: mysecret1
+        - name: pear-config
+          configMap:
+            name: myconfig1
       serviceAccountName: pear-sa

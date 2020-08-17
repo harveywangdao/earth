@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: myconfig2
+  namespace: pear-test-ns
+data:
+  cache_host: memcached-gcxt
+  cache_port: "11211"
+  cache_prefix: gcxt
+  my.cnf: |
+    [mysqld]
+    log-bin = mysql-bin
+  app.properties: |
+    property.1 = value-1
+    property.2 = value-2
+    property.3 = value-3
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: myconfig4
+  namespace: pear-test-ns
+data:
+  special.how: very
+  special.type: charm

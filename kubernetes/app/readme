@@ -76,11 +76,22 @@ kubectl create rolebinding magedu-read-pods --role=pods-reader --user=magedu --d
 kubectl get rolebindings
 kubectl describe rolebindings magedu-read-pods
 
+kubectl create rolebinding bob-admin-binding --clusterrole=admin --user=bob --namespace=acme
+kubectl create rolebinding myapp-view-binding --clusterrole=view --serviceaccount=acme:myapp --namespace=acme
+
 ClusterRole:
 
 ClusterRoleBinding:
+kubectl create clusterrolebinding root-cluster-admin-binding --clusterrole=cluster-admin --user=root
+kubectl create clusterrolebinding kubelet-node-binding --clusterrole=system:node --user=kubelet
+kubectl create clusterrolebinding myapp-view-binding --clusterrole=view --serviceaccount=acme:myapp
+
 
 StorageClass:
-ConfigMap:
 
+ConfigMap:
 kubectl config view
+kubectl create configmap myconfig1 --from-file=./myconfig.yaml
+kubectl apply -f configmap_pear.yaml
+kubectl create configmap myconfig3 --from-literal=special.how=very --from-literal=special.type=charm
+kubectl get configmaps myconfig1 -o yaml

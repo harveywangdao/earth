@@ -2,6 +2,7 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: nfs-client-provisioner
+  namespace: pear-test-ns
 
 ---
 kind: ClusterRole
@@ -33,7 +34,7 @@ metadata:
 subjects:
   - kind: ServiceAccount
     name: nfs-client-provisioner
-    namespace: default
+    namespace: pear-test-ns
 roleRef:
   kind: ClusterRole
   name: nfs-client-provisioner-runner
