@@ -4,13 +4,9 @@ metadata:
   name: nfs-client-provisioner
   labels:
     app: nfs-client-provisioner
-  # replace with namespace where provisioner is deployed
-  namespace: pear-test-ns  #与RBAC文件中的namespace保持一致
+  namespace: default  #与RBAC文件中的namespace保持一致
 spec:
   replicas: 1
-  selector:
-    matchLabels:
-      app: nfs-client-provisioner
   strategy:
     type: Recreate
   selector:
@@ -18,6 +14,7 @@ spec:
       app: nfs-client-provisioner
   template:
     metadata:
+      namespace: default
       labels:
         app: nfs-client-provisioner
     spec:
@@ -25,18 +22,19 @@ spec:
       containers:
         - name: nfs-client-provisioner
           image: quay.io/external_storage/nfs-client-provisioner:latest
+          imagePullPolicy: IfNotPresent
           volumeMounts:
             - name: nfs-client-root
               mountPath: /persistentvolumes
           env:
             - name: PROVISIONER_NAME
-              value: pear-nfs-storage  #provisioner名称,请确保该名称与 nfs-StorageClass.yaml文件中的provisioner名称保持一致
+              value: pear-nfs-storage
             - name: NFS_SERVER
-              value: 192.168.1.12   #NFS Server IP地址
-            - name: NFS_PATH  
-              value: /home/thomas/nfsroot/v1    #NFS挂载卷
+              value: 192.168.1.12
+            - name: NFS_PATH
+              value: /home/thomas/nfsroot/v1
       volumes:
         - name: nfs-client-root
           nfs:
-            server: 192.168.1.12  #NFS Server IP地址
-            path: /home/thomas/nfsroot/v1     #NFS 挂载卷
+            server: 192.168.1.12
+            path: /home/thomas/nfsroot/v1

@@ -3,11 +3,10 @@ kind: PersistentVolumeClaim
 metadata:
   name: nfs-pvc
   namespace: pear-test-ns
-  annotations:
-    volume.beta.kubernetes.io/storage-class: "managed-nfs-storage"   #与nfs-StorageClass.yaml metadata.name保持一致
 spec:
   accessModes:
     - ReadWriteMany
   resources:
     requests:
       storage: 10Mi
+  storageClassName: managed-nfs-storage

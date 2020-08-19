@@ -12,7 +12,7 @@ scp pear.tar thomas@node02:/home/thomas/images
 scp pear.tar thomas@node04:/home/thomas/images
 docker load -i pear.tar
 
-scp * thomas@node02:/home/thomas/project
+scp -r * thomas@node02:/home/thomas/project
 
 kubectl create namespace pear-test-ns
 kubectl apply -f pv_pear.yaml
