@@ -54,7 +54,9 @@ kubectl autoscale deployment nginx-test --min=5 --max=15 --cpu-percent=80
 kubectl autoscale rc foo --max=5 --cpu-percent=80
 
 kubectl scale --current-replicas=2 --replicas=3 deployment/mysql
-kubectl scale --replicas=3 statefulset/web
-kubectl scale --replicas=3 rs/foo
-kubectl scale --replicas=5 rc/foo
+kubectl scale statefulset web --replicas=3
+kubectl scale rs/foo --replicas=3
+kubectl scale rc/foo --replicas=5
 
+<pod-name>.<svc-name>.<namespace>.svc.cluster.local
+web-0.nginx.default.svc.cluster.local
