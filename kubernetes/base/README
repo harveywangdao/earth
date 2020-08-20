@@ -1,0 +1,60 @@
+k8s灰度发布/滚动升级
+1.部署第一版
+kubectl create deployment nginx-test --image=nginx:1.14
+kubectl scale deployment nginx-test --replicas 10
+
+kubectl get pod --all-namespaces -o wide
+kubectl get deployments.apps -o wide
+kubectl get rs -w
+
+2.部署第二版
+kubectl set image deployment/nginx-test nginx=nginx:1.15 --record
+#kubectl edit deployments.apps nginx-test
+
+3.回退到第一版
+kubectl rollout history deployment nginx-test
+kubectl rollout history deployment nginx-test --revision=1
+
+#kubectl rollout undo deployment nginx-test
+kubectl rollout undo deployment nginx-test --to-revision=1
+
+kubectl rollout status deployment nginx-test
+kubectl delete deployment nginx-test
+
+4.文件部署
+kubectl apply -f nginx_v1.yaml --record
+kubectl apply -f nginx_v2.yaml --record
+
+kubectl rollout status deployment nginx-deploy
+kubectl rollout pause deployment nginx-deploy
+kubectl rollout resume deployment nginx-deploy
+
+kubectl rollout history deployment nginx-deploy
+kubectl rollout history deployment nginx-deploy --revision=3
+
+kubectl rollout undo deployment nginx-deploy
+kubectl rollout undo deployment nginx-deploy --to-revision=2
+
+kubectl apply -f rc_v1.yaml
+kubectl rolling-update busybox-rc-v1 -f rc_v2.yaml
+kubectl rolling-update busybox-rc-v1 busybox-rc-v2 --rollback  (正对正在升级的回滚)
+
+kubectl rolling-update frontend-v1 frontend-v2 --image=image:v2
+kubectl rolling-update frontend --image=image:v2
+
+命令创建Deployment
+kubectl create deployment nginx --image=nginx:alpine
+kubectl run nginx --image=nginx --port=5701 --env="DNS_DOMAIN=cluster" --replicas=5
+kubectl run -it --rm --image=mysql:5.6 --restart=Never mysql-client -- mysql -h mysql -ppassword
+
+kubectl expose deployment nginx --port=80 --type=NodePort
+kubectl expose rc nginx --port=80 --target-port=8000
+
+kubectl autoscale deployment nginx-test --min=5 --max=15 --cpu-percent=80
+kubectl autoscale rc foo --max=5 --cpu-percent=80
+
+kubectl scale --current-replicas=2 --replicas=3 deployment/mysql
+kubectl scale --replicas=3 statefulset/web
+kubectl scale --replicas=3 rs/foo
+kubectl scale --replicas=5 rc/foo
+

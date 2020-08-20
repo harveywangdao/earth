@@ -3967,10 +3967,6 @@ InfluxDB:
   Kiali:
   #http://<IP ADDRESS OF CLUSTER INGRESS>:15029/
 
-  
-
-
-
   KIALI_USERNAME=$(read -p 'Kiali Username: ' uval && echo -n $uval | base64)
   KIALI_PASSPHRASE=$(read -sp 'Kiali Passphrase: ' pval && echo -n $pval | base64)
 
@@ -4041,34 +4037,6 @@ InfluxDB:
   kubernetes CRD
   istio ServiceEntry
   用istio部署自己的应用
-  
-  k8s灰度发布/滚动升级
-  1.部署第一版
-  kubectl create deployment nginx-test --image=nginx:1.14
-  kubectl scale deployment nginx-test --replicas 10
-  #kubectl autoscale deployment nginx-test --min=5 --max=15 --cpu-percent=80
-
-  kubectl apply -f nginx-test-v1.yaml
-  kubectl get pod --all-namespaces -o wide
-  kubectl get deployments.apps -o wide
-  kubectl get rs -w
-
-  2.部署第二版
-  kubectl set image deployment/nginx-test nginx=nginx:1.15 --record
-  #kubectl edit deployments.apps nginx-test
-
-  kubectl apply -f nginx-test-v2.yaml
-
-  3.回退到第一版
-  kubectl rollout history deployment/nginx-test
-  kubectl rollout history deployment nginx-test --revision=1
-
-  #kubectl rollout undo deployment/nginx-test
-  kubectl rollout undo deployment/nginx-test --to-revision=1
-
-  kubectl rollout status deployment/nginx-test
-  kubectl delete deployment nginx-test
-
 
 61.Go Module
   export GO111MODULE=on
