@@ -80,3 +80,11 @@ kubectl drain node01
 kubectl cordon node01
 恢复节点
 kubectl uncordon node01
+
+
+kubectl create namespace example
+kubectl get pods --all-namespaces -o wide
+kubectl apply -f limitrange.yaml --namespace=example
+
+
+
