@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: pear-ds
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app: pear
+      release: all
+  template:
+    metadata:
+      labels:
+        app: pear
+        release: all
+    spec:
+      containers:
+      - name: pear-ds-pod
+        image: nginx:1.15
+        imagePullPolicy: IfNotPresent

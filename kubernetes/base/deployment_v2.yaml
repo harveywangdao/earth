@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-test
+  labels:
+    app: nginx_pear
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx_pear
+  template:
+    metadata:
+      labels:
+        app: nginx_pear
+    spec:
+      containers:
+        - name: nginx-test
+          image: nginx:1.15
+          imagePullPolicy: IfNotPresent
+          ports:
+          - name: http
+            containerPort: 80
+      tolerations:
+        - key: "test"
+          operator: "Exists"
+          effect: "NoSchedule"   # PreferNoSchedule NoExecute tolerationSeconds: 3600

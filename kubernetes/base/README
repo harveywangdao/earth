@@ -43,20 +43,40 @@ kubectl rolling-update frontend-v1 frontend-v2 --image=image:v2
 kubectl rolling-update frontend --image=image:v2
 
 命令创建Deployment
-kubectl create deployment nginx --image=nginx:alpine
+kubectl create deployment nginx-test --image=nginx:1.15
 kubectl run nginx --image=nginx --port=5701 --env="DNS_DOMAIN=cluster" --replicas=5
 kubectl run -it --rm --image=mysql:5.6 --restart=Never mysql-client -- mysql -h mysql -ppassword
 
 kubectl expose deployment nginx --port=80 --type=NodePort
 kubectl expose rc nginx --port=80 --target-port=8000
+kubectl expose deployment redis --port=6379
 
 kubectl autoscale deployment nginx-test --min=5 --max=15 --cpu-percent=80
 kubectl autoscale rc foo --max=5 --cpu-percent=80
 
 kubectl scale --current-replicas=2 --replicas=3 deployment/mysql
+kubectl scale deployment nginx-test --replicas=3
 kubectl scale statefulset web --replicas=3
 kubectl scale rs/foo --replicas=3
 kubectl scale rc/foo --replicas=5
 
 <pod-name>.<svc-name>.<namespace>.svc.cluster.local
 web-0.nginx.default.svc.cluster.local
+
+5.污点与容忍
+kubectl describe nodes node01
+kubectl taint nodes node01 test=node01:NoSchedule
+kubectl taint nodes node01 test=node01:NoExecute
+kubectl taint nodes node01 test-
+kubectl taint nodes node01 test:NoSchedule-
+
+kubectl taint nodes node01 test01=v01:NoSchedule
+kubectl taint nodes node01 test02=v02:NoExecute
+kubectl taint nodes node01 test03=v03:NoExecute
+
+强制驱逐pod
+kubectl drain node01
+不驱逐,只影响后面的pod调度
+kubectl cordon node01
+恢复节点
+kubectl uncordon node01

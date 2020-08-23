@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-test
+  labels:
+    app: nginx_pear
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx_pear
+  template:
+    metadata:
+      labels:
+        app: nginx_pear
+    spec:
+      containers:
+        - name: nginx-test
+          image: nginx:1.15
+          imagePullPolicy: IfNotPresent
+          ports:
+          - name: http
+            containerPort: 80
+      affinity:
+        podAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: security
+                operator: In
+                values:
+                - S1
+            topologyKey: failure-domain.beta.kubernetes.io/zone
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: security
+                  operator: In
+                  values:
+                  - S2
+              topologyKey: kubernetes.io/hostname

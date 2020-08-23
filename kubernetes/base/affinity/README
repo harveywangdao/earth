@@ -1,0 +1,31 @@
+kubectl label nodes node01 --list
+kubectl label nodes node04 --list
+
+kubectl label nodes node01 redkey-
+
+kubectl get pods --all-namespaces -o wide
+kubectl delete deployments.apps nginx-test
+
+1.nodeSelector
+kubectl label nodes node01 disktype=ssd
+
+kubectl apply -f affinity/deploy_v1.yaml
+
+2.nodeAffinity
+requiredDuringSchedulingIgnoredDuringExecution
+preferredDuringSchedulingIgnoredDuringExecution
+IgnoredDuringExecution
+
+In, NotIn, Exists, DoesNotExist, Gt, Lt
+
+kubectl label nodes node01 blackkey=blackvalue1
+kubectl label nodes node04 blackkey=blackvalue2
+kubectl label nodes node04 redkey=redvalue
+
+kubectl apply -f affinity/deploy_v2.yaml
+
+3.Inter-pod affinity and anti-affinity
+
+kubectl apply -f affinity/deploy_v4.yaml
+
+kubectl label pod web-1 --list

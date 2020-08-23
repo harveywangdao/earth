@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-test
+  labels:
+    app: nginx_pear
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx_pear
+  template:
+    metadata:
+      labels:
+        app: nginx_pear
+    spec:
+      containers:
+        - name: nginx-test
+          image: nginx:1.15
+          imagePullPolicy: IfNotPresent
+          ports:
+          - name: http
+            containerPort: 80
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution: #hard条件必须匹配
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: blackkey
+                operator: In #支持In, NotIn, Exists, DoesNotExist, Gt, Lt
+                values:
+                - blackvalue1
+                - blackvalue2
+          preferredDuringSchedulingIgnoredDuringExecution: #soft条件优先匹配
+          - weight: 100  #取值范围1-100
+            preference:
+              matchExpressions:
+              - key: redkey
+                operator: In
+                values:
+                - redvalue
