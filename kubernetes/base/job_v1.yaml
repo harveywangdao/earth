@@ -1,0 +1,19 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: job1
+spec:
+  ttlSecondsAfterFinished: 10
+  backoffLimit: 6
+  completions: 10
+  parallelism: 3
+  template:
+    metadata:
+      name: job1
+    spec:
+      containers:
+      - name: busybox-test
+        image: busybox:latest
+        command: ["echo", "hello world!"]
+        imagePullPolicy: IfNotPresent
+      restartPolicy: Never   # OnFailure

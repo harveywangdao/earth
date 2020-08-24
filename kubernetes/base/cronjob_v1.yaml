@@ -1,0 +1,16 @@
+apiVersion: batch/v1beta1   # v2alpha1
+kind: CronJob
+metadata:
+  name: cj-test
+spec:
+  schedule: "*/1 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: busybox-test
+            image: busybox:latest
+            command: ["echo","hello k8s job!"]
+            imagePullPolicy: IfNotPresent
+          restartPolicy: OnFailure
