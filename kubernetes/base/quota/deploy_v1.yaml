@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: quota-pod-test
+  namespace: quota-test-ns
+spec:
+  selector:
+    matchLabels:
+      app: quota-pod-test
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: quota-pod-test
+    spec:
+      containers:
+      - name: quota-pod-test
+        image: nginx:1.15
+        imagePullPolicy: IfNotPresent

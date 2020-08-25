@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: quota-mem-cpu-test-1
+  namespace: quota-test-ns
+spec:
+  containers:
+  - name: quota-mem-cpu-test
+    image: nginx:1.15
+    imagePullPolicy: IfNotPresent
+    resources:
+      limits:
+        memory: "800Mi"
+        cpu: "800m" 
+      requests:
+        memory: "600Mi"
+        cpu: "400m"

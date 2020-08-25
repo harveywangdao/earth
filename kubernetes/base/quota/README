@@ -1,0 +1,28 @@
+1.pod quota
+kubectl create namespace quota-test-ns
+kubectl apply -f quota_v1.yaml
+kubectl get resourcequotas -n quota-test-ns quota-pod-test --output=yaml
+kubectl apply -f deploy_v1.yaml
+kubectl get pods -n quota-test-ns -o wide
+kubectl get deployments -n quota-test-ns quota-pod-test --output=yaml
+kubectl delete namespace quota-test-ns
+
+2.cpu/memory quota
+kubectl apply -f quota_v2.yaml
+kubectl get resourcequotas -n quota-test-ns quota-mem-cpu-test --output=yaml
+kubectl apply -f pod_v1.yaml
+kubectl get pods -n quota-test-ns -o wide
+kubectl get resourcequotas -n quota-test-ns quota-mem-cpu-test --output=yaml
+kubectl apply -f pod_v2.yaml
+
+
+kubectl create quota test --hard=count/deployments.extensions=2,count/replicasets.extensions=4,count/pods=3,count/secrets=4 --namespace=myspace
+kubectl run nginx --image=nginx --replicas=2 --namespace=myspace
+
+3.
+kubectl apply -f quota_v3.yaml
+kubectl get resourcequotas -n quota-test-ns
+kubectl describe resourcequotas -n quota-test-ns
+kubectl describe quota -n quota-test-ns
+
+kubectl apply -f pod_v3.yaml
