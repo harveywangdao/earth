@@ -11,9 +11,9 @@ spec:
     args: ["-c", "while true; do echo hello; sleep 10;done"]
     resources:
       requests:
-        memory: "10Gi"
+        memory: "1Gi"
         cpu: "500m"
       limits:
-        memory: "10Gi"
-        cpu: "500m"
+        memory: "2Gi"
+        cpu: "1000m"
   priorityClassName: high
