@@ -25,5 +25,7 @@ kubectl get resourcequotas -n quota-test-ns
 kubectl describe resourcequotas -n quota-test-ns
 kubectl describe quota -n quota-test-ns
 
-kubectl apply -f priority_*.yaml
+kubectl apply -f priority_high.yaml
+kubectl apply -f priority_medium.yaml
+kubectl apply -f priority_low.yaml
 kubectl apply -f pod_v3.yaml
