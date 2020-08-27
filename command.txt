@@ -2666,12 +2666,34 @@ Helm:
 
   kubectl get pods --all-namespaces -o wide
   helm repo add stable https://kubernetes.oss-cn-hangzhou.aliyuncs.com/charts
+  helm repo add stable https://kubernetes-charts.storage.googleapis.com/
   helm repo add incubator https://aliacs-app-catalog.oss-cn-hangzhou.aliyuncs.com/charts-incubator/
   helm repo update
   helm repo remove stable
   helm repo list
   helm search
+  helm search repo stable
   helm ls
+  helm search hub
+  helm search hub wordpress
+  helm search repo
+
+  helm repo add bitnami https://charts.bitnami.com/bitnami
+  helm search repo bitnami
+  helm install my-release bitnami/redis
+  helm uninstall my-release
+  helm status my-release
+
+  helm show chart stable/mysql
+  helm show all stable/mysql
+  helm show values bitnami/redis
+
+  helm create deis-workflow
+  helm lint .
+  helm package deis-workflow
+  helm install deis-workflow ./deis-workflow-0.1.0.tgz
+
+  kubectl port-forward redis-master-765d459796-258hz 6379:6379 
 
   #helm reset --force
   #rm -rf $HOME/.helm
@@ -2683,7 +2705,9 @@ Helm:
   kubectl get pv
   kubectl get pvc
 
-  helm install --name my-release stable/mysql
+  helm install test-mysql stable/mysql
+  helm install test-redis stable/redis
+
   helm install --name my-release \
   --set mysqlRootPassword=secretpassword,mysqlUser=my-user,mysqlPassword=my-password,mysqlDatabase=my-database \
     stable/mysql
