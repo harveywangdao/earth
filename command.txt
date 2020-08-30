@@ -2619,6 +2619,19 @@ mysqldump -u root -p123456 --add-drop-table db1 | mysql -u root -p123456 newdb
   #kubectl drain slave01 --delete-local-data --force --ignore-daemonsets
   #kubectl delete node slave01
 
+  metrics-server:
+  docker pull bitnami/metrics-server:0.3.7
+  docker tag bitnami/metrics-server:0.3.7 k8s.gcr.io/metrics-server/metrics-server:v0.3.7
+  wget https://github.com/kubernetes-sigs/metrics-server/releases/download/v0.3.7/components.yaml
+  --kubelet-insecure-tls
+  --kubelet-preferred-address-types=InternalIP,Hostname,InternalDNS,ExternalDNS,ExternalIP
+
+  kubectl apply -f components.yaml
+
+  kubectl top node
+  kubectl get --raw "/apis/metrics.k8s.io/v1beta1/nodes"
+  kubectl -n kube-system top pods
+
   sudo kubeadm reset --force
   sudo rm -rf /etc/kubernetes
   sudo rm -rf /var/lib/kubelet
@@ -5442,6 +5455,7 @@ InfluxDB:
   mkdir -p /home/thomas/server/calico
   cd /home/thomas/server/calico
   curl https://docs.projectcalico.org/v3.10/manifests/calico.yaml -O
+  curl https://docs.projectcalico.org/manifests/calico.yaml -O
   POD_CIDR="10.244.0.0/16"
   sed -i -e "s?192.168.0.0/16?$POD_CIDR?g" calico.yaml
   kubectl apply -f calico.yaml

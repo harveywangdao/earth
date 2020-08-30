@@ -1,0 +1,10 @@
+kubectl autoscale deployment pear-test --cpu-percent=50 --min=1 --max=10
+kubectl get hpa
+
+kubectl get pods --all-namespaces -o wide
+
+curl http://172.18.25.195:30006/ping
+
+kubectl run -it --rm load-generator --image=busybox /bin/sh
+
+while true; do wget -q -O- http://172.18.25.195:30006/ping; done

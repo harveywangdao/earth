@@ -1,0 +1,72 @@
+1.NGINX Ingress Controller
+git clone https://github.com/nginxinc/kubernetes-ingress/
+cd kubernetes-ingress/deployments
+git checkout v1.8.1
+
+kubectl apply -f common/ns-and-sa.yaml
+kubectl apply -f rbac/rbac.yaml
+kubectl apply -f common/default-server-secret.yaml
+kubectl apply -f common/nginx-config.yaml
+
+kubectl apply -f common/vs-definition.yaml
+kubectl apply -f common/vsr-definition.yaml
+kubectl apply -f common/ts-definition.yaml
+kubectl apply -f common/policy-definition.yaml
+
+kubectl apply -f common/gc-definition.yaml
+kubectl apply -f common/global-configuration.yaml
+
+kubectl apply -f deployment/nginx-ingress.yaml
+#kubectl apply -f daemon-set/nginx-ingress.yaml
+
+kubectl get pods --all-namespaces -o wide
+
+kubectl create -f service/nodeport.yaml
+kubectl get services --all-namespaces 
+
+kubectl delete namespace nginx-ingress
+kubectl delete clusterrole nginx-ingress
+kubectl delete clusterrolebinding nginx-ingress
+
+cd kubernetes-ingress/deployments/helm-chart
+helm repo add nginx-stable https://helm.nginx.com/stable
+helm repo update
+
+helm install my-release nginx-stable/nginx-ingress
+#helm install my-release .
+helm uninstall my-release
+kubectl delete -f crds/
+
+2.ingress-nginx
+helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+helm install my-release ingress-nginx/ingress-nginx
+
+POD_NAME=$(kubectl get pods -l app.kubernetes.io/name=ingress-nginx -o jsonpath='{.items[0].metadata.name}')
+kubectl exec -it $POD_NAME -- /nginx-ingress-controller --version
+
+git clone https://github.com/kubernetes/ingress-nginx.git
+git checkout nginx-0.30.0
+cd github.com/kubernetes/ingress-nginx
+kubectl apply -f deploy/static/mandatory.yaml
+kubectl apply -f deploy/static/provider/baremetal/service-nodeport.yaml
+
+kubectl delete -f deploy/static/mandatory.yaml
+kubectl delete -f deploy/static/provider/baremetal/service-nodeport.yaml
+
+3.app
+kubectl apply -f ingress
+
+kubectl get services --all-namespaces -o wide
+kubectl get ingress --all-namespaces -o wide
+kubectl get pods --all-namespaces -o wide
+kubectl get deployments --all-namespaces -o wide
+
+4.Network Policy
+kubectl create deployment nginx-test --image=nginx
+kubectl expose deployment nginx-test --port=80
+
+kubectl run busybox --rm -ti --image=busybox /bin/sh
+wget --spider --timeout=1 nginx-test
+
+kubectl apply -f network_policy_v1.yaml
+kubectl run busybox2 --rm -ti --labels="access=true" --image=busybox /bin/sh
