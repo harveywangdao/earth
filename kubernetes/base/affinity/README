@@ -1,6 +1,8 @@
 kubectl label nodes node01 --list
 kubectl label nodes node04 --list
 
+kubectl get nodes --show-labels=true
+
 kubectl label nodes node01 redkey-
 
 kubectl get pods --all-namespaces -o wide
@@ -29,3 +31,6 @@ kubectl apply -f affinity/deploy_v2.yaml
 kubectl apply -f affinity/deploy_v4.yaml
 
 kubectl label pod web-1 --list
+
+4.NodeName
+Pod.spec.nodeName: node01
