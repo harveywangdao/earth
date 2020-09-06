@@ -1,0 +1,62 @@
+1.Harbor
+PostgreSQL Redis PVC ingress controller
+
+helm repo add harbor https://helm.goharbor.io
+helm fetch harbor/harbor --untar
+
+vim values.yaml
+storageClass: "managed-nfs-storage"
+core: harbor.pear.com
+notary: notary.pear.com
+externalURL: https://harbor.pear.com:30159
+
+#helm install my-harbor harbor/harbor
+helm install my-harbor .
+helm uninstall my-harbor
+
+kubectl get pods --all-namespaces -o wide
+kubectl get ingress
+
+47.115.77.36   172.18.25.194
+47.115.82.109  172.18.25.195
+
+vim /etc/hosts
+#172.18.25.194 harbor.pear.com
+47.115.77.36 harbor.pear.com
+
+https://harbor.pear.com:30159
+admin Harbor12345
+
+#kubectl get secret my-harbor-harbor-ingress -o yaml
+vim /etc/docker/daemon.json
+{
+  "insecure-registries": [
+    "harbor.pear.com:30159"
+  ],
+  "registry-mirrors": [
+    "https://registry.docker-cn.com",
+    "http://hub-mirror.c.163.com"
+  ]
+}
+service docker restart
+
+docker login harbor.pear.com:30159 -u admin -p Harbor12345
+docker images | grep busybox
+docker tag busybox:latest harbor.pear.com:30159/library/busybox:v1
+docker push harbor.pear.com:30159/library/busybox:v1
+docker rmi harbor.pear.com:30159/library/busybox:v1
+docker pull harbor.pear.com:30159/library/busybox:v1
+
+2.Kubernetes Dashboard
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.4/aio/deploy/recommended.yaml
+kubectl proxy
+http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/
+
+helm install my-k8s-dashboard k8s-dashboard/kubernetes-dashboard --set=service.externalPort=8080,resources.limits.cpu=200m
+
+helm repo add k8s-dashboard https://kubernetes.github.io/dashboard
+helm install my-k8s-dashboard k8s-dashboard/kubernetes-dashboard --version 2.3.0
+
+export POD_NAME=$(kubectl get pods -n default -l "app.kubernetes.io/name=kubernetes-dashboard,app.kubernetes.io/instance=my-k8s-dashboard" -o jsonpath="{.items[0].metadata.name}")
+echo https://127.0.0.1:8443/
+kubectl -n default port-forward $POD_NAME 8443:8443
