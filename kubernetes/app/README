@@ -94,3 +94,10 @@ kubectl create clusterrolebinding kubelet-node-binding --clusterrole=system:node
 kubectl create clusterrolebinding myapp-view-binding --clusterrole=view --serviceaccount=acme:myapp
 
 StorageClass:
+
+
+查所有使用到的容器:
+kubectl get pods --all-namespaces -o jsonpath="{..image}" |\
+tr -s '[[:space:]]' '\n' |\
+sort |\
+uniq -c
