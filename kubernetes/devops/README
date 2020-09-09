@@ -17,9 +17,6 @@ helm uninstall my-harbor
 kubectl get pods --all-namespaces -o wide
 kubectl get ingress
 
-47.115.77.36   172.18.25.194
-47.115.82.109  172.18.25.195
-
 vim /etc/hosts
 #172.18.25.194 harbor.pear.com
 47.115.77.36 harbor.pear.com
@@ -48,11 +45,10 @@ docker rmi harbor.pear.com:30159/library/busybox:v1
 docker pull harbor.pear.com:30159/library/busybox:v1
 
 2.Kubernetes Dashboard
-kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.4/aio/deploy/recommended.yaml
-kubectl proxy --address='0.0.0.0'  --accept-hosts='^*$'
-http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/
-
-helm install my-k8s-dashboard k8s-dashboard/kubernetes-dashboard --set=service.externalPort=8080,resources.limits.cpu=200m
+#kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.4/aio/deploy/recommended.yaml
+#kubectl proxy --address='0.0.0.0'  --accept-hosts='^*$'
+#http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/
+#helm install my-k8s-dashboard k8s-dashboard/kubernetes-dashboard --set=service.externalPort=8080,resources.limits.cpu=200m
 
 helm repo add k8s-dashboard https://kubernetes.github.io/dashboard
 helm install my-k8s-dashboard k8s-dashboard/kubernetes-dashboard --version 2.3.0
@@ -63,6 +59,33 @@ helm status my-k8s-dashboard
 export POD_NAME=$(kubectl get pods -n default -l "app.kubernetes.io/name=kubernetes-dashboard,app.kubernetes.io/instance=my-k8s-dashboard" -o jsonpath="{.items[0].metadata.name}")
 kubectl port-forward --address 0.0.0.0 $POD_NAME 8443:8443
 
-kubectl describe secret $(kubectl get secret | grep my-k8s-dashboard-kubernetes-dashboard | awk '{print $1}')
+#kubectl describe secret $(kubectl get secret | grep my-k8s-dashboard-kubernetes-dashboard | awk '{print $1}')
+#kubectl describe secrets my-k8s-dashboard-kubernetes-dashboard-token-w6n5p
 
-kubectl describe secrets my-k8s-dashboard-kubernetes-dashboard-token-w6n5p
+cat <<EOF | kubectl apply -f -
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: admin-user
+  namespace: default
+EOF
+
+cat <<EOF | kubectl apply -f -
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: admin-user
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+- kind: ServiceAccount
+  name: admin-user
+  namespace: default
+EOF
+
+kubectl describe secret $(kubectl get secret | grep admin-user | awk '{print $1}')
+
+kubectl delete serviceaccount admin-user
+kubectl delete clusterrolebinding admin-user
