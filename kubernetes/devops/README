@@ -109,3 +109,13 @@ kubectl port-forward --address 0.0.0.0 prometheus-my-monitor-prometheus-oper-pro
 
 http://8.129.8.165:8443/login
 admin prom-operator
+
+helm show values stable/prometheus-operator
+
+helm uninstall my-monitor
+kubectl delete crd prometheuses.monitoring.coreos.com
+kubectl delete crd prometheusrules.monitoring.coreos.com
+kubectl delete crd servicemonitors.monitoring.coreos.com
+kubectl delete crd podmonitors.monitoring.coreos.com
+kubectl delete crd alertmanagers.monitoring.coreos.com
+kubectl delete crd thanosrulers.monitoring.coreos.com
