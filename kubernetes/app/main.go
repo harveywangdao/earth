@@ -2,18 +2,28 @@ package main
 
 import (
 	"flag"
+	"log"
+	"net/http"
 	"os"
 	"path/filepath"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
+
+func metrics() {
+	http.Handle("/metrics", promhttp.Handler())
+	log.Fatal(http.ListenAndServe(":7878", nil))
+}
 
 func main() {
 	var dir, dir2 string
 	flag.StringVar(&dir, "dir", "/data/pear", "dir")
 	flag.StringVar(&dir2, "dir2", "/data/pear_pvc", "dir2")
 	flag.Parse()
+
+	go metrics()
 
 	r := gin.Default()
 	r.GET("/ping", func(c *gin.Context) {
