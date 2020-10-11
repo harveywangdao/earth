@@ -5572,7 +5572,10 @@ InfluxDB:
   sudo showmount -e
   nfsstat -s
 
-74.小程序
+74.strace
+  strace -o aaa.txt -T -tt -e trace=all -p 1111
+
+75.小程序
   1.部署后台
   2.https部署
   3.https证书

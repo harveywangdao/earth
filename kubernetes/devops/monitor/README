@@ -1,0 +1,29 @@
+1.Prometheus
+helm install my-prometheus-test stable/prometheus
+export POD_NAME=$(kubectl get pods --namespace default -l "app=prometheus,component=server" -o jsonpath="{.items[0].metadata.name}")
+kubectl --namespace default port-forward $POD_NAME 9090
+export POD_NAME=$(kubectl get pods --namespace default -l "app=prometheus,component=alertmanager" -o jsonpath="{.items[0].metadata.name}")
+kubectl --namespace default port-forward $POD_NAME 9093
+export POD_NAME=$(kubectl get pods --namespace default -l "app=prometheus,component=pushgateway" -o jsonpath="{.items[0].metadata.name}")
+kubectl --namespace default port-forward $POD_NAME 9091
+
+
+helm install my-monitor stable/prometheus-operator
+Prometheus Operator, Alertmanager, Grafana
+
+#kubectl port-forward --address 0.0.0.0 svc/my-monitor-grafana 8443:80
+kubectl port-forward --address 0.0.0.0 my-monitor-grafana-67586dcfd8-rzds2 8443:3000
+kubectl port-forward --address 0.0.0.0 prometheus-my-monitor-prometheus-oper-prometheus-0 8443:9090
+
+http://8.129.8.165:8443/login
+admin prom-operator
+
+helm show values stable/prometheus-operator
+
+helm uninstall my-monitor
+kubectl delete crd prometheuses.monitoring.coreos.com
+kubectl delete crd prometheusrules.monitoring.coreos.com
+kubectl delete crd servicemonitors.monitoring.coreos.com
+kubectl delete crd podmonitors.monitoring.coreos.com
+kubectl delete crd alertmanagers.monitoring.coreos.com
+kubectl delete crd thanosrulers.monitoring.coreos.com
