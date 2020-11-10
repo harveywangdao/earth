@@ -103,6 +103,11 @@ void func4()
   string s1 = "abc";
   s1 = "123" + s1;
   cout << s1 << endl;
+         
+  const char *prefix;
+  prefix = "ABC";
+  s1 = prefix + s1;
+  cout << s1 << endl;
 }
 
 int main(int argc, char const *argv[])
