@@ -98,11 +98,19 @@ void func3()
 
 }
 
+void func4()
+{
+  string s1 = "abc";
+  s1 = "123" + s1;
+  cout << s1 << endl;
+}
+
 int main(int argc, char const *argv[])
 {
   //func1();
   //func2();
-  func3();
+  //func3();
+  func4();
 
   return 0;
 }
