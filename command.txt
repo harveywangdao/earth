@@ -527,6 +527,8 @@ openssl genrsa -out ca.key 2048
 openssl req -x509 -new -nodes -key ca.key -subj "/CN=abc.com" -days 5000 -out ca.crt
 openssl req -new -x509 -newkey rsa:2048 -keyout client.key -out client.crt
 
+openssl enc -d -aes256 -in b.tar.gz -out a.tar.gz
+openssl enc -e -aes256 -in a.tar.gz -out b.tar.gz
 
 12.mysql
 mysqldump -u root -p123456 --add-drop-table db1 | mysql -u root -p123456 newdb
