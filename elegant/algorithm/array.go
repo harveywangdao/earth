@@ -1528,6 +1528,60 @@ func search(nums []int, target int) int {
 	return -1
 }
 
+func rotate1(nums []int, k int) {
+	n := len(nums)
+	k = k % n
+
+	for i := 0; i < k; i++ {
+		m := nums[n-1]
+		for j := 0; j < n; j++ {
+			nums[j], m = m, nums[j]
+		}
+	}
+}
+
+func rotate2(nums []int, k int) {
+	n := len(nums)
+	k = k % n
+	nums2 := make([]int, n)
+	copy(nums2, nums)
+
+	for i := 0; i < n-k; i++ {
+		nums[k+i] = nums2[i]
+	}
+
+	for j := 0; j < k; j++ {
+		nums[j] = nums2[n-k+j]
+	}
+}
+
+func rotate(nums []int, k int) {
+	n := len(nums)
+	k = k % n
+	if k == 0 {
+		return
+	}
+
+	j, m, i := k, nums[0], 0
+	for c := 0; c < n; c++ {
+		nums[j], m = m, nums[j]
+		if j == i {
+			j++
+			i++
+			m = nums[j]
+		}
+
+		j = (j + k) % n
+	}
+}
+
+func gcd(a, b int) int {
+	for a != 0 {
+		a, b = b%a, a
+	}
+	return b
+}
+
 func main() {
 	var arr []int
 	arr = []int{1, 2, 2, 3, 4, 5, 4}

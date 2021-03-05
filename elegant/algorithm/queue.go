@@ -99,7 +99,7 @@ func _lastRemaining(n, m int) int {
 	return (m + x) % n
 }
 
-func lastRemaining1(n, m int) int {
+func lastRemaining2(n, m int) int {
 	return _lastRemaining(n, m)
 }
 
@@ -118,7 +118,7 @@ type MyCircularQueue struct {
 	length int
 }
 
-func Constructor(k int) MyCircularQueue {
+func Constructor1(k int) MyCircularQueue {
 	return MyCircularQueue{
 		arr:    make([]int, k),
 		arrlen: k,
@@ -406,6 +406,96 @@ func numIslands(grid [][]byte) int {
 		}
 	}
 	return uf.getCount()
+}
+
+type ListNode struct {
+	Val  int
+	Next *ListNode
+}
+
+type MyStack struct {
+	head *ListNode
+	sz   int
+}
+
+func (this *MyStack) Push(x int) {
+	n := &ListNode{
+		Val:  x,
+		Next: this.head,
+	}
+	this.head = n
+	this.sz++
+}
+
+func (this *MyStack) Pop() int {
+	if this.head == nil {
+		return -1
+	}
+	x := this.head.Val
+	this.head = this.head.Next
+	this.sz--
+	return x
+}
+
+func (this *MyStack) Peek() int {
+	if this.head == nil {
+		return -1
+	}
+	return this.head.Val
+}
+
+func (this *MyStack) Size() int {
+	return this.sz
+}
+
+func (this *MyStack) IsEmpty() bool {
+	if this.head == nil {
+		return true
+	}
+	return false
+}
+
+type MyQueue struct {
+	s1 *MyStack
+	s2 *MyStack
+}
+
+func Constructor() MyQueue {
+	return MyQueue{
+		s1: &MyStack{},
+		s2: &MyStack{},
+	}
+}
+
+func (this *MyQueue) Push(x int) {
+	this.s1.Push(x)
+}
+
+func (this *MyQueue) Pop() int {
+	if !this.s2.IsEmpty() {
+		return this.s2.Pop()
+	}
+
+	for this.s1.Size() > 1 {
+		this.s2.Push(this.s1.Pop())
+	}
+	return this.s1.Pop()
+}
+
+func (this *MyQueue) Peek() int {
+	if !this.s2.IsEmpty() {
+		return this.s2.Peek()
+	}
+
+	for this.s1.Size() > 0 {
+		this.s2.Push(this.s1.Pop())
+	}
+
+	return this.s2.Peek()
+}
+
+func (this *MyQueue) Empty() bool {
+	return this.s1.IsEmpty() && this.s2.IsEmpty()
 }
 
 func main() {
