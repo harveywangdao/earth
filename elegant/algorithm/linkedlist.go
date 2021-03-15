@@ -22,6 +22,7 @@ func Constructor(head *ListNode) Solution {
 	}
 }
 
+// 蓄水池抽样算法
 func (this *Solution) GetRandom() int {
 	p := this.head
 	val, i := 0, 0
@@ -419,6 +420,77 @@ func reorderList(head *ListNode) {
 		p.Next, l2 = l2, l2.Next
 		p = p.Next
 	}
+}
+
+func deleteNode(node *ListNode) {
+	node.Val = node.Next.Val
+	node.Next = node.Next.Next
+}
+
+func isPalindrome1(head *ListNode) bool {
+	var arr []int
+
+	for p := head; p != nil; p = p.Next {
+		arr = append(arr, p.Val)
+	}
+
+	for i, j := 0, len(arr)-1; i < j; i, j = i+1, j-1 {
+		if arr[i] != arr[j] {
+			return false
+		}
+	}
+	return true
+}
+
+func isPalindrome2(head *ListNode) bool {
+	n := 0
+	for p := head; p != nil; p = p.Next {
+		n++
+	}
+
+	p := head
+	var p2 *ListNode
+	for i := 1; i <= n/2; i++ {
+		next := p.Next
+		p.Next = p2
+		p2 = p
+		p = next
+	}
+	if n%2 != 0 {
+		p = p.Next
+	}
+
+	for p != nil && p2 != nil {
+		if p.Val != p2.Val {
+			return false
+		}
+		p = p.Next
+		p2 = p2.Next
+	}
+
+	return true
+}
+
+func isPalindrome3(head *ListNode) bool {
+	fast, slow := head.Next, head
+	for fast != nil && fast.Next != nil {
+		slow = slow.Next
+		fast = fast.Next.Next
+	}
+
+	tail := reverseList(slow.Next)
+
+	p, p2 := head, tail
+	for p != nil && p2 != nil {
+		if p.Val != p2.Val {
+			return false
+		}
+		p = p.Next
+		p2 = p2.Next
+	}
+
+	reverseList(tail)
+	return true
 }
 
 func main() {

@@ -36,6 +36,9 @@ func maxProfit1(prices []int) int {
 }
 
 /*
+dp[i][j] i天的利润
+j:0 未持有股票
+j:1 持有股票
 dp[i][0] = max(dp[i-1][0], dp[i-1][1]+p[i])
 dp[i][1] = max(dp[i-1][1], -p[i])
 */

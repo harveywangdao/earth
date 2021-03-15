@@ -3,44 +3,11 @@ package main
 import (
 	"fmt"
 	"math"
+	"strconv"
 )
 
-type MyStack struct {
-	arr    []int
-	total  int
-	length int
-}
-
-func NewStack(n int) *MyStack {
-	return &MyStack{
-		arr:   make([]int, n),
-		total: n,
-	}
-}
-
-func (m *MyStack) Push(val int) bool {
-	if m.length >= m.total {
-		return false
-	}
-	m.arr[m.length] = val
-	m.length++
-	return true
-}
-
-func (m *MyStack) Pop() (int, bool) {
-	if m.length <= 0 {
-		return 0, false
-	}
-	m.length--
-	return m.arr[m.length], true
-}
-
-func (m *MyStack) Len() int {
-	return m.length
-}
-
 func stack1() {
-	s := NewStack(10)
+	s := NewArrayStack(10)
 	for i := 0; i < 11; i++ {
 		ok := s.Push(i)
 		if !ok {
@@ -54,9 +21,139 @@ func stack1() {
 	}
 }
 
+type listNode struct {
+	Val  interface{}
+	Next *listNode
+}
+
+type MyStack struct {
+	head *listNode
+	sz   int
+}
+
+func (this *MyStack) Push(x interface{}) {
+	n := &listNode{
+		Val:  x,
+		Next: this.head,
+	}
+	this.head = n
+	this.sz++
+}
+
+func (this *MyStack) Pop() interface{} {
+	if this.head == nil {
+		return nil
+	}
+	x := this.head.Val
+	this.head = this.head.Next
+	this.sz--
+	return x
+}
+
+func (this *MyStack) Peek() interface{} {
+	if this.head == nil {
+		return nil
+	}
+	return this.head.Val
+}
+
+func (this *MyStack) Size() int {
+	return this.sz
+}
+
+func (this *MyStack) IsEmpty() bool {
+	if this.head == nil {
+		return true
+	}
+	return false
+}
+
 type ListNode struct {
 	Val  int
 	Next *ListNode
+}
+
+type MyListStack struct {
+	head *ListNode
+	sz   int
+}
+
+func (this *MyListStack) Push(x int) {
+	n := &ListNode{
+		Val:  x,
+		Next: this.head,
+	}
+	this.head = n
+	this.sz++
+}
+
+func (this *MyListStack) Pop() int {
+	if this.head == nil {
+		return -1
+	}
+	x := this.head.Val
+	this.head = this.head.Next
+	this.sz--
+	return x
+}
+
+func (this *MyListStack) Peek() int {
+	if this.head == nil {
+		return -1
+	}
+	return this.head.Val
+}
+
+func (this *MyListStack) Len() int {
+	return this.sz
+}
+
+func (this *MyListStack) IsEmpty() bool {
+	if this.head == nil {
+		return true
+	}
+	return false
+}
+
+type MyArrayStack struct {
+	arr    []int
+	total  int
+	length int
+}
+
+func NewArrayStack(n int) *MyArrayStack {
+	return &MyArrayStack{
+		arr:   make([]int, n),
+		total: n,
+	}
+}
+
+func (m *MyArrayStack) Push(val int) bool {
+	if m.length >= m.total {
+		return false
+	}
+	m.arr[m.length] = val
+	m.length++
+	return true
+}
+
+func (m *MyArrayStack) Pop() int {
+	if m.length <= 0 {
+		return -1
+	}
+	m.length--
+	return m.arr[m.length]
+}
+
+func (m *MyArrayStack) Peek() int {
+	if m.length <= 0 {
+		return -1
+	}
+	return m.arr[m.length-1]
+}
+
+func (m *MyArrayStack) Len() int {
+	return m.length
 }
 
 type MinStack struct {
@@ -121,6 +218,37 @@ func (this *MinStack) getMin() int {
 		p = p.Next
 	}
 	return min
+}
+
+func evalRPN(tokens []string) int {
+	stack := &MyStack{}
+
+	for i := 0; i < len(tokens); i++ {
+		var num int
+		switch tokens[i] {
+		case "+":
+			a := stack.Pop().(int)
+			b := stack.Pop().(int)
+			num = a + b
+		case "-":
+			a := stack.Pop().(int)
+			b := stack.Pop().(int)
+			num = b - a
+		case "*":
+			a := stack.Pop().(int)
+			b := stack.Pop().(int)
+			num = a * b
+		case "/":
+			a := stack.Pop().(int)
+			b := stack.Pop().(int)
+			num = b / a
+		default:
+			num, _ = strconv.Atoi(tokens[i])
+		}
+
+		stack.Push(num)
+	}
+	return stack.Pop().(int)
 }
 
 func main() {

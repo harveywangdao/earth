@@ -1068,6 +1068,7 @@ func Constructor(nums []int) Solution {
 	return Solution{nums}
 }
 
+// 蓄水池抽样算法
 func (this *Solution) Pick(target int) int {
 	n, index := 0, 0
 	for i := 0; i < len(this.ns); i++ {

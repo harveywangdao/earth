@@ -408,62 +408,15 @@ func numIslands(grid [][]byte) int {
 	return uf.getCount()
 }
 
-type ListNode struct {
-	Val  int
-	Next *ListNode
-}
-
-type MyStack struct {
-	head *ListNode
-	sz   int
-}
-
-func (this *MyStack) Push(x int) {
-	n := &ListNode{
-		Val:  x,
-		Next: this.head,
-	}
-	this.head = n
-	this.sz++
-}
-
-func (this *MyStack) Pop() int {
-	if this.head == nil {
-		return -1
-	}
-	x := this.head.Val
-	this.head = this.head.Next
-	this.sz--
-	return x
-}
-
-func (this *MyStack) Peek() int {
-	if this.head == nil {
-		return -1
-	}
-	return this.head.Val
-}
-
-func (this *MyStack) Size() int {
-	return this.sz
-}
-
-func (this *MyStack) IsEmpty() bool {
-	if this.head == nil {
-		return true
-	}
-	return false
-}
-
 type MyQueue struct {
-	s1 *MyStack
-	s2 *MyStack
+	s1 *MyListStack
+	s2 *MyListStack
 }
 
 func Constructor() MyQueue {
 	return MyQueue{
-		s1: &MyStack{},
-		s2: &MyStack{},
+		s1: &MyListStack{},
+		s2: &MyListStack{},
 	}
 }
 
