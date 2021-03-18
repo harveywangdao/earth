@@ -268,7 +268,200 @@ func sortedArrayToBST(nums []int) *TreeNode {
 	return node
 }
 
+func inorderTraversal3(root *TreeNode) []int {
+	var res []int
+	st := &MyStack{}
+	cur := root
+	for cur != nil {
+		if cur.Right != nil {
+			st.Push(cur.Right)
+		}
+
+		if cur.Left != nil {
+			st.Push(&TreeNode{Val: cur.Val})
+			cur = cur.Left
+		} else {
+			res = append(res, cur.Val)
+			if st.Size() == 0 {
+				break
+			}
+			cur = st.Pop().(*TreeNode)
+		}
+	}
+
+	return res
+}
+
+// 中序递归
 func inorderTraversal(root *TreeNode) []int {
+	var res []int
+	_inorderTraversal(root, &res)
+	return res
+}
+
+func _inorderTraversal(root *TreeNode, res *[]int) {
+	if root == nil {
+		return
+	}
+	_inorderTraversal(root.Left, res)
+	*res = append(*res, root.Val)
+	_inorderTraversal(root.Right, res)
+}
+
+// 中序迭代
+func inorderTraversal1(root *TreeNode) []int {
+	var res []int
+	st := &MyStack{}
+	cur := root
+	for cur != nil || st.Size() > 0 {
+		for cur != nil {
+			st.Push(cur)
+			cur = cur.Left
+		}
+
+		cur = st.Pop().(*TreeNode)
+		res = append(res, cur.Val)
+		cur = cur.Right
+	}
+
+	return res
+}
+
+// Morris中序遍历
+func inorderTraversal2(root *TreeNode) []int {
+	var res []int
+
+	for root != nil {
+		if root.Left != nil {
+			p := root.Left
+			for p.Right != nil && p.Right != root {
+				p = p.Right
+			}
+
+			if p.Right == root {
+				res = append(res, root.Val)
+				p.Right = nil
+				root = root.Right
+			} else {
+				p.Right = root
+				root = root.Left
+			}
+		} else {
+			res = append(res, root.Val)
+			root = root.Right
+		}
+	}
+
+	return res
+}
+
+// 前序递归
+func preorderTraversal(root *TreeNode) []int {
+	var res []int
+	_preorderTraversal(root, &res)
+	return res
+}
+
+func _preorderTraversal(root *TreeNode, res *[]int) {
+	if root == nil {
+		return
+	}
+	*res = append(*res, root.Val)
+	_preorderTraversal(root.Left, res)
+	_preorderTraversal(root.Right, res)
+}
+
+// 前序迭代
+func preorderTraversal1(root *TreeNode) []int {
+	var res []int
+
+	st := &MyStack{}
+
+	for root != nil {
+		if root.Right != nil {
+			st.Push(root.Right)
+		}
+
+		res = append(res, root.Val)
+
+		if root.Left != nil {
+			root = root.Left
+		} else {
+			if st.Size() == 0 {
+				break
+			}
+			root = st.Pop().(*TreeNode)
+		}
+	}
+
+	return res
+}
+
+// Morris前序遍历
+func preorderTraversal2(root *TreeNode) []int {
+	var res []int
+
+	for root != nil {
+		if root.Left != nil {
+			p := root.Left
+			for p.Right != nil && p.Right != root {
+				p = p.Right
+			}
+
+			if p.Right == nil {
+				res = append(res, root.Val)
+				p.Right = root
+				root = root.Left
+			} else {
+				p.Right = nil
+				root = root.Right
+			}
+		} else {
+			res = append(res, root.Val)
+			root = root.Right
+		}
+	}
+
+	return res
+}
+
+// 后序递归
+func postorderTraversal(root *TreeNode) []int {
+	var res []int
+	_postorderTraversal(root, &res)
+	return res
+}
+
+func _postorderTraversal(root *TreeNode, res *[]int) {
+	if root == nil {
+		return
+	}
+	_postorderTraversal(root.Left, res)
+	_postorderTraversal(root.Right, res)
+	*res = append(*res, root.Val)
+}
+
+// 后序迭代
+func postorderTraversal1(root *TreeNode) []int {
+	var res []int
+	st := &MyStack{}
+
+	for root != nil {
+		for root.Left != nil || root.Right != nil {
+			if root.Left != nil {
+				root = root.Left
+			} else {
+				root = root.Right
+			}
+		}
+		res = append(res, root.Val)
+	}
+
+	return res
+}
+
+// Morris后序遍历
+func postorderTraversal2(root *TreeNode) []int {
 
 }
 
