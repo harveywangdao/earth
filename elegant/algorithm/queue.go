@@ -111,73 +111,6 @@ func lastRemaining(n, m int) int {
 	return x
 }
 
-type MyCircularQueue struct {
-	arr    []int
-	arrlen int
-	start  int
-	length int
-}
-
-func Constructor1(k int) MyCircularQueue {
-	return MyCircularQueue{
-		arr:    make([]int, k),
-		arrlen: k,
-		start:  0,
-		length: 0,
-	}
-}
-
-func (this *MyCircularQueue) EnQueue(value int) bool {
-	if this.length >= this.arrlen {
-		return false
-	}
-
-	this.arr[(this.start+this.length)%this.arrlen] = value
-	this.length++
-	return true
-}
-
-func (this *MyCircularQueue) DeQueue() bool {
-	if this.length <= 0 {
-		return false
-	}
-	this.start++
-	this.length--
-	if this.start >= this.arrlen {
-		this.start = 0
-	}
-	return true
-}
-
-func (this *MyCircularQueue) Front() int {
-	if this.length <= 0 {
-		return -1
-	}
-	return this.arr[this.start]
-}
-
-func (this *MyCircularQueue) Rear() int {
-	if this.length <= 0 {
-		return -1
-	}
-
-	return this.arr[(this.start+this.length-1)%this.arrlen]
-}
-
-func (this *MyCircularQueue) IsEmpty() bool {
-	if this.length <= 0 {
-		return true
-	}
-	return false
-}
-
-func (this *MyCircularQueue) IsFull() bool {
-	if this.length >= this.arrlen {
-		return true
-	}
-	return false
-}
-
 func printg(grid [][]byte) {
 	for i := 0; i < len(grid); i++ {
 		for j := 0; j < len(grid[i]); j++ {
@@ -408,23 +341,123 @@ func numIslands(grid [][]byte) int {
 	return uf.getCount()
 }
 
+type MyArrayQueue struct {
+	arr    []int
+	arrlen int
+	start  int
+	length int
+}
+
+func NewMyArrayQueue(k int) MyArrayQueue {
+	return MyArrayQueue{
+		arr:    make([]int, k),
+		arrlen: k,
+		start:  0,
+		length: 0,
+	}
+}
+
+func (this *MyArrayQueue) EnQueue(value int) bool {
+	if this.length >= this.arrlen {
+		return false
+	}
+
+	this.arr[(this.start+this.length)%this.arrlen] = value
+	this.length++
+	return true
+}
+
+func (this *MyArrayQueue) DeQueue() bool {
+	if this.length <= 0 {
+		return false
+	}
+	this.start++
+	this.length--
+	if this.start >= this.arrlen {
+		this.start = 0
+	}
+	return true
+}
+
+func (this *MyArrayQueue) Front() int {
+	if this.length <= 0 {
+		return -1
+	}
+	return this.arr[this.start]
+}
+
+func (this *MyArrayQueue) Rear() int {
+	if this.length <= 0 {
+		return -1
+	}
+
+	return this.arr[(this.start+this.length-1)%this.arrlen]
+}
+
+func (this *MyArrayQueue) IsEmpty() bool {
+	if this.length <= 0 {
+		return true
+	}
+	return false
+}
+
+func (this *MyArrayQueue) IsFull() bool {
+	if this.length >= this.arrlen {
+		return true
+	}
+	return false
+}
+
 type MyQueue struct {
+	li *list.List
+}
+
+func NewMyQueue() *MyQueue {
+	return &MyQueue{
+		li: list.New(),
+	}
+}
+
+func (this *MyQueue) Push(v interface{}) {
+	this.li.PushFront(v)
+}
+
+func (this *MyQueue) Pop() interface{} {
+	e := this.li.Back()
+	this.li.Remove(e)
+	return e.Value
+}
+
+func (this *MyQueue) Peek() interface{} {
+	e := this.li.Back()
+	return e.Value
+}
+
+func (this *MyQueue) Size() int {
+	return this.li.Len()
+}
+
+func (this *MyQueue) IsEmpty() bool {
+	return this.li.Len() == 0
+}
+
+type MyQueueByStack struct {
 	s1 *MyListStack
 	s2 *MyListStack
 }
 
-func Constructor() MyQueue {
-	return MyQueue{
+func NewMyQueueByStack() MyQueueByStack {
+	return MyQueueByStack{
 		s1: &MyListStack{},
 		s2: &MyListStack{},
 	}
 }
 
-func (this *MyQueue) Push(x int) {
+func (this *MyQueueByStack) Push(x int) {
 	this.s1.Push(x)
 }
 
-func (this *MyQueue) Pop() int {
+func (this *MyQueueByStack) Pop() int {
 	if !this.s2.IsEmpty() {
 		return this.s2.Pop()
 	}
@@ -435,7 +468,7 @@ func (this *MyQueue) Pop() int {
 	return this.s1.Pop()
 }
 
-func (this *MyQueue) Peek() int {
+func (this *MyQueueByStack) Peek() int {
 	if !this.s2.IsEmpty() {
 		return this.s2.Peek()
 	}
@@ -447,8 +480,143 @@ func (this *MyQueue) Peek() int {
 	return this.s2.Peek()
 }
 
-func (this *MyQueue) Empty() bool {
+func (this *MyQueueByStack) Empty() bool {
 	return this.s1.IsEmpty() && this.s2.IsEmpty()
+}
+
+type MyStackByQueue struct {
+	q1 *MyListQueue
+	q2 *MyListQueue
+}
+
+func NewMyStackByQueue() *MyStackByQueue {
+	return &MyStackByQueue{
+		q1: NewMyListQueue(),
+		q2: NewMyListQueue(),
+	}
+}
+
+func (this *MyStackByQueue) Push(x int) {
+	if this.q1.IsEmpty() {
+		this.q2.Push(x)
+	} else {
+		this.q1.Push(x)
+	}
+}
+
+func (this *MyStackByQueue) Pop() int {
+	if this.q1.IsEmpty() && this.q2.IsEmpty() {
+		return -1
+	}
+
+	if !this.q1.IsEmpty() {
+		for this.q1.Size() > 1 {
+			v := this.q1.Pop()
+			this.q2.Push(v)
+		}
+		return this.q1.Pop().(int)
+	} else {
+		for this.q2.Size() > 1 {
+			v := this.q2.Pop()
+			this.q1.Push(v)
+		}
+		return this.q2.Pop().(int)
+	}
+}
+
+func (this *MyStackByQueue) Top() int {
+	if this.q1.IsEmpty() && this.q2.IsEmpty() {
+		return -1
+	}
+
+	if !this.q1.IsEmpty() {
+		for this.q1.Size() > 1 {
+			v := this.q1.Pop()
+			this.q2.Push(v)
+		}
+		v := this.q1.Pop()
+		this.q2.Push(v)
+
+		return v.(int)
+	} else {
+		for this.q2.Size() > 1 {
+			v := this.q2.Pop()
+			this.q1.Push(v)
+		}
+		v := this.q2.Pop()
+		this.q1.Push(v)
+		return v.(int)
+	}
+}
+
+func (this *MyStackByQueue) Empty() bool {
+	return this.q1.IsEmpty() && this.q2.IsEmpty()
+}
+
+type MyStackByQueue2 struct {
+	q1 *MyListQueue
+	q2 *MyListQueue
+}
+
+func NewMyStackByQueue2() *MyStackByQueue2 {
+	return &MyStackByQueue2{
+		q1: NewMyListQueue(),
+		q2: NewMyListQueue(),
+	}
+}
+
+func (this *MyStackByQueue2) Push(x int) {
+	this.q2.Push(x)
+
+	for this.q1.Size() > 0 {
+		v := this.q1.Pop()
+		this.q2.Push(v)
+	}
+	this.q1, this.q2 = this.q2, this.q1
+}
+
+func (this *MyStackByQueue2) Pop() int {
+	return this.q1.Pop().(int)
+}
+
+func (this *MyStackByQueue2) Top() int {
+	return this.q1.Peek().(int)
+}
+
+func (this *MyStackByQueue2) Empty() bool {
+	return this.q1.IsEmpty()
+}
+
+type MyStackByQueue3 struct {
+	q *MyListQueue
+}
+
+func NewMyStackByQueue3() *MyStackByQueue3 {
+	return &MyStackByQueue3{
+		q: NewMyListQueue(),
+	}
+}
+
+func (this *MyStackByQueue3) Push(x int) {
+
+	this.q.Push(x)
+
+	for sz := 0; sz < this.q.Size()-1; sz++ {
+		v := this.q.Pop()
+		this.q.Push(v)
+	}
+}
+
+func (this *MyStackByQueue3) Pop() int {
+	return this.q.Pop().(int)
+}
+
+func (this *MyStackByQueue3) Top() int {
+	return this.q.Peek().(int)
+}
+
+func (this *MyStackByQueue3) Empty() bool {
+	return this.q.IsEmpty()
 }
 
 func main() {

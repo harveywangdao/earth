@@ -446,34 +446,64 @@ func postorderTraversal1(root *TreeNode) []int {
 	var res []int
 	st := &MyStack{}
 
-	for root != nil {
-		for root.Left != nil || root.Right != nil {
-			if root.Left != nil {
-				root = root.Left
-			} else {
-				root = root.Right
-			}
+	cur := root
+	var last *TreeNode
+	for cur != nil || st.Size() > 0 {
+		for cur != nil {
+			st.Push(cur)
+			cur = cur.Left
 		}
-		res = append(res, root.Val)
+
+		cur = st.Pop().(*TreeNode)
+		if cur.Right == nil || cur.Right == last {
+			res = append(res, cur.Val)
+			last = cur
+			cur = nil
+		} else {
+			st.Push(cur)
+			cur = cur.Right
+		}
 	}
 
 	return res
 }
 
 // Morris后序遍历
-func postorderTraversal2(root *TreeNode) []int {
+func reverse(a []int) {
+	for i, n := 0, len(a); i < n/2; i++ {
+		a[i], a[n-1-i] = a[n-1-i], a[i]
+	}
+}
 
+func postorderTraversal2(root *TreeNode) (res []int) {
+	addPath := func(node *TreeNode) {
+		resSize := len(res)
+		for ; node != nil; node = node.Right {
+			res = append(res, node.Val)
+		}
+		reverse(res[resSize:])
+	}
+
+	p1 := root
+	for p1 != nil {
+		if p2 := p1.Left; p2 != nil {
+			for p2.Right != nil && p2.Right != p1 {
+				p2 = p2.Right
+			}
+			if p2.Right == nil {
+				p2.Right = p1
+				p1 = p1.Left
+				continue
+			}
+			p2.Right = nil
+			addPath(p1.Left)
+		}
+		p1 = p1.Right
+	}
+	addPath(root)
+	return
 }
 
 func main() {
-	root := &TreeNode{Val: 5}
-	n1 := &TreeNode{Val: 1}
-	n2 := &TreeNode{Val: 4}
-	n3 := &TreeNode{Val: 3}
-	n4 := &TreeNode{Val: 6}
-	root.Left = n1
-	root.Right = n2
-	n2.Left = n3
-	n2.Right = n4
-	fmt.Println(isValidBST(root))
+
 }
