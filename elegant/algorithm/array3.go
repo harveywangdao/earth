@@ -154,6 +154,69 @@ func findMin2(nums []int) int {
 	return nums[l]
 }
 
+func pivotIndex(nums []int) int {
+	n := len(nums)
+	rs := 0
+	for i := 0; i < n; i++ {
+		rs += nums[i]
+	}
+
+	ls := 0
+	for i := 0; i < n; i++ {
+		rs -= nums[i]
+		if ls == rs {
+			return i
+		}
+		ls += nums[i]
+	}
+	return -1
+}
+
+func searchInsert(nums []int, target int) int {
+	l, r := 0, len(nums)-1
+	for l <= r {
+		mid := (l + r) / 2
+		if nums[mid] == target {
+			return mid
+		}
+		if nums[mid] > target {
+			r = mid - 1
+		} else {
+			l = mid + 1
+		}
+	}
+	return l
+}
+
+func setZeroes(matrix [][]int) {
+	row := len(matrix)
+	col := len(matrix[0])
+
+	rm := make(map[int]int)
+	cm := make(map[int]int)
+
+	for i := 0; i < row; i++ {
+		for j := 0; j < col; j++ {
+			if matrix[i][j] == 0 {
+				rm[i] = 1
+				cm[j] = 1
+			}
+		}
+	}
+
+	for i, _ := range rm {
+		for j := 0; j < col; j++ {
+			matrix[i][j] = 0
+		}
+	}
+
+	for j, _ := range cm {
+		for i := 0; i < row; i++ {
+			matrix[i][j] = 0
+		}
+	}
+}
+
 func main() {
 
 }
