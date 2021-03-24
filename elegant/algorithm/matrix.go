@@ -37,8 +37,42 @@ func searchMatrix(matrix [][]int, target int) bool {
 	return false
 }
 
-func searchMatrix1(matrix [][]int, target int) bool {
+func findDiagonalOrder(matrix [][]int) []int {
+	m := len(matrix)
+	if m == 0 {
+		return nil
+	}
+	n := len(matrix[0])
 
+	res := make([]int, 0, m*n)
+	down := false
+
+	for c := 0; c <= m+n-2; c++ {
+		if down {
+			var i, j int
+			if c >= n {
+				i = c - n + 1
+			}
+			j = c - i
+
+			for ; i < m && j >= 0; i, j = i+1, j-1 {
+				res = append(res, matrix[i][j])
+			}
+		} else {
+			var i, j int
+			if c >= m {
+				j = c - m + 1
+			}
+			i = c - j
+
+			for ; i >= 0 && j < n; i, j = i-1, j+1 {
+				res = append(res, matrix[i][j])
+			}
+		}
+
+		down = !down
+	}
+	return res
 }
 
 func main() {
