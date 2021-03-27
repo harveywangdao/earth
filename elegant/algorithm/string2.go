@@ -90,6 +90,34 @@ func decodeString(s string) string {
 	return le.buf.String()
 }
 
+func reverseWords(s string) string {
+	var ss []string
+
+	start := 0
+	for i := 0; i < len(s); i++ {
+		if s[i] == ' ' {
+			if i > start {
+				ss = append(ss, string(s[start:i]))
+			}
+			start = i + 1
+		}
+	}
+
+	if len(s) > start {
+		ss = append(ss, string(s[start:]))
+	}
+
+	var res string
+	for i := len(ss) - 1; i >= 0; i-- {
+		res += ss[i]
+		if i > 0 {
+			res += " "
+		}
+	}
+
+	return res
+}
+
 func main() {
 
 }
