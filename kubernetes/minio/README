@@ -1,0 +1,84 @@
+一、部署
+单节点
+docker run --rm -p 9000:9000 \
+  --name minio1 \
+  -e "MINIO_ROOT_USER=miniothomas" \
+  -e "MINIO_ROOT_PASSWORD=miniothomas123" \
+  minio/minio server /data
+
+wget https://dl.min.io/server/minio/release/linux-amd64/minio
+chmod +x minio
+MINIO_ROOT_USER=miniothomas MINIO_ROOT_PASSWORD=miniothomas123 ./minio server --address :9000 ./data
+
+http://192.168.197.129:9000
+
+单节点纠删码
+MINIO_ROOT_USER=miniothomas MINIO_ROOT_PASSWORD=miniothomas123 ./minio server --address :9000 ./data{1...8}
+2/3drives 失败
+4drives 成功  1st pool, 1 set(s), 4 drives per set
+5drives 成功  1st pool, 1 set(s), 5 drives per set
+6drives 成功  1st pool, 1 set(s), 6 drives per set
+8drives 成功  1st pool, 1 set(s), 8 drives per set  损坏四个能全部恢复
+10drives 成功 1st pool, 1 set(s), 10 drives per set 损坏五个只能恢复bucket不能恢复object
+Host local has more than 4 drives of set. A host failure will result in data becoming unavailable
+12drives 成功 1st pool, 1 set(s), 12 drives per set 损坏五个只能恢复bucket不能恢复object
+14drives 成功 1st pool, 1 set(s), 14 drives per set 损坏五个只能恢复bucket不能恢复object
+16drives 成功 1st pool, 1 set(s), 16 drives per set 损坏五个只能恢复bucket不能恢复object
+
+
+17/19/23/29/31   失败
+18   1st pool, 2 set(s), 9 drives per set
+21   1st pool, 3 set(s), 7 drives per set
+22   1st pool, 2 set(s), 11 drives per set
+24   1st pool, 2 set(s), 12 drives per set
+25   1st pool, 5 set(s), 5 drives per set
+32   1st pool, 2 set(s), 16 drives per set
+1000 1st pool, 100 set(s), 10 drives per set
+
+一个set中的drives损坏过半数据无法恢复
+两个set其中一个set全损坏,旧的bucket无法恢复，但可以增加新的bucket
+
+rm -rf data*
+
+集群
+dd if=/dev/zero of=/home/thomas/data/files/d.txt bs=1M count=10
+dd if=/dev/zero of=/home/thomas/data/files/e.txt bs=10M count=10
+
+增加磁盘
+sudo fdisk -l
+sudo lsblk -a
+
+sudo fdisk /dev/sdb
+n
+p
+1
+2048
++10G
+w
+
+sudo mkfs.ext4 /dev/sdb1
+cd /home/thomas/data
+mkdir -p minio1 minio2 minio3 minio4
+sudo lsblk -f
+sudo vim /etc/fstab
+sudo df -hl
+sudo reboot
+
+cd /home/thomas/data
+sudo chown -R thomas:thomas *
+rm -rf minio1/* minio2/* minio3/* minio4/* minio1/.minio.sys minio2/.minio.sys minio3/.minio.sys minio4/.minio.sys
+
+cd ~/server/minio
+MINIO_ROOT_USER=miniothomas MINIO_ROOT_PASSWORD=miniothomas123 ./minio server --address :9000 \
+http://192.168.197.128:9000/home/thomas/data/minio{1...4} \
+http://192.168.197.129:9000/home/thomas/data/minio{1...4} \
+http://192.168.197.130:9000/home/thomas/data/minio{1...4}
+
+set按照节点划分，一个节点有一个或一个以上的set
+
+rm -rf minio1/* minio2/* minio1/.minio.sys minio2/.minio.sys
+
+MINIO_ROOT_USER=miniothomas MINIO_ROOT_PASSWORD=miniothomas123 ./minio server --address :9000 \
+http://192.168.197.128:9000/home/thomas/server/minio/data{1...4} \
+http://192.168.197.129:9000/home/thomas/server/minio/data{1...4} \
+http://192.168.197.130:9000/home/thomas/server/minio/data{1...4}
