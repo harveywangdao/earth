@@ -3,10 +3,13 @@ package main
 import (
 	"bytes"
 	"context"
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"path/filepath"
+	"sync"
+	"time"
 
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
@@ -79,20 +82,21 @@ func createBucket(ctx context.Context, bucket string) error {
 }
 
 func do1() {
-	createBucket(context.Background(), "bucket-01")
-	for i := 1; i <= 1000; i++ {
+	bucket := "bucket-01"
+	createBucket(context.Background(), bucket)
+	for i := 1001; i <= 2000; i++ {
 		str := fmt.Sprintf("%d-%d-%d-%d", i, i, i, i)
-		upload(context.Background(), "bucket-01", fmt.Sprintf("file-%d.txt", i), []byte(str))
+		upload(context.Background(), bucket, fmt.Sprintf("file-%d.txt", i), []byte(str))
 	}
 }
 
 func do2() {
 	bucket := "bucket-01"
-	for i := 1; i <= 1000; i++ {
+	for i := 1001; i <= 2000; i++ {
 		objectName := fmt.Sprintf("file-%d.txt", i)
 		data, err := getObject(context.Background(), bucket, objectName)
 		if err != nil {
-			log.Fatal(err)
+			log.Println(err)
 		}
 		log.Printf("download success, bucket: %s, objectName: %s, data: %s", bucket, objectName, data)
 	}
@@ -100,17 +104,72 @@ func do2() {
 
 func do3() {
 	bucket := "bucket-01"
-	for i := 1; i <= 1000; i++ {
+	for i := 1001; i <= 2000; i++ {
 		objectName := fmt.Sprintf("file-%d.txt", i)
 		storePath := filepath.Join("download", objectName)
 		if err := minioClient.FGetObject(context.Background(), bucket, objectName, storePath, minio.GetObjectOptions{}); err != nil {
-			log.Fatal(err)
+			log.Println(err)
 		}
 		log.Printf("download success, bucket: %s, objectName: %s", bucket, objectName)
 	}
 }
 
+func do4() {
+	bucket := "bucket02"
+	objectName := "bigfile"
+	createBucket(context.Background(), bucket)
+	upload(context.Background(), bucket, objectName, []byte("ascasxa"))
+
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		log.Println("prepare to download...")
+		time.Sleep(time.Second)
+		log.Println("downloading")
+		if err := minioClient.FGetObject(context.Background(), bucket, objectName, "/home/thomas/data/files/a.txt.bk", minio.GetObjectOptions{}); err != nil {
+			log.Println(err)
+		}
+		log.Printf("download success, bucket: %s, objectName: %s", bucket, objectName)
+	}()
+
+	log.Println("start modify file...")
+	uploadFile(context.Background(), "/home/thomas/data/files/a.txt", bucket, objectName)
+	log.Println("modify file finish...")
+	wg.Wait()
+}
+
+func do5() {
+	bucket := "bucket02"
+	objectName := "doublewrite"
+	createBucket(context.Background(), bucket)
+	upload(context.Background(), bucket, objectName, []byte("ascasxa"))
+
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		time.Sleep(time.Second)
+		log.Println("start upload 1")
+		uploadFile(context.Background(), "/home/thomas/data/files/d.txt", bucket, objectName)
+		log.Println("upload finish 1")
+	}()
+
+	log.Println("start upload 2")
+	uploadFile(context.Background(), "/home/thomas/data/files/f.txt", bucket, objectName)
+	log.Println("upload finish 2")
+	wg.Wait()
+}
+
 func main() {
+	var event string
+	flag.StringVar(&event, "event", "upload", "event")
+	flag.Parse()
 	log.SetFlags(log.Lshortfile | log.LstdFlags)
-	do2()
+
+	if event == "upload" {
+		do1()
+	} else {
+		do2()
+	}
 }

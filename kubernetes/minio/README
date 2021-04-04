@@ -72,13 +72,121 @@ cd ~/server/minio
 MINIO_ROOT_USER=miniothomas MINIO_ROOT_PASSWORD=miniothomas123 ./minio server --address :9000 \
 http://192.168.197.128:9000/home/thomas/data/minio{1...4} \
 http://192.168.197.129:9000/home/thomas/data/minio{1...4} \
-http://192.168.197.130:9000/home/thomas/data/minio{1...4}
+http://192.168.197.130:9000/home/thomas/data/minio{1...4} \
+http://192.168.197.131:9000/home/thomas/data/minio{1...4}
 
-set按照节点划分，一个节点有一个或一个以上的set
+MINIO_ROOT_USER=miniothomas MINIO_ROOT_PASSWORD=miniothomas123 ./minio server --address :9000 \
+http://192.168.197.128:9000/home/thomas/server/minio/data1 \
+http://192.168.197.129:9000/home/thomas/server/minio/data1 \
+http://192.168.197.130:9000/home/thomas/server/minio/data1 \
+http://192.168.197.131:9000/home/thomas/server/minio/data1 \
+http://192.168.197.128:9000/home/thomas/server/minio/data2 \
+http://192.168.197.129:9000/home/thomas/server/minio/data2 \
+http://192.168.197.130:9000/home/thomas/server/minio/data2 \
+http://192.168.197.131:9000/home/thomas/server/minio/data2 \
+http://192.168.197.128:9000/home/thomas/server/minio/data3 \
+http://192.168.197.129:9000/home/thomas/server/minio/data3 \
+http://192.168.197.130:9000/home/thomas/server/minio/data3 \
+http://192.168.197.131:9000/home/thomas/server/minio/data3 \
+http://192.168.197.128:9000/home/thomas/server/minio/data4 \
+http://192.168.197.129:9000/home/thomas/server/minio/data4 \
+http://192.168.197.130:9000/home/thomas/server/minio/data4 \
+http://192.168.197.131:9000/home/thomas/server/minio/data4 \
+http://192.168.197.128:9000/home/thomas/server/minio/data5 \
+http://192.168.197.129:9000/home/thomas/server/minio/data5 \
+http://192.168.197.130:9000/home/thomas/server/minio/data5 \
+http://192.168.197.131:9000/home/thomas/server/minio/data5 \
+http://192.168.197.128:9000/home/thomas/server/minio/data6 \
+http://192.168.197.129:9000/home/thomas/server/minio/data6 \
+http://192.168.197.130:9000/home/thomas/server/minio/data6 \
+http://192.168.197.131:9000/home/thomas/server/minio/data6 \
+http://192.168.197.128:9000/home/thomas/server/minio/data7 \
+http://192.168.197.129:9000/home/thomas/server/minio/data7 \
+http://192.168.197.130:9000/home/thomas/server/minio/data7 \
+http://192.168.197.131:9000/home/thomas/server/minio/data7 \
+http://192.168.197.128:9000/home/thomas/server/minio/data8 \
+http://192.168.197.129:9000/home/thomas/server/minio/data8 \
+http://192.168.197.130:9000/home/thomas/server/minio/data8 \
+http://192.168.197.131:9000/home/thomas/server/minio/data8
 
-rm -rf minio1/* minio2/* minio1/.minio.sys minio2/.minio.sys
+MINIO_ROOT_USER=miniothomas MINIO_ROOT_PASSWORD=miniothomas123 ./minio server --address :9000 \
+http://192.168.197.1{28...31}:9000/home/thomas/server/minio/data{1...4} \
+http://192.168.197.1{28...31}:9000/home/thomas/server/minio/data{5...8}
+
+MINIO_ROOT_USER=miniothomas MINIO_ROOT_PASSWORD=miniothomas123 ./minio server --address :9000 \
+http://192.168.197.1{28...31}:9000/home/thomas/server/minio/data{1...8}
+这种方式部署四个节点前四个drives是一个set，后四个drives也是一个set，整个集群有2个set，一个节点挂掉，不影响读写
+
+MINIO_ROOT_USER=miniothomas MINIO_ROOT_PASSWORD=miniothomas123 ./minio server --address :9000 \
+http://192.168.197.128:9000/home/thomas/server/minio/data{1...8} \
+http://192.168.197.129:9000/home/thomas/server/minio/data{1...8} \
+http://192.168.197.130:9000/home/thomas/server/minio/data{1...8} \
+http://192.168.197.131:9000/home/thomas/server/minio/data{1...8}
+这种方式部署每个节点都是一个set，一个节点挂掉，能读到其中某一个节点的数据，写完全失败
 
 MINIO_ROOT_USER=miniothomas MINIO_ROOT_PASSWORD=miniothomas123 ./minio server --address :9000 \
 http://192.168.197.128:9000/home/thomas/server/minio/data{1...4} \
 http://192.168.197.129:9000/home/thomas/server/minio/data{1...4} \
-http://192.168.197.130:9000/home/thomas/server/minio/data{1...4}
+http://192.168.197.130:9000/home/thomas/server/minio/data{1...4} \
+http://192.168.197.131:9000/home/thomas/server/minio/data{1...4} \
+http://192.168.197.128:9000/home/thomas/server/minio/data{5...8} \
+http://192.168.197.129:9000/home/thomas/server/minio/data{5...8} \
+http://192.168.197.130:9000/home/thomas/server/minio/data{5...8} \
+http://192.168.197.131:9000/home/thomas/server/minio/data{5...8}
+这种方式部署一个节点前四个drives是一个set，每个节点有两个set，一共8个set，一个节点挂掉，读只能读某一个节点的数据，写完全失败
+
+MINIO_ROOT_USER=miniothomas MINIO_ROOT_PASSWORD=miniothomas123 ./minio server --address :9000 \
+http://192.168.197.1{28...31}:9000/home/thomas/server/minio/data1
+四个节点组成一个set，一个节点挂掉不影响读写；2个drives坏掉数据可以自动恢复；2个节点挂掉数据可读不可写
+
+MINIO_ROOT_USER=miniothomas MINIO_ROOT_PASSWORD=miniothomas123 ./minio server --address :9000 \
+http://192.168.197.1{28...31}:9000/home/thomas/server/minio/data{1...2}
+四个节点组成一个set，一个节点挂掉不影响读写；4个drives坏掉数据可以自动恢复；2个节点挂掉数据可读不可写
+
+MINIO_ROOT_USER=miniothomas MINIO_ROOT_PASSWORD=miniothomas123 ./minio server --address :9000 \
+http://192.168.197.1{28...31}:9000/home/thomas/server/minio/data{1...4}
+四个节点组成一个set，一个节点挂掉不影响读写；5个drives坏掉文件数据会清零bucket会保存；2个节点挂掉数据不可读不可写
+
+MINIO_ROOT_USER=miniothomas MINIO_ROOT_PASSWORD=miniothomas123 ./minio server --address :9000 \
+http://192.168.197.1{28...31}:9000/home/thomas/server/minio/data{1...2} \
+http://192.168.197.1{28...31}:9000/home/thomas/server/minio/data{3...4}
+四个节点前2个drives组成一个set，后2个drives组成一个set，整个集群有2个set，一个节点挂掉不影响读写；一个set中的4个drives坏掉数据可以自动恢复；2个节点挂掉数据可读不可写
+
+最佳搭配：8个drives组成一个set
+
+二、客户端
+mc --autocompletion
+
+mc alias list
+mc alias remove harvey
+mc alias set harvey http://192.168.197.128:9000 miniothomas miniothomas123
+
+mc ls harvey
+mc mb harvey/bucket02
+mc cp a.txt harvey/bucket02
+mc ls harvey/bucket02
+
+mc cat harvey/bucket02/a.txt 
+mc share download harvey/bucket02/a.txt
+mc share upload harvey/bucket02/b.txt
+mc find harvey/bucket02 --name "*.txt"
+mc stat harvey/bucket02/a.txt
+mc rm harvey/bucket02/a.txt
+mc du harvey/bucket02/a.txt
+mc ilm ls harvey/bucket02
+mc ilm add --expiry-days "1" harvey/bucket02
+mc watch harvey/bucket02
+mc admin info harvey
+
+三、原理
+纠删码
+dsync分布式锁
+ACID
+CAP
+
+增加节点
+删除节点
+
+分布式存储
+数据不丢失，数据副本，纠删码
+数据一致性，分布式事务，raft
