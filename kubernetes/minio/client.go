@@ -16,7 +16,7 @@ import (
 )
 
 var (
-	endpoint        = "192.168.197.128:9000"
+	endpoint        = "192.168.126.131:9000"
 	accessKeyID     = "miniothomas"
 	secretAccessKey = "miniothomas123"
 

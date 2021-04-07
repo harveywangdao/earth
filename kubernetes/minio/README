@@ -152,7 +152,10 @@ http://192.168.197.1{28...31}:9000/home/thomas/server/minio/data{1...2} \
 http://192.168.197.1{28...31}:9000/home/thomas/server/minio/data{3...4}
 四个节点前2个drives组成一个set，后2个drives组成一个set，整个集群有2个set，一个节点挂掉不影响读写；一个set中的4个drives坏掉数据可以自动恢复；2个节点挂掉数据可读不可写
 
-最佳搭配：8个drives组成一个set
+MINIO_STORAGE_CLASS_STANDARD=EC:8 MINIO_ROOT_USER=miniothomas MINIO_ROOT_PASSWORD=miniothomas123 ./minio server --address :9000 \
+http://192.168.126.1{28...31}:9000/home/thomas/server/minio/data{1...4}
+四个节点组成一个set，一个节点挂掉不影响读写；8个drives坏掉文件数据可以恢复；2个节点挂掉数据可读不可写
+
 
 二、客户端
 mc --autocompletion
@@ -179,7 +182,8 @@ mc watch harvey/bucket02
 mc admin info harvey
 
 三、原理
-纠删码
+k8s部署
+纠删码Reed-Solomon
 dsync分布式锁
 ACID
 CAP
@@ -188,5 +192,6 @@ CAP
 删除节点
 
 分布式存储
+服务可用性
 数据不丢失，数据副本，纠删码
-数据一致性，分布式事务，raft
+数据一致性，分布式事务，分布式锁，raft
