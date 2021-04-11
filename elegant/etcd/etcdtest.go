@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/coreos/etcd/clientv3"
+	"go.etcd.io/etcd/clientv3"
 	"log"
 	"time"
 )
