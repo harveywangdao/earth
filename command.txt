@@ -3246,6 +3246,16 @@ Helm:
   nohup ./src/redis-server redis.conf &
 
   nohup ./etcd --data-dir=data.etcd --name et-wang-1 \
+    --initial-advertise-peer-urls http://192.168.0.106:2380 --listen-peer-urls http://192.168.0.106:2380 \
+    --advertise-client-urls http://192.168.0.106:2379 --listen-client-urls http://192.168.0.106:2379 \
+    --initial-cluster et-wang-1=http://192.168.0.106:2380 \
+    --initial-cluster-state new \
+    --initial-cluster-token token-wang-group-1 \
+    >>etcd.log 2>&1 &
+
+  ./etcdctl --endpoints=http://192.168.0.106:2379 get / --prefix
+
+  nohup ./etcd --data-dir=data.etcd --name et-wang-1 \
     --initial-advertise-peer-urls http://192.168.1.7:2380 --listen-peer-urls http://192.168.1.7:2380 \
     --advertise-client-urls http://192.168.1.7:2379 --listen-client-urls http://192.168.1.7:2379 \
     --initial-cluster et-wang-1=http://192.168.1.7:2380,et-wang-2=http://192.168.1.10:2380,et-wang-3=http://192.168.1.11:2380 \
