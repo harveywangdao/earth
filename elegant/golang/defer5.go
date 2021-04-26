@@ -4,7 +4,7 @@ import (
 	"fmt"
 )
 
-func es() {
+func do1() {
 	fmt.Println("000")
 
 	defer fmt.Println("111")
@@ -22,7 +22,24 @@ func es() {
 	fmt.Println("444")
 }
 
+func do2() {
+	a := 1
+
+	defer func() {
+		f1(a)
+	}()
+
+	defer func(x int) {
+		f1(x)
+	}(a)
+
+	a++
+}
+
+func f1(a int) {
+	fmt.Println(a)
+}
+
 func main() {
-	es()
-	fmt.Println("555")
+	do2()
 }
