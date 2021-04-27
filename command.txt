@@ -3227,6 +3227,8 @@ Helm:
   Snapshot、Entry、HTTP Server、Store、Raft
   静态配置启动、etcd自身服务发现、通过DNS进行服务发现
   
+  docker run -d -p 2379:2379 -e "ALLOW_NONE_AUTHENTICATION=yes" bitnami/etcd
+
   tar -xzvf etcd-v3.3.13-linux-amd64.tar.gz -C ~/server/
   ./etcd
   export ETCDCTL_API=3
