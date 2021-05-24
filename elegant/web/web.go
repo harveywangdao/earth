@@ -2,8 +2,12 @@ package main
 
 import (
 	"encoding/json"
+	//"golang.org/x/net/http2"
+	"log"
 	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	beego "github.com/beego/beego/server/web"
@@ -90,13 +94,37 @@ func chiweb() {
 	http.ListenAndServe(":9996", r)
 }
 
+func https2web() {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("http2 web\n"))
+	})
+
+	var srv http.Server
+	srv.Addr = ":9997"
+	srv.Handler = mux
+
+	log.Fatal(srv.ListenAndServeTLS("../http/ca/server.crt", "../http/ca/server.key"))
+}
+
+func http2web() {
+
+}
+
 func main() {
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
+
 	go ginweb()
 	go beegoweb()
-	//go irisweb()
+	go irisweb()
 	go echoweb()
 	go fiberweb()
 	go martiniweb()
 	go chiweb()
-	select {}
+	go https2web()
+	go http2web()
+
+	ch := make(chan os.Signal)
+	signal.Notify(ch, syscall.SIGTERM, syscall.SIGINT)
+	<-ch
 }
