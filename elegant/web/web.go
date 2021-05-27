@@ -1,14 +1,19 @@
 package main
 
 import (
+	"crypto/tls"
 	"encoding/json"
-	//"golang.org/x/net/http2"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	"golang.org/x/crypto/acme/autocert"
+	"golang.org/x/net/http2"
+	"golang.org/x/net/http2/h2c"
 
 	beego "github.com/beego/beego/server/web"
 	bc "github.com/beego/beego/server/web/context"
@@ -97,7 +102,7 @@ func chiweb() {
 func https2web() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("http2 web\n"))
+		w.Write([]byte("https2 web\n"))
 	})
 
 	var srv http.Server
@@ -108,7 +113,61 @@ func https2web() {
 }
 
 func http2web() {
+	go http2web_client()
 
+	mux := http.NewServeMux()
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("http2 web"))
+	})
+	s := &http.Server{
+		Addr:    ":9998",
+		Handler: h2c.NewHandler(mux, &http2.Server{}),
+	}
+	log.Fatal(s.ListenAndServe())
+}
+
+func http2web_client() {
+	time.Sleep(time.Second * 5)
+	client := &http.Client{
+		Transport: &http2.Transport{
+			AllowHTTP: true,
+			DialTLS: func(network, addr string, cfg *tls.Config) (net.Conn, error) {
+				return net.Dial(network, addr)
+			},
+		},
+	}
+	resp, err := client.Get("http://localhost:9998")
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
+	defer resp.Body.Close()
+
+	log.Println(resp.Status)
+	log.Println(resp.Proto)
+}
+
+func http2web2() {
+	certManager := autocert.Manager{
+		Prompt:     autocert.AcceptTOS,
+		HostPolicy: autocert.HostWhitelist("192.168.126.128"),
+		Cache:      autocert.DirCache("certs"),
+	}
+
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("http2 web"))
+	})
+
+	srv := &http.Server{
+		Addr: ":9998",
+		TLSConfig: &tls.Config{
+			GetCertificate: certManager.GetCertificate,
+		},
+	}
+
+	go http.ListenAndServe(":80", certManager.HTTPHandler(nil))
+
+	log.Fatal(srv.ListenAndServeTLS("", ""))
 }
 
 func main() {
