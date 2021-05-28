@@ -1,0 +1,44 @@
+1.HTTP/2
+SPDY基础上
+多路复用,一个TCP连接上同时跑多个HTTP请求,请求可设定优先级,二进制分帧,stream,解决队首阻塞问题
+头部压缩,HPACK,静态索引表,动态索引表
+Server Push
+ALPN,协议协商
+
+帧类型:
+DATA：用于传输HTTP消息体
+HEADERS：用于传输首部字段
+SETTINGS：用于约定客户端和服务端的配置数据。比如设置初识的双向流量控制窗口大小
+WINDOW_UPDATE：用于调整个别流或个别连接的流量
+PRIORITY：用于指定或重新指定引用资源的优先级
+RST_STREAM：用于通知流的非正常终止
+PUSH_ PROMISE：服务端推送许可
+PING：用于计算往返时间，执行“ 活性” 检活
+GOAWAY：用于通知对端停止在当前连接中创建流
+
+stream:
+流是连接中的一个虚拟信道，可以承载双向消息传输。每个流有唯一整数标识符。为了防止两端流ID冲突，客户端发起的流具有奇数ID，服务器端发起的流具有偶数ID
+
+请求优先级:
+31bit
+0：表示最高优先级
+
+PUSH_PROMISE帧是服务端向客户端有意推送资源的信号
+
+首部表来跟踪和存储之前发送的键-值对
+
+HTTP Upgrade
+
+2.TLS/SSL
+
+
+3.TCP
+三次握手
+四次挥手
+SYN Flood: reset认证 cookie源认证
+Syn Cookie: 无状态的三次握手
+Syn Cache: 不直接分配TCB,使用更少的数据记录状态
+cat /proc/sys/net/ipv4/tcp_max_syn_backlog
+
+4.UDP
+
