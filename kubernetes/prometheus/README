@@ -1,0 +1,40 @@
+1.Prometheus
+docker run -d --name prometheus \
+  --restart=always \
+  -p 9090:9090 \
+  -v $(pwd)/prometheus.yml:/etc/prometheus/prometheus.yml \
+  prom/prometheus
+
+curl http://192.168.126.128:9090
+
+2.node_exporter
+docker run -d --name node_exporter \
+  --restart=always \
+  --net="host" \
+  --pid="host" \
+  -v "/proc:/host/proc:ro" \
+  -v "/sys:/host/sys:ro" \
+  -v "/:/rootfs:ro" \
+  quay.io/prometheus/node-exporter:latest \
+  --path.procfs=/host/proc \
+  --path.sysfs=/host/sys \
+  --path.rootfs=/rootfs \
+  --collector.filesystem.ignored-mount-points='^/(sys|proc|dev|host|etc)($$|/)'
+
+curl http://192.168.126.128:9100/metrics
+
+3.Grafana
+docker run -d -p 3000:3000 --name grafana grafana/grafana
+
+curl http://192.168.126.128:3000
+admin
+admin
+
+https://grafana.com/grafana/dashboards
+
+4.cAdvisor
+
+5.Alertmanager
+
+6.Pushgateway
+
