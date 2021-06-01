@@ -3,6 +3,7 @@ package main
 import (
 	"crypto/tls"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net"
 	"net/http"
@@ -34,6 +35,11 @@ func ginweb() {
 			"message": "gin web",
 		})
 	})
+
+	r.GET("/:wind", func(c *gin.Context) {
+		fmt.Println(c.Param("wind"))
+	})
+
 	r.Run(":9990")
 }
 
