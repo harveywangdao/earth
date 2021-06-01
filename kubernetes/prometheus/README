@@ -32,9 +32,27 @@ admin
 
 https://grafana.com/grafana/dashboards
 
-4.cAdvisor
+4.Pushgateway
+docker run -d -p 9091:9091 --name pushgateway prom/pushgateway
 
-5.Alertmanager
+curl http://192.168.126.128:9091
 
-6.Pushgateway
+echo "some_metric 3.14" | curl --data-binary @- http://192.168.126.128:9091/metrics/job/some_job
 
+5.cAdvisor
+docker run \
+  --volume=/:/rootfs:ro \
+  --volume=/var/run:/var/run:ro \
+  --volume=/sys:/sys:ro \
+  --volume=/var/lib/docker/:/var/lib/docker:ro \
+  --volume=/dev/disk/:/dev/disk:ro \
+  --publish=8080:8080 \
+  --detach=true \
+  --name=cadvisor \
+  --privileged \
+  --device=/dev/kmsg \
+  gcr.io/cadvisor/cadvisor:latest
+
+curl http://192.168.126.128:8080
+
+6.Alertmanager
