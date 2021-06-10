@@ -7,6 +7,7 @@ import (
 	"time"
 
 	pb "github.com/harveywangdao/earth/elegant/http/grpc/hello"
+	"github.com/harveywangdao/earth/elegant/logger/logger"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 )
@@ -31,8 +32,16 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 
-	//ctx = metadata.NewIncomingContext(ctx, metadata.Pairs("Incomingkey01", "Incomingvalue01"))
-	ctx = metadata.NewOutgoingContext(ctx, metadata.Pairs("Outgoingkey01", "Outgoingvalue01"))
+	ctx = logger.CreateLogContext(ctx)
+
+	logger.Info("start client")
+	logger.Infof("%s", "start client")
+
+	logger.With(ctx).Info("start client")
+	logger.With(ctx).Infof("%s", "start client")
+
+	ctx = logger.CreateOutgoingContext(ctx)
+	ctx = metadata.AppendToOutgoingContext(ctx, "x-out-going", "1287319823791", "x-qws-asdas", "dasdasdasd")
 
 	r, err := c.SayHello(ctx, &pb.HelloRequest{Name: name})
 	if err != nil {
