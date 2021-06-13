@@ -16,15 +16,34 @@ func do1(cli *clientv3.Client) {
 	}
 
 	mu := concurrency.NewMutex(session, "darwin")
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	err = mu.Lock(ctx)
-	cancel()
-	if err != nil {
-		log.Println(err)
-		return
+
+	log.Println("wait session done")
+	_, ok := <-session.Done()
+	if !ok {
+		log.Println("ok:", ok)
 	}
 
-	log.Println("locked")
+	for {
+		ctx1, cancel1 := context.WithTimeout(context.Background(), 10*time.Second)
+		err = mu.Lock(ctx1)
+		cancel1()
+		if err != nil {
+			log.Println(err)
+			return
+		}
+		log.Println("locked")
+
+		time.Sleep(time.Second * 2)
+
+		ctx2, cancel2 := context.WithTimeout(context.Background(), 10*time.Second)
+		err = mu.Unlock(ctx2)
+		cancel2()
+		if err != nil {
+			log.Println(err)
+			return
+		}
+		log.Println("unlocked")
+	}
 
 	go do2(cli)
 	time.Sleep(10 * time.Second)
