@@ -1,0 +1,116 @@
+1.golang
+map
+管道
+协程
+
+2.mysql
+聚族索引和非聚族索引
+InnoDB和MyISAM
+索引 B树 B+树
+执行流程
+
+3.redis
+string
+hash
+list
+set
+zset
+
+主从
+redis cluster
+哨兵
+
+4.k8s
+Pod Deployment Service DaemonSet StatefulSet ReplicaSet Job Label Namespace ConfigMap Secret Ingress
+Volume PersistentVolume PersistentVolumeClaim StorageClass
+kube-apiserver etcd kube-scheduler kube-controller-manager kubelet kube-proxy
+
+5.微服务/服务网格
+服务注册发现
+链路追踪
+
+6.kafka
+
+7.mongodb
+
+8.操作系统
+进程
+线程 TCB
+内存
+进程间通信 管道 命名管道FIFO 共享内存 消息队列 信号 UNIX域 socket DBUS
+同步 信号量 互斥量 条件变量 读写锁
+IO多路复用 poll select epoll
+
+9.tcp/udp
+物理层
+数据链路层 ARP RARP
+网络层 IP ICMP IGMP
+传输层 TCP UDP
+应用层 HTTP FTP TFTP SMTP
+
+三次握手 避免重复连接
+四次挥手
+粘包
+DDOS
+半连接队列
+全连接队列
+
+最大传输单元(MTU) 1500字节
+MSS （最大报文段长度）536
+
+SYN Flood
+Syn Cache: 不直接分配TCB,使用更少的数据记录状态
+Syn Cookie: 无状态的三次握手
+cookie源认证: 记录sequence number,将真实客户端IP加入白名单
+reset认证: reset报文,将真实客户端IP加入白名单
+
+慢启动 慢启动门限(ssthresh) 65536 指数增长
+拥塞避免 线性增长 重传了一个报文段 ssthresh=cwnd/2 cwnd=1 进入慢启动
+快速重传 收到3个相同的ACK ssthresh=cwnd/2 cwnd=ssthresh 进入拥塞避免
+快速恢复
+窗口值的大小就代表能够发送出去的但还没有收到ACK的最大数据报文段
+拥塞窗口(cwnd)
+接收窗口(rwnd)
+
+10.HTTP HTTP2 TLS/SSL
+状态码:
+200 请求成功
+301 资源（网页等）被永久转移到其它URL
+
+1xx 信息响应
+2xx 成功响应
+3xx 重定向
+4xx 客户端错误
+5xx 服务器错误
+
+301 MovedPermanently 永久移动
+302 Found 临时移动,与301类似,但资源只是临时被移动,客户端应继续使用原有URI
+
+400 Bad Request
+401 Unauthorized
+403 Forbidden
+404 请求的资源（网页等）不存在
+
+500 InternalServerError
+501 NotImplemented
+502 BadGateway
+503 ServiceUnavailable
+504 GatewayTimeout
+505 HTTPVersionNotSupported
+
+包含请求方法、URI、HTTP版本信息
+header
+body
+
+包含HTTP版本、状态码、状态码的原因短语
+header
+body
+
+HTTP 2.0 和 HTTP1.1 区别
+多路复用 二进制分帧层
+首部压缩
+HTTP2支持服务器推送
+
+11.算法
+
+12.分布式 高并发 事务
