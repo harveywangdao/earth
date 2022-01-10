@@ -1,24 +1,85 @@
 1.golang
+切片
 map
 管道
 协程
+内存回收
 
 2.mysql
 聚族索引和非聚族索引
 InnoDB和MyISAM
 索引 B树 B+树
 执行流程
+mvcc
+隔离级别
 
 3.redis
-string
-hash
-list
-set
-zset
+string SDS 长度不能超过512M int编码 raw编码 embstr编码
+hash hashtable ziplist(列表保存元素个数小于512个&每个元素长度小于64字节)
+list linkedlist ziplist(列表保存元素个数小于512个&每个元素长度小于64字节)
+set hashtable intset(集合对象中所有元素都是整数&集合对象所有元素数量不超过512)
+zset skiplist&字典 ziplist(保存的元素数量小于128&每个元素长度小于64字节)
 
-主从
+AOF
+RDB 快照 save&bgsave dump.rdb
+RDB在恢复大数据集时的速度比AOF的恢复速度要快
+
+HyperLogLog
+PUB/SUB
+事务 MULTI EXEC DISCARD UNWATCH WATCH
+Lua EVAL "return {KEYS[1],KEYS[2],ARGV[1],ARGV[2]}" 2 key1 key2 first second
+Redis GEO
+Redis Stream
+Redis Pipeline
+Redis Bitmap
+
+redis缓存击穿(热点key不失效或加锁)、缓存穿透(不存在的key设置空value和过期时间)、缓存雪崩(key失效时间不同)
+
+单节点
+主从 replicaof 127.0.0.1 7000
 redis cluster
-哨兵
+redis cluster+主从
+主从+哨兵
+
+daemonize yes
+bind 127.0.0.1
+port 7000
+dir /home/thomas/server/redis/data/redis-7000
+pidfile /var/run/redis/redis-7000.pid
+logfile /home/thomas/server/redis/log/redis-7000.log
+cluster-enabled yes
+cluster-config-file /home/thomas/server/redis/conf/cluster-7000.conf
+cluster-node-timeout 10000
+
+rm -rf cluster data log
+mkdir cluster data log
+mkdir data/redis-7000 data/redis-7001 data/redis-7002 data/redis-8000 data/redis-8001 data/redis-8002 data/sentinel-9000 data/sentinel-9001 data/sentinel-9002
+
+./redis-server /home/thomas/server/redis/conf/redis-7000.conf
+./redis-cli -p 7000
+./redis-cli --cluster create 127.0.0.1:7000 127.0.0.1:7001 127.0.0.1:7002
+./redis-cli -c -p 7000
+./redis-cli --cluster check 127.0.0.1:7000
+./redis-cli --cluster reshard 127.0.0.1:7000
+./redis-cli -p 7000 cluster nodes
+./redis-cli --cluster add-node 127.0.0.1:7003 127.0.0.1:7000
+./redis-cli --cluster add-node 127.0.0.1:8000 127.0.0.1:7000 --cluster-slave
+./redis-cli --cluster add-node 127.0.0.1:8001 127.0.0.1:7000 --cluster-slave --cluster-master-id 7f3541c3b2e8bd05226729e9889a338b341cd77e
+./redis-cli --cluster del-node 127.0.0.1:7000 3adfaaeb6d60f39e70562d961fe7fae200913386
+
+port 9000
+daemonize yes
+logfile /home/thomas/server/redis/log/sentinel-9000.log
+pidfile /var/run/redis/sentinel-9000.pid
+dir /home/thomas/server/redis/data/sentinel-9000
+
+sentinel monitor mymaster 127.0.0.1 7000 2
+sentinel down-after-milliseconds mymaster 1500
+sentinel failover-timeout mymaster 30000
+
+./redis-sentinel /home/thomas/server/redis/conf/sentinel-9000.conf
+./redis-cli -p 9000
+sentinel master mymaster
 
 4.k8s
 Pod Deployment Service DaemonSet StatefulSet ReplicaSet Job Label Namespace ConfigMap Secret Ingress
@@ -114,3 +175,7 @@ HTTP2支持服务器推送
 11.算法
 
 12.分布式 高并发 事务
+
+LevelDB
+Snowflake
+
