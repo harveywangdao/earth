@@ -81,6 +81,21 @@ sentinel failover-timeout mymaster 30000
 ./redis-cli -p 9000
 sentinel master mymaster
 
+读操作:
+读到缓存直接返回
+读不到缓存,先去DB读数据,再更新到缓存,再返回
+
+写操作:
+先写DB,删除缓存
+
+问题:
+A读了数据库还未更新缓存
+B修改数据库
+A再去更新缓存
+数据不一致
+
+解决办法加短的过期时间
+
 4.k8s
 Pod Deployment Service DaemonSet StatefulSet ReplicaSet Job Label Namespace ConfigMap Secret Ingress
 Volume PersistentVolume PersistentVolumeClaim StorageClass
