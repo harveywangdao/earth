@@ -68,6 +68,55 @@ func do5() {
 	fmt.Println(s1 == s2)
 }
 
+func modify1(x map[int]int) {
+	x = make(map[int]int)
+	x[2] = 2
+}
+
+func modify2(x map[int]int) {
+	x[2] = 2
+}
+
+func do6() {
+	m := make(map[int]int)
+	m[1] = 1
+	fmt.Println(m)
+	modify1(m)
+	fmt.Println(m)
+	modify2(m)
+	fmt.Println(m)
+}
+
+func modify3(x []int) {
+	x = make([]int, 2)
+	x[0] = 10
+	x[1] = 20
+}
+
+func modify4(x []int) {
+	x[0] = 100
+	x[1] = 200
+}
+
+func modify5(x []int) {
+	x[0] = 1000
+	x[1] = 2000
+	x = append(x, 3000)
+}
+
+func do7() {
+	m := make([]int, 2)
+	m[0] = 1
+	m[1] = 2
+	fmt.Println(m)
+	modify3(m)
+	fmt.Println(m)
+	modify4(m)
+	fmt.Println(m)
+	modify5(m)
+	fmt.Println(m)
+}
+
 func main() {
-	do5()
+	do7()
 }
