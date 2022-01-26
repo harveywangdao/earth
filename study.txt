@@ -1,19 +1,65 @@
-1.golang
+1.Golang
 切片
 map
 管道
-协程
-内存回收
+select
+协程 调度 GMP
+内存回收 三色标记 白 灰 黑
+内存管理 mheap mspan mcentral mcache mstats TCMalloc
+接口interface
+反射
+定时器
 
-2.mysql
+
+2.MySQL
 聚族索引和非聚族索引
+覆盖索引
 InnoDB和MyISAM
-索引 B树 B+树
-执行流程
-mvcc
-隔离级别
+索引B树和B+树
+B树的所有节点既存放键(key)也存放数据(data),而B+树只有叶子节点存放key和data,其他内节点只存放key
+B+树的叶子节点有一条引用链指向与它相邻的叶子节点
 
-3.redis
+执行流程
+mvcc 快照读 当前读 Read View
+隔离级别 读取未提交 读取已提交 可重复读 可串行化
+
+InnoDB 通过数据行的 DB_TRX_ID 和 Read View 来判断数据的可见性
+DB_TRX_ID（6字节）：表示最后一次插入或更新该行的事务 id
+DB_ROLL_PTR（7字节） 回滚指针，指向该行的 undo log
+DB_ROW_ID（6字节）：如果没有设置主键且该表没有唯一非空索引时，InnoDB 会使用该 id 来生成聚簇索引
+
+redo log
+undo log
+binlog
+
+Record lock
+Gap lock
+Next-key lock
+
+select ... lock in share mode  S锁
+select ... for update X锁
+
+ACID 原子性 一致性 隔离性 持久性
+
+脏读
+幻读
+不可重复读
+
+回表
+
+连接器 查询缓存、分析器、优化器、执行器
+
+Buffer Pool
+redo log buffer
+
+
+3.DB
+MongoDB
+LevelDB
+ElasticSearch
+
+
+4.Redis
 string SDS 长度不能超过512M int编码 raw编码 embstr编码
 hash hashtable ziplist(列表保存元素个数小于512个&每个元素长度小于64字节)
 list linkedlist ziplist(列表保存元素个数小于512个&每个元素长度小于64字节)
@@ -96,18 +142,24 @@ A再去更新缓存
 
 解决办法加短的过期时间
 
-4.k8s
+
+5.Kubernetes
 Pod Deployment Service DaemonSet StatefulSet ReplicaSet Job Label Namespace ConfigMap Secret Ingress
 Volume PersistentVolume PersistentVolumeClaim StorageClass
 kube-apiserver etcd kube-scheduler kube-controller-manager kubelet kube-proxy
 
-5.微服务/服务网格
+
+6.微服务/服务网格
 服务注册发现
 链路追踪
 
-6.kafka
 
-7.mongodb
+7.MQ
+Kafka
+RabbitMQ
+RocketMQ
+ActiveMQ
+Pulsar
 
 8.操作系统
 进程
@@ -117,7 +169,8 @@ kube-apiserver etcd kube-scheduler kube-controller-manager kubelet kube-proxy
 同步 信号量 互斥量 条件变量 读写锁
 IO多路复用 poll select epoll
 
-9.tcp/udp
+
+9.网络/TCP/IP/UDP
 物理层
 数据链路层 ARP RARP
 网络层 IP ICMP IGMP
@@ -147,6 +200,7 @@ reset认证: reset报文,将真实客户端IP加入白名单
 窗口值的大小就代表能够发送出去的但还没有收到ACK的最大数据报文段
 拥塞窗口(cwnd)
 接收窗口(rwnd)
+
 
 10.HTTP HTTP2 TLS/SSL
 状态码:
@@ -187,13 +241,13 @@ HTTP 2.0 和 HTTP1.1 区别
 首部压缩
 HTTP2支持服务器推送
 
+跨域CORS 同源策略 JSONP
+CSRF/XSRF XSS
+JWT Session Token
+
+
 11.算法
 
-12.分布式 高并发 事务
 
-LevelDB
-Snowflake
+12.分布式 高并发 事务 Snowflake
 
-跨域CORS 同源策略 JSONP
-CSRF/XSRF XSS 
-JWT Session Token
