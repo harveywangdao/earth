@@ -20,7 +20,7 @@ B树的所有节点既存放键(key)也存放数据(data),而B+树只有叶子�
 B+树的叶子节点有一条引用链指向与它相邻的叶子节点
 
 执行流程
-mvcc 快照读 当前读 Read View
+mvcc 快照读 当前读 ReadView
 隔离级别 读取未提交 读取已提交 可重复读 可串行化
 
 InnoDB 通过数据行的 DB_TRX_ID 和 Read View 来判断数据的可见性
@@ -53,7 +53,7 @@ Buffer Pool
 redo log buffer
 
 
-3.DB
+3.NoSQL
 MongoDB
 LevelDB
 ElasticSearch
@@ -143,34 +143,21 @@ A再去更新缓存
 解决办法加短的过期时间
 
 
-5.Kubernetes
-Pod Deployment Service DaemonSet StatefulSet ReplicaSet Job Label Namespace ConfigMap Secret Ingress
-Volume PersistentVolume PersistentVolumeClaim StorageClass
-kube-apiserver etcd kube-scheduler kube-controller-manager kubelet kube-proxy
-
-
-6.微服务/服务网格
-服务注册发现
-链路追踪
-
-
-7.MQ
+5.MQ 异步/解耦/削峰
 Kafka
-RabbitMQ
-RocketMQ
+RabbitMQ AMQP/高级消息队列协议 routing-key/路由 镜像集群
+交换器/Exchange: direct/fanout/topic/headers
+RocketMQ NameServer Broker
 ActiveMQ
 Pulsar
 
-8.操作系统
-进程
-线程 TCB
-内存
-进程间通信 管道 命名管道FIFO 共享内存 消息队列 信号 UNIX域 socket DBUS
-同步 信号量 互斥量 条件变量 读写锁
-IO多路复用 poll select epoll
+如何解决重复消费消息的问题
+如何解决消息的顺序消费问题
+解决分布式事务问题
+解决消息堆积的问题
 
 
-9.网络/TCP/IP/UDP
+6.网络/TCP/IP/UDP
 物理层
 数据链路层 ARP RARP
 网络层 IP ICMP IGMP
@@ -202,7 +189,7 @@ reset认证: reset报文,将真实客户端IP加入白名单
 接收窗口(rwnd)
 
 
-10.HTTP HTTP2 TLS/SSL
+7.HTTP HTTP2 TLS/SSL
 状态码:
 200 请求成功
 301 资源（网页等）被永久转移到其它URL
@@ -246,8 +233,32 @@ CSRF/XSRF XSS
 JWT Session Token
 
 
-11.算法
+8.Kubernetes
+Pod Deployment Service DaemonSet StatefulSet ReplicaSet Job Label Namespace ConfigMap Secret Ingress
+Volume PersistentVolume PersistentVolumeClaim StorageClass
+kube-apiserver etcd kube-scheduler kube-controller-manager kubelet kube-proxy
 
 
-12.分布式 高并发 事务 Snowflake
+9.微服务/服务网格
+服务注册发现
+链路追踪
 
+
+10.分布式 高并发 事务 Snowflake
+限流 漏桶算法 令牌桶算法
+熔断
+降级
+灾备
+异地多活
+
+
+11.操作系统
+进程
+线程 TCB
+内存
+进程间通信 管道 命名管道FIFO 共享内存 消息队列 信号 UNIX域 socket DBUS
+同步 信号量 互斥量 条件变量 读写锁
+IO多路复用 poll select epoll
+
+
+12.算法
