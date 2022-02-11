@@ -56,8 +56,8 @@ redo log buffer
 3.NoSQL
 MongoDB
 LevelDB
-ElasticSearch
-
+ElasticSearch Shard/Replica 倒排索引 master/data/ingest/coodrinating only
+MinIO
 
 4.Redis
 string SDS 长度不能超过512M int编码 raw编码 embstr编码
