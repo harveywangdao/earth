@@ -163,11 +163,28 @@ sentinel master mymaster
 5.MQ 异步/解耦/削峰
 Kafka
 topic partition ISR/OSR/AR
+pull方式消费消息
+
+Consumer Group:
+多个消费者组成一个group,组内的所有消费者协调在一起来消费订阅主题的所有分区,每个分区只能由同一个消费组内的一个consumer来消费,避免重复消费,
+记录offset到__consumer_offsets kafka自带的topic(记录到具体哪个分区hash(groupID) % numPartitions)
+
+自动提交/手动提交: enable.auto.commit = true
+
+Rebalance:
+组成员发生变更/订阅主题数发生变更/订阅主题的分区数发生变更
+coordinator来执行对于consumer group的管理,从consumer group选出一个leader并且generation+1,leader生成具体消费方案,leader把生成的方案发给coordinator,coordinator再同步给所有consumer
+Heartbeat请求: consumer需要定期给coordinator发送心跳来表明自己还活着
+LeaveGroup请求: 主动告诉coordinator我要离开consumer group
+SyncGroup请求: group leader把分配方案发给coordinator,coordinator再告诉组内所有成员
+JoinGroup请求: 成员请求加入组
+DescribeGroup请求: 显示组的所有信息，包括成员信息，协议名称，分配方案，订阅信息等。通常该请求是给管理员使用
 
 RabbitMQ
 AMQP/高级消息队列协议
 routing-key/路由
 交换器/Exchange: direct/fanout/topic/headers
+支持pull、push方式消费消息
 
 消息丢失:
 生产者 事务(同步阻塞慢) 发送确认(异步快)(确认成功就在数据库设置标记,否则重新发送消息,未确认的消息也可存在内存/本地磁盘/redis)
@@ -206,7 +223,12 @@ requeue重新放入队列,是立即可以再次消费还是等多长时间?
 优先队列: 队列设置的x-max-priority,消息设置队列设置的priority,优先级越大越先消费
 
 
-RocketMQ NameServer Broker
+RocketMQ
+NameServer Broker
+支持pull、push方式消费消息
+生产消息: SendSync/SendAsync/SendOneWay
+
+
 ActiveMQ
 Pulsar
 
