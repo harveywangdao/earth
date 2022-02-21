@@ -162,6 +162,7 @@ sentinel master mymaster
 
 5.MQ 异步/解耦/削峰
 Kafka
+消息永久保存,定期删除
 topic partition ISR/OSR/AR
 pull方式消费消息
 
@@ -181,6 +182,7 @@ JoinGroup请求: 成员请求加入组
 DescribeGroup请求: 显示组的所有信息，包括成员信息，协议名称，分配方案，订阅信息等。通常该请求是给管理员使用
 
 RabbitMQ
+消息消费完就删除
 AMQP/高级消息队列协议
 routing-key/路由
 交换器/Exchange: direct/fanout/topic/headers
@@ -224,10 +226,30 @@ requeue重新放入队列,是立即可以再次消费还是等多长时间?
 
 
 RocketMQ
-NameServer Broker
+消息永久保存,定期删除
 支持pull、push方式消费消息
+NameServer: 路由控制中心,NameServer之间没有数据同步,Broker上报信息到NameServer
+Broker: 多主多从,只有主Broker节点才能写,当master宕机,master上的队列不可写入,但是读取依然是可以的
 生产消息: SendSync/SendAsync/SendOneWay
 
+主从能否自动切换?
+从节点能否消费消息?
+一个topic可以在一个broker上创建两个queue?
+
+Topic: 主题,创建topic时需要指定该topic要存储在哪些Broker上
+Tag: 子主题
+GroupName: 生产者组合或消费者组合
+ProducerGroup: 
+ConsumerGroup: 一个Queue最多只能分配给一个Consumer
+Rebalance: 
+广播消费: 广播模式消费位移使用本地文件存储,Rebalance过程中同一个ConsumeGroup下的consumer不会进行MessageQueue的分配,每个consumer负责订阅的topic下的所有MessageQueue
+log: commitLog存消息数据 consumeQueue存索引 config存Group/Topic/Consumer消费的offset
+offset: 
+
+消息堆积: 增加consumer;放到临时的topic再增加新的consumer去消费;
+延时队列: 生产消息时设置,只能选择1s 5s 10s 30s 1m 2m 3m 4m 5m 6m 7m 8m 9m 10m 20m 30m 1h 2h(可以改配置文件增加level),level从1开始;消息按照延迟时间段发送到指定的延时队列(SCHEDULE_TOPIC_XX)中,定时器进行轮训这些队列查看消息是否到期,如果到期就把这个消息发送到指定topic的队列中,这样的好处是同一队列中的消息延时时间是一致的,还有一个好处是这个队列中的消息是按照消息到期时间进行递增排序的,然后把延迟队列中的消息删除
+死信队列: 死信消息,消费失败自动进行消息重试,达到最大重试次数后将其发送到该消费者对应的特殊队列中,有效期与正常消息相同到期自动删除;一个死信队列对应一个GroupID
+重试: 广播消息是不会重试的
 
 ActiveMQ
 Pulsar
@@ -327,13 +349,13 @@ kube-apiserver etcd kube-scheduler kube-controller-manager kubelet kube-proxy
 服务注册发现
 链路追踪
 
-
 10.分布式 高并发 事务 Snowflake
 限流 漏桶算法 令牌桶算法
 熔断
 降级
 灾备
 异地多活
+Sentinel
 
 
 11.操作系统
