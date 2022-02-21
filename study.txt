@@ -95,6 +95,25 @@ Redis Bitmap
 
 redis缓存击穿(热点key不失效或加锁)、缓存穿透(不存在的key设置空value和过期时间)、缓存雪崩(key失效时间不同)
 
+redis和mysql数据一致性保证:
+强一致性 弱一致性 最终一致性
+Pattern: Cache-Aside/旁路缓存模式 Read-Through/Write-Through/读写穿透 Write-Behind/异步缓存写入
+延时双删: 先删除缓存 再更新数据库 休眠一会再次删除缓存
+同步binlog
+
+读操作:
+读到缓存直接返回
+读不到缓存,先去DB读数据,再更新到缓存,再返回
+写操作:
+先写DB,删除缓存
+问题:
+A读了数据库还未更新缓存
+B修改数据库
+A再去更新缓存
+数据不一致
+解决办法加短的过期时间
+
+
 单节点
 主从 replicaof 127.0.0.1 7000
 redis cluster
@@ -141,34 +160,66 @@ sentinel failover-timeout mymaster 30000
 ./redis-cli -p 9000
 sentinel master mymaster
 
-读操作:
-读到缓存直接返回
-读不到缓存,先去DB读数据,再更新到缓存,再返回
-
-写操作:
-先写DB,删除缓存
-
-问题:
-A读了数据库还未更新缓存
-B修改数据库
-A再去更新缓存
-数据不一致
-
-解决办法加短的过期时间
-
 
 5.MQ 异步/解耦/削峰
 Kafka
-RabbitMQ AMQP/高级消息队列协议 routing-key/路由 镜像集群
+
+RabbitMQ
+AMQP/高级消息队列协议
+routing-key/路由
 交换器/Exchange: direct/fanout/topic/headers
+
+消息丢失:
+生产者 事务(同步阻塞慢) 发送确认(异步快)(确认成功就在数据库设置标记,否则重新发送消息,未确认的消息也可存在内存/本地磁盘/redis)
+broker 持久化Exchange、Queue、Message
+消费者 改为手动提交(自动提交在broker发送消息到消费端就会删除) autoAck=false
+
+死信交换机/死信队列:
+默认情况下queue中被抛弃的消息将被直接丢掉,但是可以通过设置queue的x-dead-letter-exchange参数将被抛弃的消息发送到指定的exchange中
+消费方nack/reject时指定了requeue=false、消息的TTL已到、消息队列的max-length已到
+设置队列中所有消息的过期时间x-message-ttl,队列最大消息数x-max-length,生产者设置单个消息的expiration
+Alternate Exchange: 发送消息的时候根据routing-key没有对应的队列接受消息,这就会将此消息路由到Alternate Exchange属性指定的Exchange上了,如果mandatory=true则会将消息返回给生产者
+如果发送到A消费者的消息一直不确认,只有等到A消费者与rabbitmq的连接中断,rabbitmq才会考虑将A消费者未确认的消息重新投递给另一个消费者
+
+Ack: 确认后删除消息
+Reject: 只能拒绝一个
+Nack: 可以拒绝多个
+
+Message:
+expiration 消息的过期时刻
+deliveryMode 1为非持久化,2为持久化
+Queue:
+durable 持久化
+exclusive 该队列仅对首次声明他它的连接可见,并在连接断开时自动删除
+autoDelete 所有与这个连接的消费者都断开时会自动删除
+Exchange:
+durability 持久化
+autoDelete 与这个Exchange绑定的Queue或Exchange都与此解绑时,会删除本交换器
+
+requeue重新放入队列,是立即可以再次消费还是等多长时间?
+没有ack后多久可以再次消费此消息?
+
+集群:
+普通集群 队列只会存在一个节点,存在哪个节点,是固定的一个还是随机分散?
+镜像队列 主从模式,针对的是队列不是节点,push操作会在主从的每个节点上执行一次,消费操作在master执行然后广播给每个slave;
+        新增加一个节点需要配置才会同步master所有数据,并且同步时会阻塞
+
+延时队列: 死信队列+ttl 插件rabbitmq-delayed-message-exchange
+优先队列: 队列设置的x-max-priority,消息设置队列设置的priority,优先级越大越先消费
+
+
 RocketMQ NameServer Broker
 ActiveMQ
 Pulsar
 
-如何解决重复消费消息的问题
-如何解决消息的顺序消费问题
-解决分布式事务问题
-解决消息堆积的问题
+优先队列
+延时队列
+
+消息丢失
+重复消费 幂等
+顺序消费
+消息堆积
+事务
 
 
 6.网络/TCP/IP/UDP
