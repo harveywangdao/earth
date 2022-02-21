@@ -28,9 +28,9 @@ mvcc 快照读 当前读 ReadView
 隔离级别 读取未提交 读取已提交 可重复读 可串行化
 
 InnoDB 通过数据行的 DB_TRX_ID 和 Read View 来判断数据的可见性
-DB_TRX_ID（6字节）：表示最后一次插入或更新该行的事务 id
-DB_ROLL_PTR（7字节） 回滚指针，指向该行的 undo log
-DB_ROW_ID（6字节）：如果没有设置主键且该表没有唯一非空索引时，InnoDB 会使用该 id 来生成聚簇索引
+DB_TRX_ID(6字节): 表示最后一次插入或更新该行的事务 id
+DB_ROLL_PTR(7字节): 回滚指针，指向该行的 undo log
+DB_ROW_ID(6字节): 如果没有设置主键且该表没有唯一非空索引时，InnoDB会使用该id来生成聚簇索引
 
 redo log
 undo log
@@ -42,7 +42,6 @@ Next-key lock 临键锁 = Gap Lock + Record Lock 为了解决幻读 左开右闭
 自增锁
 意向锁 意向共享锁IS 意向排它锁IX 表级别锁
 插入意向锁: 间隙锁的一种,专门针对insert操作,多个事务在同一个索引同一个范围区间插入记录时候,如果插入位置不冲突,不会彼此阻塞
-
 select ... lock in share mode  S锁 共享锁
 select ... for update X锁 排他锁
 
@@ -163,6 +162,7 @@ sentinel master mymaster
 
 5.MQ 异步/解耦/削峰
 Kafka
+topic partition ISR/OSR/AR
 
 RabbitMQ
 AMQP/高级消息队列协议
@@ -181,9 +181,7 @@ broker 持久化Exchange、Queue、Message
 Alternate Exchange: 发送消息的时候根据routing-key没有对应的队列接受消息,这就会将此消息路由到Alternate Exchange属性指定的Exchange上了,如果mandatory=true则会将消息返回给生产者
 如果发送到A消费者的消息一直不确认,只有等到A消费者与rabbitmq的连接中断,rabbitmq才会考虑将A消费者未确认的消息重新投递给另一个消费者
 
-Ack: 确认后删除消息
-Reject: 只能拒绝一个
-Nack: 可以拒绝多个
+Ack: 确认后删除消息; Reject: 只能拒绝一个; Nack: 可以拒绝多个
 
 Message:
 expiration 消息的过期时刻
@@ -214,7 +212,6 @@ Pulsar
 
 优先队列
 延时队列
-
 消息丢失
 重复消费 幂等
 顺序消费
