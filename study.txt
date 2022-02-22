@@ -241,15 +241,36 @@ Tag: 子主题
 GroupName: 生产者组合或消费者组合
 ProducerGroup: 
 ConsumerGroup: 一个Queue最多只能分配给一个Consumer
-Rebalance: 
-广播消费: 广播模式消费位移使用本地文件存储,Rebalance过程中同一个ConsumeGroup下的consumer不会进行MessageQueue的分配,每个consumer负责订阅的topic下的所有MessageQueue
-log: commitLog存消息数据 consumeQueue存索引 config存Group/Topic/Consumer消费的offset
-offset: 
 
-消息堆积: 增加consumer;放到临时的topic再增加新的consumer去消费;
-延时队列: 生产消息时设置,只能选择1s 5s 10s 30s 1m 2m 3m 4m 5m 6m 7m 8m 9m 10m 20m 30m 1h 2h(可以改配置文件增加level),level从1开始;消息按照延迟时间段发送到指定的延时队列(SCHEDULE_TOPIC_XX)中,定时器进行轮训这些队列查看消息是否到期,如果到期就把这个消息发送到指定topic的队列中,这样的好处是同一队列中的消息延时时间是一致的,还有一个好处是这个队列中的消息是按照消息到期时间进行递增排序的,然后把延迟队列中的消息删除
-死信队列: 死信消息,消费失败自动进行消息重试,达到最大重试次数后将其发送到该消费者对应的特殊队列中,有效期与正常消息相同到期自动删除;一个死信队列对应一个GroupID
-重试: 广播消息是不会重试的
+Rebalance: 
+订阅Topic的队列数量变化(broker宕机、队列扩容/缩容)/消费者组信息变化(消费者宕机、消费者扩容/缩容、Topic订阅信息发生变化)
+一个队列最多分配给一个消费者,offset是异步提交造成重复消费,Broker端负责Rebalance元数据维护
+
+广播消费:
+广播模式消费位移使用本地文件存储,Rebalance过程中同一个ConsumeGroup下的consumer不会进行MessageQueue的分配,每个consumer负责订阅的topic下的所有MessageQueue
+
+log:
+commitLog存消息数据
+consumeQueue存索引
+config存Group/Topic/Consumer消费的offset
+超时时间/磁盘占比/人工删除触发删除commitLog/consumeQueue
+
+offset: 当消费模式为广播模式时offset使用本地模式存储
+消息堆积: 增加consumer;放到临时的topic再增加新的consumer去消费
+
+延时队列:
+生产消息时设置,只能选择1s 5s 10s 30s 1m 2m 3m 4m 5m 6m 7m 8m 9m 10m 20m 30m 1h 2h(可以改配置文件增加level),level从1开始;消息按照延迟时间段发送到指定的延时队列(SCHEDULE_TOPIC_XXXX)中,定时器进行轮训这些队列查看消息是否到期,如果到期就把这个消息发送到指定topic的队列中,这样的好处是同一队列中的消息延时时间是一致的,还有一个好处是这个队列中的消息是按照消息到期时间进行递增排序的,然后把延迟队列中的消息删除
+
+死信队列:
+%DLQ%+consumergroup
+消费失败自动进行消息重试,达到最大重试次数后将其发送到该消费者对应的特殊队列中,有效期与正常消息相同到期自动删除
+一个死信队列对应一个GroupID
+
+重试:
+广播消息是不会重试的
+生产端重试: 生产端自动重试,可设置超时时间和重试次数,异步发送重试次数只有1/0次
+消费端重试: 主动返回RECONSUME_LATER消息会进去重试队列;超时重试是直接重试不需要延时;message携带重试次数消费端可以用来判断
+重试队列: 先保存到SCHEDULE_TOPIC_XXXX中,再设置偏移量,后台定时任务按照对应的时间进行Delay后重新保存至%RETRY%+consumerGroup重试队列中,消费者消费重试队列
 
 ActiveMQ
 Pulsar
