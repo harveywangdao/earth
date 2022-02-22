@@ -181,6 +181,22 @@ SyncGroup请求: group leader把分配方案发给coordinator,coordinator再告�
 JoinGroup请求: 成员请求加入组
 DescribeGroup请求: 显示组的所有信息，包括成员信息，协议名称，分配方案，订阅信息等。通常该请求是给管理员使用
 
+生产者幂等性:
+ProducerID(每个新的Producer在初始化的时候会被分配一个唯一的PID)
+SequenceNumber(对于每个PID,该Producer发送数据的每个<Topic,Partition>都对应一个从0开始单调递增的SequenceNumber)
+只能保证单个partition内的幂等性,只能保证Producer在单个会话内不丟不重
+
+事务:
+涉及到多个Topic-Partition的写入时,这个事务操作要么会全部成功,要么会全部失败
+initTransactions beginTransaction commitTransaction/abortTransaction
+transactionalID由用户提供,和ProducerID+epoch组成唯一值
+TransactionCoordinator __transaction_state
+isolation.level read_committed/read_uncommitted
+LEO: 日志末端位移(log end offset),最后一条消息的下一条消息的位移值
+HW: 水位值,HW值不会大于LEO值,小于等于HW值的所有消息都被认为是已备份的,consumer无法消费分区下leader副本中位移值大于分区HW的任何消息
+LSO:
+
+
 RabbitMQ
 消息消费完就删除
 AMQP/高级消息队列协议
@@ -224,6 +240,9 @@ requeue重新放入队列,是立即可以再次消费还是等多长时间?
 延时队列: 死信队列+ttl 插件rabbitmq-delayed-message-exchange
 优先队列: 队列设置的x-max-priority,消息设置队列设置的priority,优先级越大越先消费
 
+事务:
+txSelect txComment txRollback
+
 
 RocketMQ
 消息永久保存,定期删除
@@ -231,9 +250,6 @@ RocketMQ
 NameServer: 路由控制中心,NameServer之间没有数据同步,Broker上报信息到NameServer
 Broker: 多主多从,只有主Broker节点才能写,当master宕机,master上的队列不可写入,但是读取依然是可以的
 生产消息: SendSync/SendAsync/SendOneWay
-
-主从能否自动切换?
-从节点能否消费消息?
 
 Topic:
 主题,创建topic时指定读写队列数量,可以指定broker创建也可以让集群自动分配
