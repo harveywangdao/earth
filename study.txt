@@ -253,9 +253,9 @@ ConsumerGroup: 一个Queue最多只能分配给一个Consumer
 slave向master报告自己的最大偏移量
 master向slave返回偏移量后的CommitLog数据
 brokerId=0表明这个broker是master,brokerId>0表明这个broker是slave
-rocketmq目前还不支持主从切换,需要手动切换
+slave只负责读,rocketmq目前还不支持主从切换,需要手动切换
 正常情况下consumer并不能配置从master读还是slave读,当master不可用或者繁忙的时候consumer会被自动切换到从slave读
-同步复制/异步复制
+master可配置同步复制SYNC_MASTER/异步复制ASYNC_MASTER
 
 
 
