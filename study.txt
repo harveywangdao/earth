@@ -193,7 +193,7 @@ transactionalID由用户提供,和ProducerID+epoch组成唯一值
 TransactionCoordinator __transaction_state
 isolation.level read_committed/read_uncommitted
 LEO: 日志末端位移(log end offset),最后一条消息的下一条消息的位移值
-HW: 水位值,HW值不会大于LEO值,小于等于HW值的所有消息都被认为是已备份的,consumer无法消费分区下leader副本中位移值大于分区HW的任何消息
+HW: 水位值,HW值不会大于LEO值,小于等于HW值的所有消息都被认为是已备份的,consumer无法消费分区下leader副本中位移值大于分区HW的任何消息,Kafka使用HW值来决定副本备份的进度
 LSO:
 
 
