@@ -242,14 +242,15 @@ mqadmin deleteTopic
 mqadmin updateSubGroup
 mqadmin deleteSubGroup
 mqadmin updateTopicPerm
-writeQueueNums/readQueueNum
+mqadmin consumerProgress
+writeQueueNums/readQueueNum: 方便队列的缩容和扩容
 
 Tag: 子主题
 GroupName: 生产者组合或消费者组合
 ProducerGroup: 
 ConsumerGroup: 一个Queue最多只能分配给一个Consumer
 
-主从同步:
+主从:
 slave向master报告自己的最大偏移量
 master向slave返回偏移量后的CommitLog数据
 brokerId=0表明这个broker是master,brokerId>0表明这个broker是slave
@@ -257,11 +258,12 @@ slave只负责读,rocketmq目前还不支持主从切换,需要手动切换
 正常情况下consumer并不能配置从master读还是slave读,本次拉取的数据量大于物理内存的40%和当master不可用或者繁忙的时候consumer会从slave读
 master可配置同步复制SYNC_MASTER/异步复制ASYNC_MASTER
 
-
-
 Rebalance: 
 订阅Topic的队列数量变化(broker宕机、队列扩容/缩容)/消费者组信息变化(消费者宕机、消费者扩容/缩容、Topic订阅信息发生变化)
 一个队列最多分配给一个消费者,offset是异步提交造成重复消费,Broker端负责Rebalance元数据维护
+周期性触发rebalance
+同一个消费者组订阅多个Topic时可能会出现分配不均
+对Topic队列/消费者各自进行排序,每个消费者需要使用相同的分配策略
 
 广播消费:
 广播模式消费位移使用本地文件存储,Rebalance过程中同一个ConsumeGroup下的consumer不会进行MessageQueue的分配,每个consumer负责订阅的topic下的所有MessageQueue
