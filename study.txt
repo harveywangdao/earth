@@ -312,6 +312,15 @@ prepare阶段
 commit/rollback阶段
 
 ActiveMQ
+JMS
+kahadb leveldb mysql
+topic
+P2P: 生产者向队列投递一条消息,只有一个消费者能够监听得到这条消息
+Pub/Sub: 生产者向队列投递一条消息,所有监听该队列的消费者都能够监听得到这条消息
+与zookeeper进行构建主备集群模型
+Network集群模型
+
+
 Pulsar
 
 优先队列
