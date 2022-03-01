@@ -65,6 +65,16 @@ redo log buffer
 数据库三范式: 每列保持原子性 每列都和主键相关 每一列数据都和主键直接相关而不能间接相关
 MySQL死锁
 
+TIMESTAMP: 把客户端插入的时间从当前时区转化为UTC,查询时将其又转化为客户端当前时区进行返回;'1970-01-01 00:00:01.000000'to'2038-01-19 03:14:07.999999';插入NULL会自动赋值当前时间;4个字节;相对快
+DATETIME: 原样输入和输出;'1000-01-01 00:00:00.000000'to'9999-12-31 23:59:59.999999';插入NULL就是NULL;8个字节;相对慢
+
+utf8是1字符3字节,gbk是1字符2字节
+utf8mb4的编码,mb4就是most bytes 4的意思,专门用来兼容四字节的unicode,好在utf8mb4是utf8的超集,除了将编码改为utf8mb4外不需要做其他转换
+CHAR: 字符数而不是字节数;最大值为255字符;长度固定;速度快;CHAR(M)每个值都占用M个字节,如果某个长度小于M就会在它的右边用空格字符补足;
+VARCHAR: 字符数而不是字节数;最大值为65535字节;可变长;速度慢;VARCHAR(M)每个值只占用刚好够用的字节再加上一个用来记录其长度的字节;
+TEXT: 申明时不设置最大长度;最大65535字节;最慢
+BLOB: 二进制
+
 
 3.NoSQL
 MongoDB
@@ -196,6 +206,12 @@ LEO: 日志末端位移(log end offset),最后一条消息的下一条消息的�
 HW: 水位值,HW值不会大于LEO值,小于等于HW值的所有消息都被认为是已备份的,consumer无法消费分区下leader副本中位移值大于分区HW的任何消息,Kafka使用HW值来决定副本备份的进度
 LSO:
 
+log:
+每个partition都有一个目录,里面有很多segment file
+partition的第一个segment从0开始,后续每个segment文件名为上一个segment文件最后一条消息的offset
+.index 文件名是消息总偏移 内容: 消息偏移(每个index都从0开始,稀疏索引,不是连续的)+字节偏移offset
+.log
+.timeindex CreateTime表示producer创建这条消息的时间,LogAppendTime leader broker将这条消息写入到log的时间
 
 RabbitMQ
 消息消费完就删除
