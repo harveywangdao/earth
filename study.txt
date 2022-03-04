@@ -1,16 +1,29 @@
 1.Golang
-切片
+slice切片
+数组
+string
 map
-管道
+hmap
+扩容: map中数据总个数/桶个数>6.5时,引发翻倍扩容 || 使用了太多的溢出桶时
+
+sync.Map:
+通过互斥锁和原子操作来实现近似无锁,空间换时间,延迟删除,删除一个键值只是打标记,只有在迁移dirty数据的时候才清理删除的数据,readOnly向dirty拷贝是遍历,不适合大数据场景
+不加锁: 读/删一个存在readOnly中的key,写一个存在readOnly中的key并且没有标记删除
+加锁: 增加新key会加锁,新key先放dirty,不适合频繁增加数据
+
+chan管道
 select
 协程 调度 GMP
 内存回收 三色标记 白 灰 黑
 内存管理 mheap mspan mcentral mcache mstats TCMalloc
 内存逃逸
-接口interface
+接口interface eface表示空的interface{},iface表示至少带有一个函数的interface
 反射
 定时器
 性能优化 pprof
+结构体方法调用时会先拷贝一份,所以无法改变原本结构体内部的成员值
+内存对齐 计算机只能从4、8的倍数开始读数据,不能随便从一个地址读数据,
+atomic/条件变量/mutex/rwmutex/WaitGroup/Once/sync.Pool
 
 
 2.MySQL
