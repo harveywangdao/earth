@@ -18,12 +18,14 @@ select
 内存管理 mheap mspan mcentral mcache mstats TCMalloc
 内存逃逸
 接口interface eface表示空的interface{},iface表示至少带有一个函数的interface
-反射
+反射reflect
 定时器
 性能优化 pprof
 结构体方法调用时会先拷贝一份,所以无法改变原本结构体内部的成员值
 内存对齐 计算机只能从4、8的倍数开始读数据,不能随便从一个地址读数据,
 atomic/条件变量/mutex/rwmutex/WaitGroup/Once/sync.Pool
+netpoll
+gin/beego/grpc/Restful/fasthttp
 
 
 2.MySQL
@@ -92,8 +94,15 @@ BLOB: 二进制
 3.NoSQL
 MongoDB
 LevelDB
-ElasticSearch Shard/Replica 倒排索引 master/data/ingest/coodrinating only
+ElasticSearch/Logstash/Kibana/filebeat/Flume Shard/Replica 倒排索引 master/data/ingest/coodrinating only
 MinIO
+Etcd
+TiDB
+Ceph
+Nginx
+Keepalived/Haproxy/LVS
+Promethous/Grafana
+
 
 4.Redis
 string SDS 长度不能超过512M int编码 raw编码 embstr编码
@@ -366,7 +375,7 @@ Pulsar
 数据链路层 ARP RARP
 网络层 IP ICMP IGMP
 传输层 TCP UDP
-应用层 HTTP FTP TFTP SMTP
+应用层 HTTP FTP TFTP SMTP DNS
 
 三次握手 避免重复连接
 四次挥手
@@ -446,14 +455,24 @@ kube-apiserver etcd kube-scheduler kube-controller-manager kubelet kube-proxy
 9.微服务/服务网格
 服务注册发现
 链路追踪
+Istio/Serverless
 
-10.分布式 高并发 事务 Snowflake
+
+10.分布式
+CAP
+高并发
+高可用
+事务
+Snowflake
 限流 漏桶算法 令牌桶算法
 熔断
 降级
 灾备
 异地多活
 Sentinel
+秒杀
+2PC/3PC/TCC
+Raft/Paxos
 
 
 11.操作系统
@@ -463,6 +482,15 @@ Sentinel
 进程间通信 管道 命名管道FIFO 共享内存 消息队列 信号 UNIX域 socket DBUS
 同步 信号量 互斥量 条件变量 读写锁
 IO多路复用 poll select epoll
+socket
 
 
 12.算法
+栈/队列
+排序
+二叉树/红黑树
+链表
+动态规划
+图
+缓存
+字符串
