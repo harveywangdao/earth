@@ -1,15 +1,20 @@
 1.Golang
-slice切片 扩容规则
+slice切片:
 只能判断slice==nil,不能slice1==slice2
+扩容规则: 容量小于1024时每次扩容2倍,大于1024时每次扩大1.25倍,且遵循内存对齐规则;切片扩容机制与切片的数据类型、原本切片的容量、所需要的容量都有关系
+s[:] s[i:] s[:j] s[i:j]
+s[i:j:k]k代表容量,k>=j,如果没有k则默认原切片的cap长度,新切片的len=j-i,cap=k-i
+从一个长的切片里截取部分数据,未使用的空间不会gc
+nil切片也会分配结构体,ptr是0;空切片ptr指向固定地址
 
 数组:
 数组以arr[:]方式转成切片,切片的底层直接指向了这个数组
 数组可以使用len和cap
 不能append
 arr2:=arr1是值复制,拷贝所有数据
-可以range
+可以range,会完全复制整个数组
 
-string
+string:
 有len无cap
 不可修改
 对字符串进行切片操作(str[:])生成的还是字符串,不能修改值
@@ -22,8 +27,11 @@ copy:
 
 struct:
 空结构体都指向zerobase;当空结构体放到另一个结构体中的最后一个字段时会进行特殊填充
+结构体可以直接==判断
+继承
 
-map hmap
+map:
+hmap
 扩容: map中数据总个数/桶个数>6.5时,引发翻倍扩容 || 使用了太多的溢出桶时
 
 sync.Map:
@@ -31,14 +39,49 @@ sync.Map:
 不加锁: 读/删一个存在readOnly中的key,写一个存在readOnly中的key并且没有标记删除
 加锁: 增加新key会加锁,新key先放dirty,不适合频繁增加数据
 
-chan管道
+chan管道:
 len+cap;读写nil管道都会阻塞;close nil管道会panic;close两次管道会panic
 
-select
-协程 调度 GMP
-内存回收 三色标记 白 灰 黑
-内存管理 mheap mspan mcentral mcache mstats TCMalloc
-内存逃逸 go build -gcflags "-m -m" main.go 编译阶段确定;大内存优先分配在堆上/分配的大小不确定;变量在函数返回后还可能被使用,闭包,返回指针;造成gc压力变大
+select:
+selectgo
+select中没有case时会阻塞;select中所有case都阻塞就走default,没有default就阻塞;只能用于管道;case是随机执行的;两个case可以接收同一个管道
+
+协程:
+调度 GMP
+
+内存管理:
+mheap mspan mcentral mcache mstats TCMalloc
+小于32KB,从P上的mcache分配mspan,不需要加锁,为每种类别的mspan维护着一个mcentral
+mcentral的作用是为所有mcache提供切分好的mspan资源,每个central会持有一种特定大小的全局mspan列表,mcentral被所有的工作线程共同享有,需要加锁
+当mcentral没有空闲的mspan时,会向mheap申请
+而mheap没有资源时,会向操作系统申请新内存,mheap主要用于大对象的内存分配,以及管理未切割的mspan
+大于32KB,会直接从堆上(mheap)上分配对应的数量的内存页(每页大小是8KB)给程序
+
+协程栈:
+每个goroutine都维护着自己的栈区,栈结构是连续栈,是一块连续的内存,栈区的初始大小是2KB,按照需要增长和收缩,最大1GB
+分段栈,栈空间会以双向链表的形式串联起来,如果协程的栈几乎充满,那么任意的函数调用都会触发栈的扩容,当函数返回后又会触发栈的收缩,如果在一个循环中调用函数,栈分配释放造成巨大开销,热分裂问题
+连续栈,栈空间不足时,初始化一片比旧栈大两倍的新栈并将原栈中的所有值都迁移到新的栈中,将指向旧栈对应变量的指针重新指向新栈
+分配类似堆内存的分配
+
+内存回收gc:
+三色标记
+开始所有对象都是白色的
+遍历根节点(全局变量和栈内变量)集合里的所有根对象,把根对象引用的对象标记为灰色,从白色集合放入灰色集合
+遍历灰色集合,将灰色对象引用的对象从白色集合放入灰色集合,之后将此灰色对象放入黑色集合
+重复第三步,直到灰色集合中无任何对象
+回收白色集合里的所有对象,本次垃圾回收结束
+写屏障,在对象新增的同时给它着色为灰色,而所有新创建的对象都会被直接标记成黑色
+开启写屏障前和移除写屏障前暂停应用程序
+
+标记准备阶段,暂停程序
+标记阶段,根对象入队,开启写屏障,恢复执行程序,开始扫描根对象,扫描协程栈期间会暂停当前处理器,
+标记终止阶段,暂停程序
+清理阶段,初始化清理状态并关闭写屏障,恢复用户程序,后台并发清理所有的内存管理单元,当goroutine申请新的内存管理单元时就会触发清理
+
+内存逃逸:
+go build -gcflags "-m -m" main.go 编译阶段确定;大内存优先分配在堆上/分配的大小不确定;变量在函数返回后还可能被使用,闭包,返回指针;造成gc压力变大
+go tool compile -m main.go
+
 接口interface eface表示空的interface{},iface表示至少带有一个函数的interface
 反射reflect
 定时器
@@ -48,12 +91,26 @@ select
 atomic/条件变量/mutex/rwmutex/WaitGroup/Once/sync.Pool
 netpoll
 gin/beego/grpc/Restful/fasthttp
-汇编plan9 go tool compile -N -l -S main.go
+
+汇编plan9:
+go tool compile -N -l -S main.go
+go run -gcflags "-N -l" main.go
+go build -gcflags "-N -l" main.go
+go build -gcflags=all="-N -l" main.go
+
 defer
 panic
 recover
 nil: nil不是关键字;nil可作为变量名;nil是没有默认类型的在使用它时必须要提供足够的信息能够让编译器推断nil期望的类型
 iota: 只能和const一起使用;每当const出现时都会使iota初始化为0;const中每新增一行常量声明将使iota计数一次;默认int型
+unsafe
+uintptr
+//go:noinline
+//go:nosplit
+//go:noescape
+//go:linkname
+//go:notinheap
+//go:norace
 
 
 2.MySQL
