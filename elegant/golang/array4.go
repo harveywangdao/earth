@@ -8,26 +8,11 @@ import (
 func printmem() {
 	m := runtime.MemStats{}
 	runtime.ReadMemStats(&m)
-	fmt.Println("mem:", m.Alloc)
+	fmt.Println("mem:", m.Alloc/1024/1024, "MB")
 }
 
-func f1(arr [1024 * 1024 * 10]int) {
-	printmem()
-	arr[0] = 222
-	printmem()
-}
-
+// range会拷贝一份数组,修改原数组不会影响副本
 func do1() {
-	printmem()
-	arr := [1024 * 1024 * 10]int{}
-	printmem()
-	arr[0] = 2
-	f1(arr)
-	fmt.Println(arr[0])
-	printmem()
-}
-
-func do2() {
 	arr := [4]int{1, 2, 3, 4}
 	for k, v := range arr {
 		if k == 0 {
@@ -41,7 +26,8 @@ func do2() {
 	fmt.Println(arr)
 }
 
-func do3() {
+// 大数组在堆上分配
+func do2() {
 	printmem()
 	arr := [1024 * 1024 * 100]int{}
 	printmem()
@@ -53,7 +39,8 @@ func do3() {
 	}
 }
 
-func do4() {
+// range会拷贝一份数组,修改原数组不会影响副本,实际情况是只有一份内存
+func do3() {
 	printmem()
 	arr := [1024 * 1024 * 50]int{}
 	printmem()
@@ -63,9 +50,8 @@ func do4() {
 		}
 		arr[k] = v + 1
 	}
-	arr[0] = 1
 }
 
 func main() {
-	do1()
+	do3()
 }

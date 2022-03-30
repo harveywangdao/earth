@@ -12,7 +12,8 @@ nil切片也会分配结构体,ptr是0;空切片ptr指向固定地址
 数组可以使用len和cap
 不能append
 arr2:=arr1是值复制,拷贝所有数据
-可以range,会完全复制整个数组
+可以range,会完全复制整个数组,编译器优化实际只有一份内存,有待研究?
+可以直接==判断
 
 string:
 有len无cap
@@ -97,6 +98,7 @@ go tool compile -N -l -S main.go
 go run -gcflags "-N -l" main.go
 go build -gcflags "-N -l" main.go
 go build -gcflags=all="-N -l" main.go
+go tool objdump -s "main" main
 
 defer
 panic
@@ -105,12 +107,7 @@ nil: nil不是关键字;nil可作为变量名;nil是没有默认类型的在使�
 iota: 只能和const一起使用;每当const出现时都会使iota初始化为0;const中每新增一行常量声明将使iota计数一次;默认int型
 unsafe
 uintptr
-//go:noinline
-//go:nosplit
-//go:noescape
-//go:linkname
-//go:notinheap
-//go:norace
+//go:noinline //go:nosplit //go:noescape //go:linkname //go:notinheap //go:norace
 
 
 2.MySQL
