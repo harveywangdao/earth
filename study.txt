@@ -73,11 +73,11 @@ mcentral的作用是为所有mcache提供切分好的mspan资源,每个central�
 回收白色集合里的所有对象,本次垃圾回收结束
 写屏障,在对象新增的同时给它着色为灰色,而所有新创建的对象都会被直接标记成黑色
 开启写屏障前和移除写屏障前暂停应用程序
-
 标记准备阶段,暂停程序
 标记阶段,根对象入队,开启写屏障,恢复执行程序,开始扫描根对象,扫描协程栈期间会暂停当前处理器,
 标记终止阶段,暂停程序
 清理阶段,初始化清理状态并关闭写屏障,恢复用户程序,后台并发清理所有的内存管理单元,当goroutine申请新的内存管理单元时就会触发清理
+触发时机,内存使用超过某值,超过两分钟,手动GC
 
 内存逃逸:
 go build -gcflags "-m -m" main.go 编译阶段确定;大内存优先分配在堆上/分配的大小不确定;变量在函数返回后还可能被使用,闭包,返回指针;造成gc压力变大
@@ -86,9 +86,46 @@ go tool compile -m main.go
 接口interface eface表示空的interface{},iface表示至少带有一个函数的interface
 反射reflect
 定时器
-性能优化 pprof
+
+性能优化:
+pprof:
+net/http/pprof runtime/pprof
+go tool pprof http://localhost:6060/debug/pprof/heap
+go tool pprof http://localhost:6060/debug/pprof/profile
+go tool pprof http://localhost:6060/debug/pprof/goroutine
+go tool pprof demo demo.prof
+go tool pprof -http 0.0.0.0:8080 http://localhost:6060/debug/pprof/profile
+能查到哪个函数分配的内存高
+能查到哪个函数占用cpu高
+火焰图
+调用链,每个函数的耗时和占比
+
+dlv:
+设置断点break main.go:35
+继续执行continue
+查看函数参数、打印变量、单步执行、查看所有协程
+
+Benchmark:
+go test -bench .
+go test -bench=. -cpuprofile=cpu.prof
+go test -bench=. -memprofile=mem.prof
+go tool pprof -http 0.0.0.0:8080 cpu.prof
+
+trace:
+curl -o app.trace http://localhost:6060/debug/pprof/trace
+go tool trace -http 0.0.0.0:8080 performance app.trace
+可以查看每个协程在哪耗时大
+
+generate:
+//go:generate stringer -type=Life
+
+test:
+go test -coverprofile=test.out
+go tool cover -html=test.out -o cover.html
+
+struct:
 结构体方法调用时会先拷贝一份,所以无法改变原本结构体内部的成员值
-内存对齐 计算机只能从4、8的倍数开始读数据,不能随便从一个地址读数据,
+内存对齐 计算机只能从4、8的倍数开始读数据,不能随便从一个地址读数据
 atomic/条件变量/mutex/rwmutex/WaitGroup/Once/sync.Pool
 netpoll
 gin/beego/grpc/Restful/fasthttp
@@ -100,6 +137,9 @@ go build -gcflags "-N -l" main.go
 go build -gcflags=all="-N -l" main.go
 go tool objdump -s "main" main
 
+go tool:
+addr2line asm buildid cgo dist fix link nm pack test2json vet
+
 defer
 panic
 recover
@@ -108,7 +148,6 @@ iota: 只能和const一起使用;每当const出现时都会使iota初始化为0;
 unsafe
 uintptr
 //go:noinline //go:nosplit //go:noescape //go:linkname //go:notinheap //go:norace
-
 
 2.MySQL
 聚族索引和非聚族索引
