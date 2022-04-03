@@ -30,6 +30,7 @@ struct:
 空结构体都指向zerobase;当空结构体放到另一个结构体中的最后一个字段时会进行特殊填充
 结构体可以直接==判断
 继承
+结构体方法调用时会先拷贝一份,所以无法改变原本结构体内部的成员值
 
 map:
 hmap
@@ -83,9 +84,8 @@ mcentral的作用是为所有mcache提供切分好的mspan资源,每个central�
 go build -gcflags "-m -m" main.go 编译阶段确定;大内存优先分配在堆上/分配的大小不确定;变量在函数返回后还可能被使用,闭包,返回指针;造成gc压力变大
 go tool compile -m main.go
 
-接口interface eface表示空的interface{},iface表示至少带有一个函数的interface
-反射reflect
-定时器
+接口interface:
+eface表示空的interface{},iface表示至少带有一个函数的interface
 
 性能优化:
 pprof:
@@ -123,28 +123,40 @@ test:
 go test -coverprofile=test.out
 go tool cover -html=test.out -o cover.html
 
-struct:
-结构体方法调用时会先拷贝一份,所以无法改变原本结构体内部的成员值
-内存对齐 计算机只能从4、8的倍数开始读数据,不能随便从一个地址读数据
-atomic/条件变量/mutex/rwmutex/WaitGroup/Once/sync.Pool
-netpoll
-gin/beego/grpc/Restful/fasthttp
+内存对齐:
+计算机只能从4、8的倍数开始读数据,不能随便从一个地址读数据
 
 汇编plan9:
-go tool compile -N -l -S main.go
+go tool compile -N -l -S main.go //打印汇编 生成.o
 go run -gcflags "-N -l" main.go
 go build -gcflags "-N -l" main.go
 go build -gcflags=all="-N -l" main.go
 go tool objdump -s "main" main
-
+go env -w GO111MODULE=on
+go tool fix main.go //golang.org/x/net/context --> context
+go fmt main.go
+go vet main.go //检查基本错误如语法错误 fmt.Printf("%s", 12)
+go tool asm main.s //.s --> .o
+go tool link main.o //链接
+readelf -w a.out
+addr2line -e a.out
 go tool:
-addr2line asm buildid cgo dist fix link nm pack test2json vet
+cgo dist nm pack test2json
 
+nil:
+nil不是关键字;nil可作为变量名;nil是没有默认类型的在使用它时必须要提供足够的信息能够让编译器推断nil期望的类型
+
+iota:
+只能和const一起使用;每当const出现时都会使iota初始化为0;const中每新增一行常量声明将使iota计数一次;默认int型
+
+反射reflect
+定时器
 defer
 panic
 recover
-nil: nil不是关键字;nil可作为变量名;nil是没有默认类型的在使用它时必须要提供足够的信息能够让编译器推断nil期望的类型
-iota: 只能和const一起使用;每当const出现时都会使iota初始化为0;const中每新增一行常量声明将使iota计数一次;默认int型
+atomic/条件变量/mutex/rwmutex/WaitGroup/Once/sync.Pool
+netpoll
+gin/beego/grpc/Restful/fasthttp
 unsafe
 uintptr
 //go:noinline //go:nosplit //go:noescape //go:linkname //go:notinheap //go:norace
