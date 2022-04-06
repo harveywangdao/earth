@@ -87,6 +87,9 @@ go tool compile -m main.go
 接口interface:
 eface表示空的interface{},iface表示至少带有一个函数的interface
 
+内存对齐:
+计算机只能从4、8的倍数开始读数据,不能随便从一个地址读数据
+
 性能优化:
 pprof:
 net/http/pprof runtime/pprof
@@ -123,15 +126,14 @@ test:
 go test -coverprofile=test.out
 go tool cover -html=test.out -o cover.html
 
-内存对齐:
-计算机只能从4、8的倍数开始读数据,不能随便从一个地址读数据
-
 汇编plan9:
 go tool compile -N -l -S main.go //打印汇编 生成.o
 go run -gcflags "-N -l" main.go
 go build -gcflags "-N -l" main.go
 go build -gcflags=all="-N -l" main.go
 go tool objdump -s do1 main.o
+
+tool:
 go env -w GO111MODULE=on
 go tool fix main.go //golang.org/x/net/context --> context
 go fmt main.go
@@ -142,21 +144,33 @@ readelf -w a.out
 addr2line -e a.out
 go tool nm main.o
 go tool pack c file.a main.go
+//go:noinline //go:nosplit //go:noescape //go:linkname //go:notinheap //go:norace
 
 nil:
 nil不是关键字;nil可作为变量名;nil是没有默认类型的在使用它时必须要提供足够的信息能够让编译器推断nil期望的类型
 iota:
 只能和const一起使用;每当const出现时都会使iota初始化为0;const中每新增一行常量声明将使iota计数一次;默认int型
 
+return:
+不带命名的返回参数会默认加r0...rn的名称,函数返回时需要给这些变量赋值
+带命名的返回参数:
+return后面什么都不加,等同于,return后面加返回值里的变量;
+return后面加非返回值里的变量,先给这个函数返回值变量赋值再返回;
+
+defer:
+先进后出;defer无法改变已经return的变量,除非该变量在函数的返回值里申明
+deferprocStack&deferreturn
+
+panic&recover:
+
+
+闭包函数
 反射reflect
 定时器
-defer
-panic&recover
 atomic/条件变量/mutex/rwmutex/WaitGroup/Once/sync.Pool
 netpoll
 gin/beego/grpc/Restful/fasthttp
 unsafe&uintptr
-//go:noinline //go:nosplit //go:noescape //go:linkname //go:notinheap //go:norace
 cgo
 
 
