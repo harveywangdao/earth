@@ -131,7 +131,7 @@ go tool compile -N -l -S main.go //打印汇编 生成.o
 go run -gcflags "-N -l" main.go
 go build -gcflags "-N -l" main.go
 go build -gcflags=all="-N -l" main.go
-go tool objdump -s "main" main
+go tool objdump -s do1 main.o
 go env -w GO111MODULE=on
 go tool fix main.go //golang.org/x/net/context --> context
 go fmt main.go
@@ -140,26 +140,26 @@ go tool asm main.s //.s --> .o
 go tool link main.o //链接
 readelf -w a.out
 addr2line -e a.out
+go tool nm main.o
 go tool:
-cgo dist nm pack test2json
+pack test2json
 
 nil:
 nil不是关键字;nil可作为变量名;nil是没有默认类型的在使用它时必须要提供足够的信息能够让编译器推断nil期望的类型
-
 iota:
 只能和const一起使用;每当const出现时都会使iota初始化为0;const中每新增一行常量声明将使iota计数一次;默认int型
 
 反射reflect
 定时器
 defer
-panic
-recover
+panic&recover
 atomic/条件变量/mutex/rwmutex/WaitGroup/Once/sync.Pool
 netpoll
 gin/beego/grpc/Restful/fasthttp
-unsafe
-uintptr
+unsafe&uintptr
 //go:noinline //go:nosplit //go:noescape //go:linkname //go:notinheap //go:norace
+cgo
+
 
 2.MySQL
 聚族索引和非聚族索引
