@@ -162,7 +162,9 @@ defer:
 deferprocStack&deferreturn
 
 panic&recover:
-
+只能recover本协程内的panic
+gopanic&gorecover
+数组切片越界;nil指针野指针;往已经close的chan里发送数据;并发读写相同map;interface{}断言未接收第二个返回值
 
 闭包函数
 反射reflect
