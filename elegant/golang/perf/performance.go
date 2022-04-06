@@ -10,6 +10,10 @@ import (
 	"sync"
 )
 
+func Random() int {
+	return int(C.rand())
+}
+
 //go:noinline
 func ReadArray1() {
 	arr := [1024 * 1024 * 10]int{}
