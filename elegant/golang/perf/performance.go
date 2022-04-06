@@ -1,18 +1,11 @@
 package main
 
-// #include <stdlib.h>
-import "C"
 import (
 	"context"
-	"fmt"
 	"net/http"
 	_ "net/http/pprof"
 	"sync"
 )
-
-func Random() int {
-	return int(C.rand())
-}
 
 //go:noinline
 func ReadArray1() {
@@ -71,7 +64,7 @@ func do3(ctx context.Context) {
 }
 
 func main() {
-	fmt.Printf("%s", 12)
+	//fmt.Printf("%s", 12)
 	go func() {
 		http.ListenAndServe(":6060", nil)
 	}()

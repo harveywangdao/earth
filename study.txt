@@ -141,8 +141,7 @@ go tool link main.o //链接
 readelf -w a.out
 addr2line -e a.out
 go tool nm main.o
-go tool:
-pack test2json
+go tool pack c file.a main.go
 
 nil:
 nil不是关键字;nil可作为变量名;nil是没有默认类型的在使用它时必须要提供足够的信息能够让编译器推断nil期望的类型
