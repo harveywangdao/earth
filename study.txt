@@ -1,5 +1,5 @@
 1.Golang
-slice切片:
+slice:
 只能判断slice==nil,不能slice1==slice2
 扩容规则: 容量小于1024时每次扩容2倍,大于1024时每次扩大1.25倍,且遵循内存对齐规则;切片扩容机制与切片的数据类型、原本切片的容量、所需要的容量都有关系
 s[:] s[i:] s[:j] s[i:j]
@@ -7,7 +7,7 @@ s[i:j:k]k代表容量,k>=j,如果没有k则默认原切片的cap长度,新切片
 从一个长的切片里截取部分数据,未使用的空间不会gc
 nil切片也会分配结构体,ptr是0;空切片ptr指向固定地址
 
-数组:
+array:
 数组以arr[:]方式转成切片,切片的底层直接指向了这个数组
 数组可以使用len和cap
 不能append
@@ -26,11 +26,25 @@ str[0]是byte/uint8;range str返回的是rune/int32
 copy:
 第一个参数只能是slice,第二个参数可以是slice和string
 
+nil:
+nil不是关键字;nil可作为变量名;nil是没有默认类型的在使用它时必须要提供足够的信息能够让编译器推断nil期望的类型
+
+iota:
+只能和const一起使用;每当const出现时都会使iota初始化为0;const中每新增一行常量声明将使iota计数一次;默认int型
+
 struct:
 空结构体都指向zerobase;当空结构体放到另一个结构体中的最后一个字段时会进行特殊填充
 结构体可以直接==判断
-继承
+继承,一个结构体嵌到另一个结构体
+如果一个struct嵌套了另一个匿名结构体,那么这个结构可以直接访问匿名结构体的方法从而实现继承
+如果一个struct嵌套了另一个有名结构体,那么这个模式叫做组合
 结构体方法调用时会先拷贝一份,所以无法改变原本结构体内部的成员值
+
+接口interface:
+eface表示空的interface{},iface表示至少带有一个函数的interface
+
+内存对齐:
+计算机只能从4、8的倍数开始读数据,不能随便从一个地址读数据
 
 map:
 hmap
@@ -48,8 +62,26 @@ select:
 selectgo
 select中没有case时会阻塞;select中所有case都阻塞就走default,没有default就阻塞;只能用于管道;case是随机执行的;两个case可以接收同一个管道
 
+return:
+不带命名的返回参数会默认加r0...rn的名称,函数返回时需要给这些变量赋值
+带命名的返回参数:
+return后面什么都不加,等同于,return后面加返回值里的变量;
+return后面加非返回值里的变量,先给这个函数返回值变量赋值再返回;
+
+defer:
+先进后出;defer无法改变已经return的变量,除非该变量在函数的返回值里申明
+deferprocStack&deferreturn
+
+panic&recover:
+只能recover本协程内的panic
+gopanic&gorecover
+数组切片越界;nil指针野指针;往已经close的chan里发送数据;并发读写相同map;interface{}断言未接收第二个返回值
+
+闭包函数: 定义在一个函数内部的函数,闭包是将函数内部和函数外部连接起来的桥梁,局部变量变成全局变量
+
 协程:
 调度 GMP
+netpoll:
 
 内存管理:
 mheap mspan mcentral mcache mstats TCMalloc
@@ -84,12 +116,6 @@ mcentral的作用是为所有mcache提供切分好的mspan资源,每个central�
 go build -gcflags "-m -m" main.go 编译阶段确定;大内存优先分配在堆上/分配的大小不确定;变量在函数返回后还可能被使用,闭包,返回指针;造成gc压力变大
 go tool compile -m main.go
 
-接口interface:
-eface表示空的interface{},iface表示至少带有一个函数的interface
-
-内存对齐:
-计算机只能从4、8的倍数开始读数据,不能随便从一个地址读数据
-
 性能优化:
 pprof:
 net/http/pprof runtime/pprof
@@ -119,9 +145,6 @@ curl -o app.trace http://localhost:6060/debug/pprof/trace
 go tool trace -http 0.0.0.0:8080 performance app.trace
 可以查看每个协程在哪耗时大
 
-generate:
-//go:generate stringer -type=Life
-
 test:
 go test -coverprofile=test.out
 go tool cover -html=test.out -o cover.html
@@ -145,32 +168,11 @@ addr2line -e a.out
 go tool nm main.o
 go tool pack c file.a main.go
 //go:noinline //go:nosplit //go:noescape //go:linkname //go:notinheap //go:norace
+//go:generate stringer -type=Life
 
-nil:
-nil不是关键字;nil可作为变量名;nil是没有默认类型的在使用它时必须要提供足够的信息能够让编译器推断nil期望的类型
-iota:
-只能和const一起使用;每当const出现时都会使iota初始化为0;const中每新增一行常量声明将使iota计数一次;默认int型
-
-return:
-不带命名的返回参数会默认加r0...rn的名称,函数返回时需要给这些变量赋值
-带命名的返回参数:
-return后面什么都不加,等同于,return后面加返回值里的变量;
-return后面加非返回值里的变量,先给这个函数返回值变量赋值再返回;
-
-defer:
-先进后出;defer无法改变已经return的变量,除非该变量在函数的返回值里申明
-deferprocStack&deferreturn
-
-panic&recover:
-只能recover本协程内的panic
-gopanic&gorecover
-数组切片越界;nil指针野指针;往已经close的chan里发送数据;并发读写相同map;interface{}断言未接收第二个返回值
-
-闭包函数
 反射reflect
 定时器
 atomic/条件变量/mutex/rwmutex/WaitGroup/Once/sync.Pool
-netpoll
 gin/beego/grpc/Restful/fasthttp
 unsafe&uintptr
 cgo
