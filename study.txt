@@ -80,6 +80,13 @@ gopanic&gorecover
 
 闭包函数: 定义在一个函数内部的函数,闭包是将函数内部和函数外部连接起来的桥梁,局部变量变成全局变量
 
+unsafe&uintptr:
+unsafe.Pointer和uintptr可以相互转化
+unsafe.Pointer不能加减
+uintptr可以加减
+uintptr对对象已经无引用,对象可能随时被回收;除非是系统调用传进去的uintptr,编译器做了处理对象不会被回收
+普通变量取址也不能进行加减
+
 协程:
 调度 GMP
 netpoll:
@@ -188,7 +195,6 @@ runtime
 定时器
 atomic/条件变量/mutex/rwmutex/WaitGroup/Once/sync.Pool
 gin/beego/grpc/Restful/fasthttp
-unsafe&uintptr
 cgo
 
 

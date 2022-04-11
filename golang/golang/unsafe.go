@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"reflect"
 	"unsafe"
 )
 
@@ -12,7 +13,7 @@ type ClassA struct {
 	d bool
 }
 
-func main() {
+func do1() {
 	var bytea byte = 7
 	var int8a int8 = 7
 	var uint8a uint8 = 7
@@ -121,4 +122,65 @@ func main() {
 	*ptr4 = 9
 
 	fmt.Printf("%+v\n", ca)
+}
+
+func do2() {
+	var n int = 12
+	var m int = 13
+	up1 := unsafe.Pointer(&n)
+	up2 := unsafe.Pointer(&m)
+	fmt.Println(up1, up2)
+
+	ui1 := uintptr(up1)
+	ui2 := uintptr(up2)
+	fmt.Println(ui1, ui2)
+
+	up3 := unsafe.Pointer(ui1 + 24)
+	x := *((*int)(up3))
+	fmt.Println(x)
+}
+
+// 字节切片转 string
+func ByteSlice2String(slice []byte) (s string) {
+	sliceHeader := (*reflect.SliceHeader)(unsafe.Pointer(&slice))
+	stringHeader := (*reflect.StringHeader)(unsafe.Pointer(&s))
+	stringHeader.Data = sliceHeader.Data
+	stringHeader.Len = sliceHeader.Len
+	return
+}
+
+// string 转字节切片
+func String2ByteSlice(s string) (slice []byte) {
+	stringHeader := (*reflect.StringHeader)(unsafe.Pointer(&s))
+	sliceHeader := (*reflect.SliceHeader)(unsafe.Pointer(&slice))
+
+	sliceHeader.Data = stringHeader.Data
+	sliceHeader.Len = stringHeader.Len
+	sliceHeader.Cap = stringHeader.Len
+	return
+}
+
+func do3() {
+	s1 := []byte{'a', 'b', 'c'}
+	str1 := ByteSlice2String(s1)
+	fmt.Println(str1)
+
+	str2 := "987"
+	s2 := String2ByteSlice(str2)
+	fmt.Println(s2)
+}
+
+func do4() {
+	var n int = 12
+	var m int = 13
+
+	p1 := &n
+	p2 := &m
+
+	p3 := p1 + p2
+	_ = p3
+}
+
+func main() {
+	do4()
 }
