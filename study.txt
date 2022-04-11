@@ -39,6 +39,7 @@ struct:
 如果一个struct嵌套了另一个匿名结构体,那么这个结构可以直接访问匿名结构体的方法从而实现继承
 如果一个struct嵌套了另一个有名结构体,那么这个模式叫做组合
 结构体方法调用时会先拷贝一份,所以无法改变原本结构体内部的成员值,因为接收者是结构体
+结构体指针方法,把结构体赋值给接口,这时调用方法会造成编译不过
 
 接口interface:
 eface表示空的interface{},iface表示至少带有一个函数的interface
@@ -82,6 +83,15 @@ gopanic&gorecover
 协程:
 调度 GMP
 netpoll:
+当网络请求阻塞时,调度器会让当前阻塞的G放入网络轮询器中,由网络轮询器处理异步网络系统调用,从而让出P执行其它goroutine,当异步网络调用由网络轮询器完成后,再由sysmon监控线程将其切换回来继续执行
+
+sysmon:
+每隔20us~10ms轮询一次,独立于GMP之外,独立的M
+监控那些长时间运行的G,设置被强占的标识符,别的G就可以抢先进来执行
+检查当前网络轮询器中所有G距离runtime.netpoll被调用是否超过了10ms,将其放入全局运行队列,等待下一次的继续执行
+系统调用导致阻塞的话,P的状态为_Psyscall,则会让GM一起切换出去,让P重新找一个GM运行
+如果垃圾回收器超过两分钟没有执行的话,sysmon监控线程也会强制进行GC
+获取下一个需要被触发的计时器
 
 内存管理:
 mheap mspan mcentral mcache mstats TCMalloc
@@ -155,6 +165,8 @@ go run -gcflags "-N -l" main.go
 go build -gcflags "-N -l" main.go
 go build -gcflags=all="-N -l" main.go
 go tool objdump -s do1 main.o
+静态单赋值SSA GOSSAFUNC=do1 go build main.go
+中间代码
 
 tool:
 go env -w GO111MODULE=on
@@ -169,7 +181,9 @@ go tool nm main.o
 go tool pack c file.a main.go
 //go:noinline //go:nosplit //go:noescape //go:linkname //go:notinheap //go:norace
 //go:generate stringer -type=Life
+插件: go build -buildmode=plugin add.go
 
+runtime
 反射reflect
 定时器
 atomic/条件变量/mutex/rwmutex/WaitGroup/Once/sync.Pool
