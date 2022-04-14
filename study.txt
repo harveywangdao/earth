@@ -650,7 +650,18 @@ Raft/Paxos
 
 11.操作系统
 进程
-线程 TCB
+线程,轻量级进程
+PCB/TCB
+task_struct/thread_info/内核栈
+slab分配器
+线程有自己独立的内核栈
+创建进程和线程底层都是调用clone系统调用,fork创建进程时clone不传参数则创建一个完整的进程,pthread_create创建线程时clone会传一些参数,共享地址空间
+
+线程模型:
+用户级线程模型
+内核级线程模型
+两级线程模型
+
 内存
 进程间通信 管道 命名管道FIFO 共享内存 消息队列 信号 UNIX域 socket DBUS
 同步 信号量 互斥量 条件变量 读写锁
