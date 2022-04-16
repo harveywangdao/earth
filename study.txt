@@ -260,6 +260,25 @@ VARCHAR: 字符数而不是字节数;最大值为65535字节;可变长;速度慢
 TEXT: 申明时不设置最大长度;最大65535字节;最慢
 BLOB: 二进制
 
+LIMIT:
+LIMIT offset,n; LIMIT n; LIMIT n OFFSET offset;
+GROUP BY
+ORDER BY ASC/DESC
+INNER JOIN/LEFT JOIN/RIGHT JOIN/CROSS JOIN/OUTER JOIN
+LIKE
+UNION
+COUNT/SUM/AVG/MAX/MIN
+DISTINCT
+HAVING
+USING
+IS NULL/IS NOT NULL
+IN/NOT IN
+BETWEEN
+AS
+EXISTS
+存储过程
+定时任务
+
 
 3.NoSQL
 MongoDB
@@ -636,7 +655,12 @@ CAP
 高并发
 高可用
 事务
-Snowflake
+
+唯一ID:
+Snowflake,64位,第1位默认为0,接下来前41位是毫秒数时间戳,接下来的10位代表计算机ID,其余12位代表每台机器上生成ID的序列号
+Uidgenerator
+Leaf
+
 限流 漏桶算法 令牌桶算法
 熔断
 降级
