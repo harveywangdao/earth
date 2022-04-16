@@ -21,7 +21,8 @@ string:
 对字符串进行切片操作(str[:])生成的还是字符串,不能修改值
 []byte转成string一定会拷贝内存吗,使用m[string(b)]来查找;字符串拼接;string(b) == "foo"
 不能等于nil
-str[0]是byte/uint8;range str返回的是rune/int32
+str[0]是byte/uint8;range str返回的是rune/int32,range str时index可能是不连续的,value是unicode
+[]rune(str)转成unicode,[]byte(str)转成utf-8的每个字节
 
 copy:
 第一个参数只能是slice,第二个参数可以是slice和string
@@ -706,3 +707,13 @@ socket
 图
 缓存
 字符串
+
+
+13.其它
+utf-8:
+Unicode只是一个符号集,它只规定了符号的二进制代码,却没有规定这个二进制代码应该如何存储,“严”的unicode是十六进制数U+4E25
+utf-8是变长的编码方式,使用1~4个字节表示一个符号,utf-8编码方式:
+0xxxxxxx
+110xxxxx 10xxxxxx
+1110xxxx 10xxxxxx 10xxxxxx
+11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
