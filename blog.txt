@@ -1,4 +1,5 @@
-https://goproxy.io/zh/
+学习：
+https://www.runoob.com/sitemap
 
 算法：
 https://leetcode-cn.com/problemset/all/
@@ -7,28 +8,25 @@ https://www.luogu.com.cn/problem/list
 https://books.halfrost.com/leetcode/
 https://labuladong.gitbook.io/algo/
 
-技术：
+Golang：
+https://goproxy.io/zh/
+https://go.dev/
 https://studygolang.com/
 https://talkgo.org/
 https://gocn.vip/
+https://tonybai.com/
 https://blog.haohtml.com/
-https://dtm.pub/guide/start.html
-https://seata.io/zh-cn/index.html
 https://opensource.actionsky.com/
 https://draveness.me/
 https://draveness.me/golang/
-http://mysql.taobao.org/monthly/
 https://xargin.com/
 https://pengrl.com/#/
 https://pengrl.com/archives/
-https://studygolang.com/articles/33163
 https://coding3min.com/
 https://golang-minibear2333.github.io/
 https://www.zhihu.com/people/he-gang-huan/posts
-https://tonybai.com/
 https://gopher-daily.com/
 https://www.cnblogs.com/jiujuan/
-https://www.runoob.com/sitemap
 https://zhuanlan.zhihu.com/p/452965689
 http://xiaorui.cc/
 https://jiajunhuang.com/
@@ -38,16 +36,22 @@ https://changkun.de/blog/
 https://golang.design/go-questions/
 https://gocompiler.shizhz.me/
 
+https://studygolang.com/articles/33163
 https://www.zhihu.com/column/c_1352639051791454208
 https://www.cnblogs.com/daxiong2014/p/4768681.html
 https://www.cnblogs.com/ysocean/p/9102811.html
 https://go.dev/doc/asm
 
 数据库：
+http://mysql.taobao.org/monthly/
 https://blog.csdn.net/weixin_46460843/article/details/118633766
 
 C/C++：
 http://www.cplusplus.com/reference/
+
+分布式事务：
+https://dtm.pub/guide/start.html
+https://seata.io/zh-cn/index.html
 
 云计算：
 https://docs.docker.com/
