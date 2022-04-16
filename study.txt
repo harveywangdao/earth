@@ -165,6 +165,10 @@ go tool trace -http 0.0.0.0:8080 performance app.trace
 test:
 go test -coverprofile=test.out
 go tool cover -html=test.out -o cover.html
+go test -run=FuzzReverse
+go test -fuzz=Fuzz
+go test -run=FuzzReverse/8fe4afa715c62ebbf52961c12d500dda471293a8d663e527b1f89032f1956f5f
+go test -fuzz=Fuzz -fuzztime 30s
 
 汇编plan9:
 go tool compile -N -l -S main.go //打印汇编 生成.o
