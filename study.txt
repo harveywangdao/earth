@@ -79,7 +79,8 @@ panic&recover:
 gopanic&gorecover
 数组切片越界;nil指针野指针;往已经close的chan里发送数据;并发读写相同map;interface{}断言未接收第二个返回值
 
-闭包函数: 定义在一个函数内部的函数,闭包是将函数内部和函数外部连接起来的桥梁,局部变量变成全局变量
+闭包函数:
+定义在一个函数内部的函数,闭包是将函数内部和函数外部连接起来的桥梁,局部变量变成全局变量
 
 unsafe&uintptr:
 unsafe.Pointer和uintptr可以相互转化
@@ -90,8 +91,10 @@ uintptr对对象已经无引用,对象可能随时被回收;除非是系统调�
 
 协程:
 调度 GMP
+
 netpoll:
-当网络请求阻塞时,调度器会让当前阻塞的G放入网络轮询器中,由网络轮询器处理异步网络系统调用,从而让出P执行其它goroutine,当异步网络调用由网络轮询器完成后,再由sysmon监控线程将其切换回来继续执行
+当网络请求阻塞时,调度器会让当前阻塞的G放入网络轮询器中,由网络轮询器处理异步网络系统调用,从而让出P执行其它goroutine,
+当异步网络调用由网络轮询器完成后,再由sysmon监控线程将其切换回来继续执行
 
 sysmon:
 每隔20us~10ms轮询一次,独立于GMP之外,独立的M
@@ -131,7 +134,8 @@ mcentral的作用是为所有mcache提供切分好的mspan资源,每个central�
 触发时机,内存使用超过某值,超过两分钟,手动GC
 
 内存逃逸:
-go build -gcflags "-m -m" main.go 编译阶段确定;大内存优先分配在堆上/分配的大小不确定;变量在函数返回后还可能被使用,闭包,返回指针;造成gc压力变大
+编译阶段确定;大内存优先分配在堆上/分配的大小不确定;变量在函数返回后还可能被使用,闭包,返回指针;造成gc压力变大
+go build -gcflags "-m -m" main.go
 go tool compile -m main.go
 
 性能优化:
@@ -225,6 +229,7 @@ DB_ROW_ID(6字节): 如果没有设置主键且该表没有唯一非空索引时
 redo log
 undo log
 binlog
+relay log
 
 Record lock 记录锁 单条索引记录上加锁
 Gap lock 间隙锁 锁住一个索引区间(开区间,不包括双端端点) 防止幻读,保证索引间的不会被插入数据
@@ -265,8 +270,7 @@ VARCHAR: 字符数而不是字节数;最大值为65535字节;可变长;速度慢
 TEXT: 申明时不设置最大长度;最大65535字节;最慢
 BLOB: 二进制
 
-LIMIT:
-LIMIT offset,n; LIMIT n; LIMIT n OFFSET offset;
+LIMIT: LIMIT offset,n; LIMIT n; LIMIT n OFFSET offset;
 GROUP BY
 ORDER BY ASC/DESC
 INNER JOIN/LEFT JOIN/RIGHT JOIN/CROSS JOIN/OUTER JOIN
@@ -288,14 +292,18 @@ EXISTS
 3.NoSQL
 MongoDB
 LevelDB
-ElasticSearch/Logstash/Kibana/filebeat/Flume Shard/Replica 倒排索引 master/data/ingest/coodrinating only
-MinIO
-Etcd
 TiDB
+
+ElasticSearch:
+Shard/Replica 倒排索引 master/data/ingest/coodrinating only
+Logstash/Kibana/filebeat/Flume
+
+Etcd/ZooKeeper/Nacos/Consul
 Ceph
 Nginx
 Keepalived/Haproxy/LVS
 Promethous/Grafana
+MinIO
 
 
 4.Redis
@@ -337,7 +345,6 @@ B修改数据库
 A再去更新缓存
 数据不一致
 解决办法加短的过期时间
-
 
 单节点
 主从 replicaof 127.0.0.1 7000
@@ -475,7 +482,6 @@ requeue重新放入队列,是立即可以再次消费还是等多长时间?
 事务:
 txSelect txComment txRollback
 
-
 RocketMQ
 消息永久保存,定期删除
 支持pull、push方式消费消息
@@ -551,7 +557,6 @@ P2P: 生产者向队列投递一条消息,只有一个消费者能够监听得�
 Pub/Sub: 生产者向队列投递一条消息,所有监听该队列的消费者都能够监听得到这条消息
 与zookeeper进行构建主备集群模型
 Network集群模型
-
 
 Pulsar
 
