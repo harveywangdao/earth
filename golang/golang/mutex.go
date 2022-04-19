@@ -5,13 +5,19 @@ import (
 )
 
 func do1() {
-	var mu sync.Mutex
+	mu := new(sync.Mutex)
 	n := 0
 	mu.Lock()
 	n++
 	mu.Unlock()
 }
 
+func do2() {
+	mu := new(sync.Mutex)
+	mu.Lock()
+	mu.Lock()
+}
+
 func main() {
-	do1()
+	do2()
 }
