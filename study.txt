@@ -199,10 +199,13 @@ go tool pack c file.a main.go
 //go:generate stringer -type=Life
 插件: go build -buildmode=plugin add.go
 
+mutex:
+
+
 runtime
 反射reflect
 定时器
-atomic/条件变量/mutex/rwmutex/WaitGroup/Once/sync.Pool
+atomic/条件变量/rwmutex/WaitGroup/Once/sync.Pool
 gin/beego/grpc/Restful/fasthttp
 cgo
 
@@ -680,7 +683,8 @@ Sentinel
 秒杀
 2PC/3PC/TCC
 Raft/Paxos
-
+CDN
+SLB
 
 11.操作系统
 Reactor线程模型

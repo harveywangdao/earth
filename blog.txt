@@ -45,6 +45,9 @@ https://www.cnblogs.com/daxiong2014/p/4768681.html
 https://www.cnblogs.com/ysocean/p/9102811.html
 https://zhuanlan.zhihu.com/p/452965689
 
+linux:
+https://www.cnblogs.com/LoyenWang/
+
 数据库：
 http://mysql.taobao.org/monthly/
 https://blog.csdn.net/weixin_46460843/article/details/118633766
