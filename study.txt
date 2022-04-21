@@ -58,6 +58,7 @@ sync.Map:
 加锁: 增加新key会加锁,新key先放dirty,不适合频繁增加数据
 
 chan管道:
+以通信方式共享内存,不要以共享内存方式通信
 len+cap;读写nil管道都会阻塞;close nil管道会panic;close两次管道会panic
 
 select:

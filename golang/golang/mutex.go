@@ -2,6 +2,7 @@ package main
 
 import (
 	"sync"
+	"time"
 )
 
 func do1() {
@@ -12,10 +13,25 @@ func do1() {
 	mu.Unlock()
 }
 
+var (
+	n = 0
+)
+
+func m1(mu *sync.Mutex) {
+	for {
+		mu.Lock()
+		time.Sleep(time.Second * 2)
+		n++
+		mu.Unlock()
+	}
+}
+
 func do2() {
 	mu := new(sync.Mutex)
-	mu.Lock()
-	mu.Lock()
+	for i := 0; i < 1000; i++ {
+		go m1(mu)
+	}
+	select {}
 }
 
 func main() {
