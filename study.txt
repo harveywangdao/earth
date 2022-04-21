@@ -91,6 +91,18 @@ uintptr对对象已经无引用,对象可能随时被回收;除非是系统调�
 
 协程:
 调度 GMP
+systemstack
+pc: program counter
+sp: stack pointer
+gsignal
+g0
+lock
+unlock
+gopark
+goready
+mcall: switches from the g to the g0 stack
+stopTheWorld
+startTheWorld
 
 netpoll:
 当网络请求阻塞时,调度器会让当前阻塞的G放入网络轮询器中,由网络轮询器处理异步网络系统调用,从而让出P执行其它goroutine,
