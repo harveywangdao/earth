@@ -104,6 +104,13 @@ goready
 mcall: switches from the g to the g0 stack
 stopTheWorld
 startTheWorld
+gosave
+gogo
+
+M:
+sched.maxmcount = 10000
+
+
 
 netpoll:
 当网络请求阻塞时,调度器会让当前阻塞的G放入网络轮询器中,由网络轮询器处理异步网络系统调用,从而让出P执行其它goroutine,
