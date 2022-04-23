@@ -47,6 +47,7 @@ https://zhuanlan.zhihu.com/p/452965689
 
 linux:
 https://www.kernel.org/
+https://www.kernel.org/doc/man-pages/
 https://www.cnblogs.com/LoyenWang/
 https://www.zhihu.com/people/linuxwang-xian-sheng
 
