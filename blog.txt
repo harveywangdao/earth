@@ -46,7 +46,9 @@ https://www.cnblogs.com/ysocean/p/9102811.html
 https://zhuanlan.zhihu.com/p/452965689
 
 linux:
+https://www.kernel.org/
 https://www.cnblogs.com/LoyenWang/
+https://www.zhihu.com/people/linuxwang-xian-sheng
 
 数据库：
 http://mysql.taobao.org/monthly/
