@@ -58,6 +58,7 @@ https://opensource.actionsky.com/
 
 C/C++：
 http://www.cplusplus.com/reference/
+https://en.cppreference.com/w/c
 
 分布式事务：
 https://dtm.pub/guide/start.html
