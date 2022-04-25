@@ -118,11 +118,16 @@ CAS+原子操作
 如果不进入自旋接下来就会阻塞在信号量,放入队列,执行gopark,_Grunning->_Gwaiting,unlock时调用goready唤醒阻塞的协程,_Gwaiting->_Grunnable
 
 RWMutex:
-使用Mutex实现,
+使用Mutex和信号量实现
+获得读锁,如果之前有读锁那么直接获得锁,如果之前有写锁那么阻塞在读信号量队列上,当释放写锁时唤醒读信号量队列上所有的读锁
+获得写锁,如果之前有写锁那么直接阻塞在互斥量上,如果之前有读锁,那么阻塞在写信号量上,当释放最后一个读锁时唤醒写信号量
 
 sync.Once:
 CAS+mutex
 首先原子判断done是不是0,如果不是0就直接返回,如果是0就代表未执行过,这时先加锁,再次判断done是不是0,不是0就代表被其它同时运行的G执行了直接退出,是0的话就执行fn再原子设置done为1
+
+sync.Pool:
+
 
 netpoll:
 当网络请求阻塞时,调度器会让当前阻塞的G放入网络轮询器中,由网络轮询器处理异步网络系统调用,从而让出P执行其它goroutine,
@@ -248,7 +253,7 @@ go tool pack c file.a main.go
 runtime
 反射reflect
 定时器
-atomic/条件变量/WaitGroup/sync.Pool
+atomic/条件变量/WaitGroup
 gin/beego/grpc/Restful/fasthttp
 cgo
 
