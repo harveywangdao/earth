@@ -128,6 +128,10 @@ CAS+mutex
 
 sync.Pool:
 
+WaitGroup:
+Add: 支持加负数,检测到v等于0并且等待者不等于0就去释放所有等待者的信号量
+Done: Add(-1)
+Wait: 原子增加等待者的数量+1,协程进入信号量阻塞
 
 netpoll:
 当网络请求阻塞时,调度器会让当前阻塞的G放入网络轮询器中,由网络轮询器处理异步网络系统调用,从而让出P执行其它goroutine,
@@ -253,7 +257,7 @@ go tool pack c file.a main.go
 runtime
 反射reflect
 定时器
-atomic/条件变量/WaitGroup
+atomic/条件变量
 gin/beego/grpc/Restful/fasthttp
 cgo
 
