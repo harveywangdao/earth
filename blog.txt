@@ -38,6 +38,9 @@ https://changkun.de/blog/
 https://cswiki.top/
 https://gocompiler.shizhz.me/
 https://www.cnblogs.com/jajian/
+https://www.zhihu.com/column/golang-internal
+https://www.zhihu.com/column/golang-inside
+https://blog.51cto.com/u_15127695/original/p_1
 
 https://studygolang.com/articles/33163
 https://www.zhihu.com/column/c_1352639051791454208
