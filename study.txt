@@ -53,7 +53,18 @@ iface表示至少带有一个函数的interface,有两个字段tab和data,itab�
 
 map:
 hmap
+冲突解决,开放寻址法:写入新的数据时如果发生了冲突就会将键值对写入到下一个索引为空的位置;拉链法:数组加上链表,引入红黑树以优化性能
+并发读写会panic,通过flags标志位判断
+hash高8位用作tophash,底位用于计算在哪个桶
+溢出桶通过链表链接
+初始化,makemap
+插入更新,mapassign,每个bucket可以存8个kv,摆放方式key1...key8/value1...value8
+查询,mapaccess1,mapaccess2
+删除,mapdelete
+遍历,mapiterinit,mapiternext
 扩容: map中数据总个数/桶个数>6.5时,引发翻倍扩容 || 使用了太多的溢出桶时
+mapextra
+hash函数
 
 sync.Map:
 通过互斥锁和原子操作来实现近似无锁,空间换时间,延迟删除,删除一个键值只是打标记,只有在迁移dirty数据的时候才清理删除的数据,readOnly向dirty拷贝是遍历,不适合大数据场景
