@@ -138,6 +138,21 @@ Signal: 唤醒单个等待者
 Broadcast: 唤醒所有等待者
 
 sync.Pool:
+Get,P先去private找,如果private是空则去本地池查找,如果自己没有就去其它P偷过来一些,如果还是没有就去本地池victim取,如果都没有就New一个
+Put,P操作本地池,数据放入一个双向链表,每个链表节点存储容量以2倍递增
+gc前的STW执行注册的回调函数用于清理一代的缓存,原本的victim赋值nil去除对内存的引用,local赋值给victim
+禁止G被抢占,false sharing问题的避免
+
+atomic:
+锁住变量的地址不允许其它cpu操作
+通过指令实现原子操作,LOCK
+ANDL/ORL/ANDB/ORB
+StoreInt64 XCHGQ
+LoadInt64 *ptr
+AddInt64 XADDQ
+CompareAndSwapInt64 CMPXCHGQ
+SwapInt64 XCHGQ
+MESI缓存一致性协议
 
 netpoll:
 当网络请求阻塞时,调度器会让当前阻塞的G放入网络轮询器中,由网络轮询器处理异步网络系统调用,从而让出P执行其它goroutine,
@@ -263,7 +278,6 @@ go tool pack c file.a main.go
 runtime
 反射reflect
 定时器
-atomic
 gin/beego/grpc/Restful/fasthttp
 cgo
 
