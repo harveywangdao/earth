@@ -49,16 +49,18 @@ eface表示空的interface{},有两个字段_type和data,data是指向数据的�
 iface表示至少带有一个函数的interface,有两个字段tab和data,itab表示interface和实际类型的转换信息,运行时为这一对具体的<Interface,Type>生成itab信息
 
 内存对齐:
-计算机只能从4、8的倍数开始读数据,不能随便从一个地址读数据
+不是所有的硬件平台都能访问任意地址上的任意数据,为了访问未对齐的内存,处理器需要作两次内存访问,而对齐的内存访问仅需要一次访问
+计算机只能从4/8的倍数开始读数据,不能随便从一个地址读数据
+结构体嵌套空结构体的情况,空结构体在最前面/中间不占字节,在最后会被填充对齐到前一个字段的大小
 
 map:
-hmap
+切片/map不能作为key
 冲突解决,开放寻址法:写入新的数据时如果发生了冲突就会将键值对写入到下一个索引为空的位置;拉链法:数组加上链表,引入红黑树以优化性能
 并发读写会panic,通过flags标志位判断
 hash高8位用作tophash,底位用于计算在哪个桶
-溢出桶通过链表链接
+每个桶都是一个bmap,每个bucket可以存8个kv,摆放方式key1...key8/value1...value8,溢出桶通过链表链接
 初始化,makemap
-插入更新,mapassign,每个bucket可以存8个kv,摆放方式key1...key8/value1...value8
+插入更新,mapassign
 查询,mapaccess1,mapaccess2
 删除,mapdelete
 遍历,mapiterinit,mapiternext
@@ -120,6 +122,12 @@ stopTheWorld
 startTheWorld
 gosave
 gogo
+mallocgc
+
+P状态:_Pidle/_Prunning/_Psyscall/_Pgcstop/_Pdead
+G状态:_Grunning/_Gwaiting/_Grunnable/_Gsyscall/_Gidle/_Gdead/_Gcopystack/_Gpreempted
+G存储在,LRQ本地运行队列/GRQ全局运行队列/Netpoller网络轮询器/系统调用/锁/chan receive/chan send/select
+GC sweep/GC scavenge/force gc/GC worker
 
 M:
 sched.maxmcount = 10000
