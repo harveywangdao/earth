@@ -55,15 +55,19 @@ iface表示至少带有一个函数的interface,有两个字段tab和data,itab�
 
 map:
 冲突解决,开放寻址法:写入新的数据时如果发生了冲突就会将键值对写入到下一个索引为空的位置;拉链法:数组加上链表,引入红黑树以优化性能
+
 切片/map不能作为key,但可以作为value
 并发读写会panic,通过flags标志位判断
 hash高8位用作tophash,底位用于计算在哪个桶
 每个桶都是一个bmap,每个bucket可以存8个kv,摆放方式key1...key8/value1...value8,溢出桶通过链表链接
-初始化,makemap,bucket数量一般是2的次方
-插入更新,mapassign,插入一个不存在的key/更新一个存在key
-查询,mapaccess1,mapaccess2
-删除,mapdelete
-遍历,mapiterinit,mapiternext
+tophash,emptyRest表示后面没有数据了,emptyOne表示当前没有key
+
+初始化,makemap,bucket数量一般是2的倍数,初始化时容量超过8才会分配空间,最少分配2个bucket
+插入更新,mapassign,先找这个key是否已经存在,如果存在则更新value,如果不存在则找到第一个emptyOne/emptyRest插入新KV
+删除,mapdelete,找到这个key,把tophash设置成emptyOne,把最后一个有key的后面所有的tophash都设置成emptyRest
+查询,mapaccess1一个返回值,mapaccess2带ok的返回值,如果key不存在则返回&zeroVal[0]
+
+遍历,mapiterinit初始化hiter结构体,起始桶和桶内的offset是随机数,mapiternext
 扩容: map中数据总个数/桶个数>6.5时,引发翻倍扩容 || 使用了太多的溢出桶时
 mapextra
 hash函数

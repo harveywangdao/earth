@@ -56,6 +56,28 @@ func do4() {
 	m1[22.0] = 33
 }
 
+func do5() {
+	m1 := make(map[int]int)
+	m2 := make(map[int]int, 7)
+	m3 := make(map[int]int, 8)
+	m4 := make(map[int]int, 9)
+	_ = m1
+	_ = m2
+	_ = m3
+	_ = m4
+}
+
+func do6() {
+	m1 := make(map[int]int, 64)
+	m1[1] = 1
+	m1[2] = 2
+
+	for k, v := range m1 {
+		k++
+		v++
+	}
+}
+
 func main() {
 	do1()
 }
