@@ -24,14 +24,29 @@ string:
 str[0]是byte/uint8;range str返回的是rune/int32,range str时index可能是不连续的,value是unicode
 []rune(str)转成unicode,[]byte(str)转成utf-8的每个字节
 
-copy:
-第一个参数只能是slice,第二个参数可以是slice和string
+map:
+冲突解决,开放寻址法:写入新的数据时如果发生了冲突就会将键值对写入到下一个索引为空的位置;拉链法:数组加上链表,引入红黑树以优化性能
+切片/map不能作为key,但可以作为value
+并发读写会panic,通过flags标志位判断
+hash高8位用作tophash,底位用于计算在哪个桶
+每个桶都是一个bmap,每个bucket可以存8个kv,摆放方式key1...key8/value1...value8,溢出桶通过链表链接
+tophash,emptyRest表示后面没有数据了,emptyOne表示当前没有key
+初始化,makemap,bucket数量一般是2的倍数,初始化时容量超过8才会分配空间,最少分配2个bucket
+插入更新,mapassign,先找这个key是否已经存在,如果存在则更新value,如果不存在则找到第一个emptyOne/emptyRest插入新KV
+删除,mapdelete,找到这个key,把tophash设置成emptyOne,把最后一个有key的后面所有的tophash都设置成emptyRest
+查询,mapaccess1一个返回值,mapaccess2带ok的返回值,如果key不存在则返回&zeroVal[0]
+遍历,mapiterinit初始化hiter结构体,起始桶和桶内的offset是随机数,mapiternext先遍历一个桶内的8个key再遍历下一个桶
+扩容: map中数据总个数/桶个数>6.5时,引发翻倍扩容 || 使用了太多的溢出桶时,hashGrow开始扩容,插入/更新/删除时触发实际扩容,扩容当前的桶和一个每次递增的桶
+mapextra
+hash函数
 
-nil:
-nil不是关键字;nil可作为变量名;nil是没有默认类型的在使用它时必须要提供足够的信息能够让编译器推断nil期望的类型
+chan管道:
+以通信方式共享内存,不要以共享内存方式通信
+len+cap;读写nil管道都会阻塞;close nil管道会panic;close两次管道会panic
 
-iota:
-只能和const一起使用;每当const出现时都会使iota初始化为0;const中每新增一行常量声明将使iota计数一次;默认int型
+select:
+selectgo
+select中没有case时会阻塞;select中所有case都阻塞就走default,没有default就阻塞;只能用于管道;case是随机执行的;两个case可以接收同一个管道
 
 struct:
 空结构体都指向zerobase;当空结构体放到另一个结构体中的最后一个字段时会进行特殊填充
@@ -47,66 +62,6 @@ struct:
 只要实现了接口的所有方法,这个类型就实现了该接口,duck typing,不需要显式地去继承接口,编译阶段就可以发现是否实现了接口
 eface表示空的interface{},有两个字段_type和data,data是指向数据的指针,_type是类型信息
 iface表示至少带有一个函数的interface,有两个字段tab和data,itab表示interface和实际类型的转换信息,运行时为这一对具体的<Interface,Type>生成itab信息
-
-内存对齐:
-不是所有的硬件平台都能访问任意地址上的任意数据,为了访问未对齐的内存,处理器需要作两次内存访问,而对齐的内存访问仅需要一次访问
-计算机只能从4/8的倍数开始读数据,不能随便从一个地址读数据
-结构体嵌套空结构体的情况,空结构体在最前面/中间不占字节,在最后会被填充对齐到前一个字段的大小
-
-map:
-冲突解决,开放寻址法:写入新的数据时如果发生了冲突就会将键值对写入到下一个索引为空的位置;拉链法:数组加上链表,引入红黑树以优化性能
-切片/map不能作为key,但可以作为value
-并发读写会panic,通过flags标志位判断
-hash高8位用作tophash,底位用于计算在哪个桶
-每个桶都是一个bmap,每个bucket可以存8个kv,摆放方式key1...key8/value1...value8,溢出桶通过链表链接
-tophash,emptyRest表示后面没有数据了,emptyOne表示当前没有key
-初始化,makemap,bucket数量一般是2的倍数,初始化时容量超过8才会分配空间,最少分配2个bucket
-插入更新,mapassign,先找这个key是否已经存在,如果存在则更新value,如果不存在则找到第一个emptyOne/emptyRest插入新KV
-删除,mapdelete,找到这个key,把tophash设置成emptyOne,把最后一个有key的后面所有的tophash都设置成emptyRest
-查询,mapaccess1一个返回值,mapaccess2带ok的返回值,如果key不存在则返回&zeroVal[0]
-遍历,mapiterinit初始化hiter结构体,起始桶和桶内的offset是随机数,mapiternext先遍历一个桶内的8个key再遍历下一个桶
-
-扩容: map中数据总个数/桶个数>6.5时,引发翻倍扩容 || 使用了太多的溢出桶时,hashGrow开始扩容,插入/更新/删除时触发实际扩容,扩容当前的桶和一个每次递增的桶
-mapextra
-hash函数
-
-sync.Map:
-通过互斥锁和原子操作来实现近似无锁,空间换时间,延迟删除,删除一个键值只是打标记,只有在迁移dirty数据的时候才清理删除的数据,readOnly向dirty拷贝是遍历,不适合大数据场景
-不加锁: 读/删一个存在readOnly中的key,写一个存在readOnly中的key并且没有标记删除
-加锁: 增加新key会加锁,新key先放dirty,不适合频繁增加数据
-
-chan管道:
-以通信方式共享内存,不要以共享内存方式通信
-len+cap;读写nil管道都会阻塞;close nil管道会panic;close两次管道会panic
-
-select:
-selectgo
-select中没有case时会阻塞;select中所有case都阻塞就走default,没有default就阻塞;只能用于管道;case是随机执行的;两个case可以接收同一个管道
-
-return:
-不带命名的返回参数会默认加r0...rn的名称,函数返回时需要给这些变量赋值
-带命名的返回参数:
-return后面什么都不加,等同于,return后面加返回值里的变量;
-return后面加非返回值里的变量,先给这个函数返回值变量赋值再返回;
-
-defer:
-先进后出;defer无法改变已经return的变量,除非该变量在函数的返回值里申明
-deferprocStack&deferreturn
-
-panic&recover:
-只能recover本协程内的panic
-gopanic&gorecover
-数组切片越界;nil指针野指针;往已经close的chan里发送数据;并发读写相同map;interface{}断言未接收第二个返回值
-
-闭包函数:
-定义在一个函数内部的函数,闭包是将函数内部和函数外部连接起来的桥梁,局部变量变成全局变量
-
-unsafe&uintptr:
-unsafe.Pointer和uintptr可以相互转化
-unsafe.Pointer不能加减
-uintptr可以加减
-uintptr对对象已经无引用,对象可能随时被回收;除非是系统调用传进去的uintptr,编译器做了处理对象不会被回收
-普通变量取址也不能进行加减
 
 协程:
 调度 GMP
@@ -133,15 +88,60 @@ ReadGCStats
 SetPanicOnFault
 WriteHeapDump
 SetTraceback
+M:
+SetMaxThreads
+sched.maxmcount = 10000
 
 P状态:_Pidle/_Prunning/_Psyscall/_Pgcstop/_Pdead
 G状态:_Grunning/_Gwaiting/_Grunnable/_Gsyscall/_Gidle/_Gdead/_Gcopystack/_Gpreempted
 G存储在,LRQ本地运行队列/GRQ全局运行队列/Netpoller网络轮询器/系统调用/锁/chan receive/chan send/select
 GC sweep/GC scavenge/force gc/GC worker
 
-M:
-SetMaxThreads
-sched.maxmcount = 10000
+netpoll:
+当网络请求阻塞时,调度器会让当前阻塞的G放入网络轮询器中,由网络轮询器处理异步网络系统调用,从而让出P执行其它goroutine,
+当异步网络调用由网络轮询器完成后,再由sysmon监控线程将其切换回来继续执行
+
+sysmon:
+每隔20us~10ms轮询一次,独立于GMP之外,独立的M
+监控那些长时间运行的G,设置被强占的标识符,别的G就可以抢先进来执行
+检查当前网络轮询器中所有G距离runtime.netpoll被调用是否超过了10ms,将其放入全局运行队列,等待下一次的继续执行
+系统调用导致阻塞的话,P的状态为_Psyscall,则会让GM一起切换出去,让P重新找一个GM运行
+如果垃圾回收器超过两分钟没有执行的话,sysmon监控线程也会强制进行GC
+获取下一个需要被触发的计时器
+
+内存管理:
+mheap mspan mcentral mcache mstats TCMalloc
+小于32KB,从P上的mcache分配mspan,不需要加锁,为每种类别的mspan维护着一个mcentral
+mcentral的作用是为所有mcache提供切分好的mspan资源,每个central会持有一种特定大小的全局mspan列表,mcentral被所有的工作线程共同享有,需要加锁
+当mcentral没有空闲的mspan时,会向mheap申请
+而mheap没有资源时,会向操作系统申请新内存,mheap主要用于大对象的内存分配,以及管理未切割的mspan
+大于32KB,会直接从堆上(mheap)上分配对应的数量的内存页(每页大小是8KB)给程序
+
+协程栈:
+每个goroutine都维护着自己的栈区,栈结构是连续栈,是一块连续的内存,栈区的初始大小是2KB,按照需要增长和收缩,最大1GB
+分段栈,栈空间会以双向链表的形式串联起来,如果协程的栈几乎充满,那么任意的函数调用都会触发栈的扩容,当函数返回后又会触发栈的收缩,如果在一个循环中调用函数,栈分配释放造成巨大开销,热分裂问题
+连续栈,栈空间不足时,初始化一片比旧栈大两倍的新栈并将原栈中的所有值都迁移到新的栈中,将指向旧栈对应变量的指针重新指向新栈
+分配类似堆内存的分配
+
+内存回收gc:
+三色标记
+开始所有对象都是白色的
+遍历根节点(全局变量和栈内变量)集合里的所有根对象,把根对象引用的对象标记为灰色,从白色集合放入灰色集合
+遍历灰色集合,将灰色对象引用的对象从白色集合放入灰色集合,之后将此灰色对象放入黑色集合
+重复第三步,直到灰色集合中无任何对象
+回收白色集合里的所有对象,本次垃圾回收结束
+写屏障,在对象新增的同时给它着色为灰色,而所有新创建的对象都会被直接标记成黑色
+开启写屏障前和移除写屏障前暂停应用程序
+标记准备阶段,暂停程序
+标记阶段,根对象入队,开启写屏障,恢复执行程序,开始扫描根对象,扫描协程栈期间会暂停当前处理器,
+标记终止阶段,暂停程序
+清理阶段,初始化清理状态并关闭写屏障,恢复用户程序,后台并发清理所有的内存管理单元,当goroutine申请新的内存管理单元时就会触发清理
+触发时机,内存使用超过某值,超过两分钟,手动GC
+
+sync.Map:
+通过互斥锁和原子操作来实现近似无锁,空间换时间,延迟删除,删除一个键值只是打标记,只有在迁移dirty数据的时候才清理删除的数据,readOnly向dirty拷贝是遍历,不适合大数据场景
+不加锁: 读/删一个存在readOnly中的key,写一个存在readOnly中的key并且没有标记删除
+加锁: 增加新key会加锁,新key先放dirty,不适合频繁增加数据
 
 sync.Mutex:
 CAS+原子操作
@@ -187,51 +187,61 @@ CompareAndSwapInt64 CMPXCHGQ
 SwapInt64 XCHGQ
 MESI缓存一致性协议
 
-netpoll:
-当网络请求阻塞时,调度器会让当前阻塞的G放入网络轮询器中,由网络轮询器处理异步网络系统调用,从而让出P执行其它goroutine,
-当异步网络调用由网络轮询器完成后,再由sysmon监控线程将其切换回来继续执行
+return:
+不带命名的返回参数会默认加r0...rn的名称,函数返回时需要给这些变量赋值
+带命名的返回参数:
+return后面什么都不加,等同于,return后面加返回值里的变量;
+return后面加非返回值里的变量,先给这个函数返回值变量赋值再返回;
 
-sysmon:
-每隔20us~10ms轮询一次,独立于GMP之外,独立的M
-监控那些长时间运行的G,设置被强占的标识符,别的G就可以抢先进来执行
-检查当前网络轮询器中所有G距离runtime.netpoll被调用是否超过了10ms,将其放入全局运行队列,等待下一次的继续执行
-系统调用导致阻塞的话,P的状态为_Psyscall,则会让GM一起切换出去,让P重新找一个GM运行
-如果垃圾回收器超过两分钟没有执行的话,sysmon监控线程也会强制进行GC
-获取下一个需要被触发的计时器
+defer:
+先进后出;defer无法改变已经return的变量,除非该变量在函数的返回值里申明
+deferprocStack&deferreturn
 
-内存管理:
-mheap mspan mcentral mcache mstats TCMalloc
-小于32KB,从P上的mcache分配mspan,不需要加锁,为每种类别的mspan维护着一个mcentral
-mcentral的作用是为所有mcache提供切分好的mspan资源,每个central会持有一种特定大小的全局mspan列表,mcentral被所有的工作线程共同享有,需要加锁
-当mcentral没有空闲的mspan时,会向mheap申请
-而mheap没有资源时,会向操作系统申请新内存,mheap主要用于大对象的内存分配,以及管理未切割的mspan
-大于32KB,会直接从堆上(mheap)上分配对应的数量的内存页(每页大小是8KB)给程序
+panic&recover:
+只能recover本协程内的panic
+gopanic&gorecover
+数组切片越界;nil指针野指针;往已经close的chan里发送数据;并发读写相同map;interface{}断言未接收第二个返回值
 
-协程栈:
-每个goroutine都维护着自己的栈区,栈结构是连续栈,是一块连续的内存,栈区的初始大小是2KB,按照需要增长和收缩,最大1GB
-分段栈,栈空间会以双向链表的形式串联起来,如果协程的栈几乎充满,那么任意的函数调用都会触发栈的扩容,当函数返回后又会触发栈的收缩,如果在一个循环中调用函数,栈分配释放造成巨大开销,热分裂问题
-连续栈,栈空间不足时,初始化一片比旧栈大两倍的新栈并将原栈中的所有值都迁移到新的栈中,将指向旧栈对应变量的指针重新指向新栈
-分配类似堆内存的分配
+闭包函数:
+定义在一个函数内部的函数,闭包是将函数内部和函数外部连接起来的桥梁,局部变量变成全局变量
 
-内存回收gc:
-三色标记
-开始所有对象都是白色的
-遍历根节点(全局变量和栈内变量)集合里的所有根对象,把根对象引用的对象标记为灰色,从白色集合放入灰色集合
-遍历灰色集合,将灰色对象引用的对象从白色集合放入灰色集合,之后将此灰色对象放入黑色集合
-重复第三步,直到灰色集合中无任何对象
-回收白色集合里的所有对象,本次垃圾回收结束
-写屏障,在对象新增的同时给它着色为灰色,而所有新创建的对象都会被直接标记成黑色
-开启写屏障前和移除写屏障前暂停应用程序
-标记准备阶段,暂停程序
-标记阶段,根对象入队,开启写屏障,恢复执行程序,开始扫描根对象,扫描协程栈期间会暂停当前处理器,
-标记终止阶段,暂停程序
-清理阶段,初始化清理状态并关闭写屏障,恢复用户程序,后台并发清理所有的内存管理单元,当goroutine申请新的内存管理单元时就会触发清理
-触发时机,内存使用超过某值,超过两分钟,手动GC
+unsafe&uintptr:
+unsafe.Pointer和uintptr可以相互转化
+unsafe.Pointer不能加减
+uintptr可以加减
+uintptr对对象已经无引用,对象可能随时被回收;除非是系统调用传进去的uintptr,编译器做了处理对象不会被回收
+普通变量取址也不能进行加减
+
+copy:
+第一个参数只能是slice,第二个参数可以是slice和string
+nil:
+nil不是关键字;nil可作为变量名;nil是没有默认类型的在使用它时必须要提供足够的信息能够让编译器推断nil期望的类型
+iota:
+只能和const一起使用;每当const出现时都会使iota初始化为0;const中每新增一行常量声明将使iota计数一次;默认int型
+
+内存对齐:
+不是所有的硬件平台都能访问任意地址上的任意数据,为了访问未对齐的内存,处理器需要作两次内存访问,而对齐的内存访问仅需要一次访问
+计算机只能从4/8的倍数开始读数据,不能随便从一个地址读数据
+结构体嵌套空结构体的情况,空结构体在最前面/中间不占字节,在最后会被填充对齐到前一个字段的大小
 
 内存逃逸:
 编译阶段确定;大内存优先分配在堆上/分配的大小不确定;变量在函数返回后还可能被使用,闭包,返回指针;造成gc压力变大
 go build -gcflags "-m -m" main.go
 go tool compile -m main.go
+
+位运算:
+&: 与AND
+|: 或OR
+^: 异或XOR,作为一元运算符时表示位反或位补,等价m^n,m所有位都是1
+&^: 位清空AND NOT,运算符左边数据与右边数据相异的位保留,相同位清零,0&^0=0  0&^1=0  1&^0=1  1&^1=0;如果右侧是0,则左侧数保持不变;如果右侧是1,则左侧数一定清零
+>>: 左移
+<<: 右移
+原码: 符号位加真值的绝对值
+反码: 无符号数和正数的反码是其本身,负数的反码是将原码除符号位外的其他位按位取反,即0变1,1变0
+补码: 无符号数和正数的补码是其本身,负数的补码是反码二进制加1
+为了让符号位参与基本预算,产生了反码
+为了解决反码运算后产生-0的问题产生了补码
+计算机实际用补码参与运算,获得的结果需要转换成原码
 
 性能优化:
 pprof:
@@ -293,20 +303,6 @@ go tool pack c file.a main.go
 //go:noinline //go:nosplit //go:noescape //go:linkname //go:notinheap //go:norace
 //go:generate stringer -type=Life
 插件: go build -buildmode=plugin add.go
-
-位运算:
-&: 与AND
-|: 或OR
-^: 异或XOR,作为一元运算符时表示位反或位补,等价m^n,m所有位都是1
-&^: 位清空AND NOT,运算符左边数据与右边数据相异的位保留,相同位清零,0&^0=0  0&^1=0  1&^0=1  1&^1=0;如果右侧是0,则左侧数保持不变;如果右侧是1,则左侧数一定清零
->>: 左移
-<<: 右移
-原码: 符号位加真值的绝对值
-反码: 无符号数和正数的反码是其本身,负数的反码是将原码除符号位外的其他位按位取反,即0变1,1变0
-补码: 无符号数和正数的补码是其本身,负数的补码是反码二进制加1
-为了让符号位参与基本预算,产生了反码
-为了解决反码运算后产生-0的问题产生了补码
-计算机实际用补码参与运算,获得的结果需要转换成原码
 
 runtime
 反射reflect
