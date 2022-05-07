@@ -43,6 +43,12 @@ hash函数
 chan管道:
 以通信方式共享内存,不要以共享内存方式通信
 len+cap;读写nil管道都会阻塞;close nil管道会panic;close两次管道会panic
+nil管道,发送/接收数据会阻塞,close会panic
+往已close的管道发送数据会panic,可以接收数据第二个返回值是false
+初始化,makechan,recvq/sendq存储G的接收发送队列,循环数组实现的数据队列,sendx/recvx记录队列中发送接收的位置
+发送,chansend,如果recvq有等待的G会直接发送给这个G,调用goready唤醒这个G,如果队列没满就把数据放入队列,sendx加1然后返回,如果队列已经满了就把G放入sendq队列然后阻塞调用gopark,数据存在sudog上
+接收,chanrecv1,chanrecv2返回值带ok,如果发送队列sendq不为空并且数据队列长度是0则直接获取阻塞G的数据并唤醒阻塞G,如果发送队列sendq不为空并且数据队列长度大于0则返回sendx位置的数据并且将阻塞G的数据放入队列,同样要唤醒阻塞G,此时队列是满的,recvx加1后,将recvx赋值给sendx,如果发送队列sendq为空并且数据队列不为空则返回sendx位置的数据,如果发送队列sendq为空并且数据队列也为空,那就将当前G放入recvq队列
+close,closechan,close两次会panic,唤醒所有recv等待者,唤醒所有send等待者并且panic
 
 select:
 selectgo
