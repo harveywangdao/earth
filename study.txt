@@ -66,7 +66,7 @@ tophash,emptyRest表示后面没有数据了,emptyOne表示当前没有key
 查询,mapaccess1一个返回值,mapaccess2带ok的返回值,如果key不存在则返回&zeroVal[0]
 遍历,mapiterinit初始化hiter结构体,起始桶和桶内的offset是随机数,mapiternext先遍历一个桶内的8个key再遍历下一个桶
 
-扩容: map中数据总个数/桶个数>6.5时,引发翻倍扩容 || 使用了太多的溢出桶时,hashGrow开始扩容,插入/更新/删除时出发扩容,扩容当前的桶和一个每次递增的桶
+扩容: map中数据总个数/桶个数>6.5时,引发翻倍扩容 || 使用了太多的溢出桶时,hashGrow开始扩容,插入/更新/删除时触发实际扩容,扩容当前的桶和一个每次递增的桶
 mapextra
 hash函数
 
@@ -125,6 +125,14 @@ startTheWorld
 gosave
 gogo
 mallocgc
+LockOSThread
+FreeOSMemory
+SetGCPercent
+SetMaxStack
+ReadGCStats
+SetPanicOnFault
+WriteHeapDump
+SetTraceback
 
 P状态:_Pidle/_Prunning/_Psyscall/_Pgcstop/_Pdead
 G状态:_Grunning/_Gwaiting/_Grunnable/_Gsyscall/_Gidle/_Gdead/_Gcopystack/_Gpreempted
@@ -132,6 +140,7 @@ G存储在,LRQ本地运行队列/GRQ全局运行队列/Netpoller网络轮询器/
 GC sweep/GC scavenge/force gc/GC worker
 
 M:
+SetMaxThreads
 sched.maxmcount = 10000
 
 sync.Mutex:
