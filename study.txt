@@ -36,8 +36,8 @@ tophash,emptyRest表示后面没有数据了,emptyOne表示当前没有key
 删除,mapdelete,找到这个key,把tophash设置成emptyOne,把最后一个有key的后面所有的tophash都设置成emptyRest
 查询,mapaccess1一个返回值,mapaccess2带ok的返回值,如果key不存在则返回&zeroVal[0]
 遍历,mapiterinit初始化hiter结构体,起始桶和桶内的offset是随机数,mapiternext先遍历一个桶内的8个key再遍历下一个桶
-扩容: map中数据总个数/桶个数>6.5时,引发翻倍扩容 || 使用了太多的溢出桶时,hashGrow开始扩容,插入/更新/删除时触发实际扩容,扩容当前的桶和一个每次递增的桶
-mapextra
+扩容,map中数据总个数/桶个数>6.5时(overLoadFactor),引发翻倍扩容,或者是使用了太多的溢出桶时(tooManyOverflowBuckets)这种是同容量扩容将松散的数据聚合,因为删除操作造成太多的空洞,hashGrow开始扩容,插入/更新/删除时触发实际扩容(growWork),扩容当前的桶和一个每次递增的桶
+mapextra,nextOverflow存放未使用的溢出桶,overflow/oldoverflow为了优化GC扫描而设计,当key和value均不包含指针并且都可以inline时使用,避免扫描hmap
 hash函数
 
 chan管道:
