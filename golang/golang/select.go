@@ -96,6 +96,38 @@ func do5() {
 	println("444")
 }
 
+func do6() {
+	c1 := make(chan int, 16)
+	c2 := make(chan int, 16)
+
+	select {
+	case <-c1:
+	}
+	select {
+	case c1 <- 13:
+	}
+
+	select {
+	case <-c1:
+	default:
+	}
+	select {
+	case c1 <- 13:
+	default:
+	}
+
+	select {
+	case <-c1:
+	case <-c2:
+	default:
+	}
+
+	select {
+	case <-c1:
+	case <-c2:
+	}
+}
+
 func main() {
-	do4()
+	do6()
 }
