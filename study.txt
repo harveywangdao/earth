@@ -830,6 +830,7 @@ fork/vfork/clone
 轻量级进程,PCB/TCB,task_struct/thread_info/内核栈,slab分配器,线程有自己独立的内核栈
 创建进程和线程底层都是调用clone系统调用,fork创建进程时clone不传参数则创建一个完整的进程,pthread_create创建线程时clone会传一些参数,共享地址空间
 线程池
+线程私有变量,pthread_key_create/pthread_setspecific/pthread_getspecific/pthread_key_delete
 
 内存管理:
 malloc/realloc/calloc/free/mmap
