@@ -92,9 +92,23 @@ gopark/goready
 stopTheWorld/startTheWorld
 gosave/gogo/mallocgc
 LockOSThread/UnlockOSThread/FreeOSMemory/SetGCPercent/SetMaxStack/ReadGCStats/SetPanicOnFault/WriteHeapDump/SetTraceback
+gobuf
+mstart
+
+main:
+rt0_go
+runtime.main
+main_main
+schedinit
 
 G:Goroutine协程,runtime.newproc,本地P运行队列没有剩余空间时会使用全局队列
-M:操作系统线程,runtime.newm,SetMaxThreads,默认sched.maxmcount=10000,最大活跃线程数是GOMAXPROCS,非活跃线程可能阻塞在系统调用
+M:
+操作系统线程
+SetMaxThreads,默认sched.maxmcount=10000
+最大活跃线程数是GOMAXPROCS,非活跃线程可能阻塞在系统调用
+newm
+mcommoninit
+m0
 P:处理器,提供线程需要的上下文环境,调度等待队列,P本地运行队列最大256
 
 P状态:_Pidle/_Prunning/_Psyscall/_Pgcstop/_Pdead
@@ -102,7 +116,7 @@ G状态:_Grunning/_Gwaiting/_Grunnable/_Gsyscall/_Gidle/_Gdead/_Gcopystack/_Gpre
 G存储在,LRQ本地运行队列/GRQ全局运行队列/Netpoller网络轮询器/系统调用/锁/chan receive/chan send/select
 GC sweep/GC scavenge/force gc/GC worker
 
-gsignal
+gsignal:signal-handling g
 g0:是持有调度栈的Goroutine,参与运行时的调度过程,包括G的创建/大内存分配/CGO函数的执行
 协程创建与销毁
 schedule:全局运行队列sched.runq中有待执行的G时,通过schedtick保证有一定几率会从全局运行队列中查找G(globrunqget),从P本地运行队列中查找待执行的G(runqget),如果前两种方法都没有找到G,会通过findrunnable进行阻塞地查找G,网络轮询器中查找,通过runqsteal尝试从其它随机的P中窃取待运行的G,该函数还可能窃取处理器的计时器
@@ -147,6 +161,8 @@ mcentral的作用是为所有mcache提供切分好的mspan资源,每个central�
 标记终止阶段,暂停程序
 清理阶段,初始化清理状态并关闭写屏障,恢复用户程序,后台并发清理所有的内存管理单元,当goroutine申请新的内存管理单元时就会触发清理
 触发时机,内存使用超过某值,超过两分钟,手动GC
+bgsweep
+bgscavenge
 
 sync.Map:
 通过互斥锁和原子操作来实现近似无锁,空间换时间,延迟删除,删除一个键值只是打标记,只有在迁移dirty数据的时候才清理删除的数据,readOnly向dirty拷贝是遍历,不适合大数据场景
