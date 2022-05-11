@@ -84,7 +84,7 @@ iface表示至少带有一个函数的interface,有两个字段tab和data,itab�
 
 协程:
 pc: program counter,pc寄存器的作用是存储程序接下来运行的位置
-sp: stack pointer
+sp: stack pointer,当前线程使用的栈的栈顶地址
 systemstack
 mcall: switches from the g to the g0 stack
 lock/unlock
