@@ -85,41 +85,66 @@ iface表示至少带有一个函数的interface,有两个字段tab和data,itab�
 协程:
 pc: program counter,pc寄存器的作用是存储程序接下来运行的位置
 sp: stack pointer,当前线程使用的栈的栈顶地址
-systemstack
-mcall: switches from the g to the g0 stack
-lock/unlock
-gopark/goready
-stopTheWorld/startTheWorld
-gosave/gogo/mallocgc
-LockOSThread/UnlockOSThread/FreeOSMemory/SetGCPercent/SetMaxStack/ReadGCStats/SetPanicOnFault/WriteHeapDump/SetTraceback
-gobuf
-mstart
+systemstack: 可以由g0/gsignal/普通g调用,当由普通g调用的时候会切换到g0,调用完再切回普通g栈
+mcall: 从普通g栈切换到g0栈,该函数由普通g调用,fn不能返回
+lock/unlock: linux futex系统调用实现
+stopTheWorld:startTheWorld: 
+
+memory:
+mallocgc
+
+stack:
+newstack
+stackalloc
+stackfree
+copystack
+shrinkstack
 
 main:
+_rt0_amd64_linux
+_rt0_amd64
 rt0_go
+runtime.args
+runtime.osinit
+runtime.schedinit
 runtime.main
 main_main
-schedinit
 
-G:Goroutine协程,runtime.newproc,本地P运行队列没有剩余空间时会使用全局队列
+G:
+Goroutine协程
+G状态:_Grunning/_Gwaiting/_Grunnable/_Gsyscall/_Gidle/_Gdead/_Gcopystack/_Gpreempted
+G存储在,LRQ本地运行队列/GRQ全局运行队列/Netpoller网络轮询器/系统调用/锁/chan receive/chan send/select,本地P运行队列没有剩余空间时会使用全局队列
+GC sweep/GC scavenge/force gc/GC worker
+gsignal:signal-handling g
+g0:是持有调度栈的Goroutine,参与运行时的调度过程,包括G的创建/大内存分配/CGO函数的执行
+getg: 返回当前g的指针,在编译的时候才会生成该函数
+newproc
+gopark/goready
+gosave/gogo
+gobuf
+
 M:
 操作系统线程
 SetMaxThreads,默认sched.maxmcount=10000
 最大活跃线程数是GOMAXPROCS,非活跃线程可能阻塞在系统调用
-newm
-mcommoninit
+osyield: 线程让出cpu
+procyield: 执行PAUSE指令空转
 m0
-P:处理器,提供线程需要的上下文环境,调度等待队列,P本地运行队列最大256
+newm
+newosproc
+mstart
+mcommoninit
+startm
 
+P:
+处理器,提供线程需要的上下文环境,调度等待队列,P本地运行队列最大256
 P状态:_Pidle/_Prunning/_Psyscall/_Pgcstop/_Pdead
-G状态:_Grunning/_Gwaiting/_Grunnable/_Gsyscall/_Gidle/_Gdead/_Gcopystack/_Gpreempted
-G存储在,LRQ本地运行队列/GRQ全局运行队列/Netpoller网络轮询器/系统调用/锁/chan receive/chan send/select
-GC sweep/GC scavenge/force gc/GC worker
+wakep
 
-gsignal:signal-handling g
-g0:是持有调度栈的Goroutine,参与运行时的调度过程,包括G的创建/大内存分配/CGO函数的执行
-协程创建与销毁
-schedule:全局运行队列sched.runq中有待执行的G时,通过schedtick保证有一定几率会从全局运行队列中查找G(globrunqget),从P本地运行队列中查找待执行的G(runqget),如果前两种方法都没有找到G,会通过findrunnable进行阻塞地查找G,网络轮询器中查找,通过runqsteal尝试从其它随机的P中窃取待运行的G,该函数还可能窃取处理器的计时器
+schedule:
+全局运行队列sched.runq中有待执行的G时,通过schedtick保证有一定几率会从全局运行队列中查找G(globrunqget),从P本地运行队列中查找待执行的G(runqget),如果前两种方法都没有找到G,会通过findrunnable进行阻塞地查找G,网络轮询器中查找,通过runqsteal尝试从其它随机的P中窃取待运行的G,该函数还可能窃取处理器的计时器
+
+LockOSThread/UnlockOSThread/FreeOSMemory/SetGCPercent/SetMaxStack/ReadGCStats/SetPanicOnFault/WriteHeapDump/SetTraceback
 
 netpoll:
 当网络请求阻塞时,调度器会让当前阻塞的G放入网络轮询器中,由网络轮询器处理异步网络系统调用,从而让出P执行其它goroutine,
