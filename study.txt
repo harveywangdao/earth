@@ -88,7 +88,7 @@ sp: stack pointer,当前线程使用的栈的栈顶地址
 systemstack: 可以由g0/gsignal/普通g调用,当由普通g调用的时候会切换到g0,调用完再切回普通g栈
 mcall: 从普通g栈切换到g0栈,该函数由普通g调用,fn不能返回
 lock/unlock: linux futex系统调用实现
-stopTheWorld:startTheWorld: 
+stopTheWorld/startTheWorld: stopTheWorldWithSema/startTheWorldWithSema
 
 memory:
 mallocgc
@@ -99,6 +99,7 @@ stackalloc
 stackfree
 copystack
 shrinkstack
+morestack
 
 main:
 _rt0_amd64_linux
@@ -130,16 +131,24 @@ SetMaxThreads,默认sched.maxmcount=10000
 osyield: 线程让出cpu
 procyield: 执行PAUSE指令空转
 m0
-newm
-newosproc
-mstart
+startm: 获取一个闲置的M,如果没有就newm一个
+newm: 创建新线程并让线程工作,newm(sysmon, nil, -1)
+allocm: 获取m结构体
+newosproc: 创建系统线程
 mcommoninit
-startm
+mexit: 退出当前线程
+
+mstart: 线程开始工作
+mstart1
+mstartfn
+
+notewakeup/futexwakeup
+notesleep/futexsleep
 
 P:
 处理器,提供线程需要的上下文环境,调度等待队列,P本地运行队列最大256
 P状态:_Pidle/_Prunning/_Psyscall/_Pgcstop/_Pdead
-wakep
+wakep: 获取一个闲置的P绑定M去执行
 
 schedule:
 全局运行队列sched.runq中有待执行的G时,通过schedtick保证有一定几率会从全局运行队列中查找G(globrunqget),从P本地运行队列中查找待执行的G(runqget),如果前两种方法都没有找到G,会通过findrunnable进行阻塞地查找G,网络轮询器中查找,通过runqsteal尝试从其它随机的P中窃取待运行的G,该函数还可能窃取处理器的计时器
