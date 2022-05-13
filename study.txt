@@ -105,18 +105,18 @@ main:
 _rt0_amd64_linux
 _rt0_amd64
 rt0_go
-runtime.settls
-runtime.abort
-runtime.check
-runtime.args
-runtime.osinit
-runtime.schedinit
-runtime.mainPC
-runtime.newproc
-runtime.mstart
+runtime.settls: 调用系统调用arch_prctl
+runtime.check: 检查基础类型是否正确,如int8是不是一个字节
+runtime.args: 处理参数
+runtime.osinit: 获取cpu数量
+runtime.schedinit: 初始化堆栈/环境变量/进程入参/gc
+runtime.newproc: 创建新G运行fn=runtime.main,将G放入当前P的队列,执行wakep
+runtime.mstart: 保存pc/sp,执行schedule
 
 runtime.main
 main_main
+
+runtime.abort: INT $3
 
 G:
 Goroutine协程
@@ -136,14 +136,14 @@ M:
 操作系统线程
 SetMaxThreads,默认sched.maxmcount=10000
 最大活跃线程数是GOMAXPROCS,非活跃线程可能阻塞在系统调用
-osyield: 线程让出cpu
+osyield: 线程让出cpu,调用系统调用sched_yield
 procyield: 执行PAUSE指令空转
 m0
 startm: 获取一个闲置的M,如果没有就newm一个
 newm: 创建新线程并让线程工作,newm(sysmon, nil, -1)
 allocm: 获取m结构体
 newosproc: 创建系统线程
-mcommoninit
+mcommoninit: M的一些初始化,创建gsignal
 mexit: 退出当前线程
 
 mstart: 线程开始工作
@@ -325,9 +325,18 @@ go tool pprof -http 0.0.0.0:8080 http://localhost:6060/debug/pprof/profile
 调用链,每个函数的耗时和占比
 
 dlv:
-设置断点break main.go:35
-继续执行continue
 查看函数参数、打印变量、单步执行、查看所有协程
+dlv exec ./hello
+设置断点
+break /usr/local/go/src/runtime/os_linux.go:71
+break main.go:35
+打印所有断点 breakpoints
+继续执行到下一个断点 continue
+执行下一行 next
+执行下个指令(更细) step
+局部变量 locals var1
+打印变量 print var1
+strace -ff ./test1
 
 Benchmark:
 go test -bench .
