@@ -105,9 +105,16 @@ main:
 _rt0_amd64_linux
 _rt0_amd64
 rt0_go
+runtime.settls
+runtime.abort
+runtime.check
 runtime.args
 runtime.osinit
 runtime.schedinit
+runtime.mainPC
+runtime.newproc
+runtime.mstart
+
 runtime.main
 main_main
 
@@ -116,6 +123,7 @@ Goroutine协程
 G状态:_Grunning/_Gwaiting/_Grunnable/_Gsyscall/_Gidle/_Gdead/_Gcopystack/_Gpreempted
 G存储在,LRQ本地运行队列/GRQ全局运行队列/Netpoller网络轮询器/系统调用/锁/chan receive/chan send/select,本地P运行队列没有剩余空间时会使用全局队列
 GC sweep/GC scavenge/force gc/GC worker
+tls: thread local storage 为线程本地存储
 gsignal:signal-handling g
 g0:是持有调度栈的Goroutine,参与运行时的调度过程,包括G的创建/大内存分配/CGO函数的执行
 getg: 返回当前g的指针,在编译的时候才会生成该函数
