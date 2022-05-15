@@ -88,7 +88,7 @@ sp: stack pointer,当前线程使用的栈的栈顶地址
 systemstack: 可以由g0/gsignal/普通g调用,当由普通g调用的时候会切换到g0,调用完再切回普通g栈
 mcall: 从普通g栈切换到g0栈,该函数由普通g调用,fn不能返回
 lock/unlock: linux futex系统调用实现
-stopTheWorld/startTheWorld: stopTheWorldWithSema/startTheWorldWithSema
+stopTheWorld/startTheWorld: stopTheWorldWithSema通知所有P上的G被抢占,只设置抢占状态不保证立即被抢占,系统调用tgkill,发送信号给其它M让其停止;startTheWorldWithSema
 
 memory:
 mallocgc
@@ -919,7 +919,35 @@ netfilter
 网卡设备
 
 系统调用
-信号
+
+信号:
+软中断
+kill 1234,默认SIGTERM,可以捕捉
+kill -9 1234,SIGKILL,终止程序,不可捕捉
+ctrl+c产生SIGINT默认反应是进程终止,可以捕捉
+对于需要处理的信号,进程可以指定处理函数,由该函数来处理;也可以忽略某个信号;也可以对该信号的处理保留系统的默认值,大部分的信号缺省操作是使得进程终止
+通过系统调用signal来指定进程对某个信号的处理行为
+SIGSTOP只是要求进程暂时停下手头的工作，休息一下，直到听到SIGCONT的召唤
+
+当内核接收到信号后,会将其放到对应进程的信号队列中,同时向进程发送一个中断,使其陷入内核态
+进程从内核态返回到用户态前进行信号检测,或者进程在内核态中,从睡眠状态被唤醒的时候进行信号检测
+内核将当前内核栈的内容拷贝到用户栈上,并且修改指令寄存器eip将其指向信号处理函数
+接下来进程返回到用户态中,执行相应的信号处理函数
+信号处理函数执行完成后,还需要返回内核态,检查是否还有其它信号未处理
+如果所有信号都处理完成,就会将内核栈恢复,从用户栈拷贝回来,同时恢复指令寄存器eip将其指向中断前的运行位置,最后回到用户态继续执行进程
+
+设置信号处理函数,signal/sigaction,发送信号kill,向自己发信号raise
+向线程发送信号,tkill,tgkill
+alarm/pause
+sigpending
+sigsuspend
+siginterrupt
+sigemptyset/sigfillset/sigaddset/sigdelset/sigismember
+sigprocmask/pthread_sigmask
+sigqueue/pthread_sigqueue
+sigwait/sigwaitinfo/sigtimedwait
+signalfd
+
 中断
 
 常用命令:
