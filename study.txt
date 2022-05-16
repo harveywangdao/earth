@@ -953,8 +953,11 @@ sigwait/sigwaitinfo/sigtimedwait
 signalfd:文件描述符接收信号,不接收SIGKILL/SIGSTOP
 setitimer/getitimer:设置定时器,可重复执行定时任务,三种类型ITIMER_REAL/ITIMER_VIRTUAL统计进程的用户时间/ITIMER_PROF统计进程的用户时间和内核时间,对应信号SIGALRM/SIGVTALRM/SIGPROF
 timer_create/timerfd_create/timer_settime/timer_gettime/timer_getoverrun/timer_delete
-clock_gettime
+clock_gettime/clock_settime/clock_getres:根据clockid获取时间/设置时间/获取精确度
 clock_getcpuclockid/pthread_getcpuclockid
+gettimeofday/settimeofday
+date/time/ctime/ftime
+adjtime/adjtimex/clock_adjtime/ntp_adjtime
 
 中断
 
