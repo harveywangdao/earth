@@ -921,7 +921,7 @@ netfilter
 系统调用
 
 信号:
-软中断
+软中断 kill -l
 kill 1234,默认SIGTERM,可以捕捉
 kill -9 1234,SIGKILL,终止程序,不可捕捉
 ctrl+c产生SIGINT默认反应是进程终止,可以捕捉
@@ -938,7 +938,8 @@ SIGSTOP只是要求进程暂时停下手头的工作，休息一下，直到听�
 
 设置信号处理函数,signal/sigaction,发送信号kill,向自己发信号raise
 向线程发送信号,tkill,tgkill
-alarm/pause
+alarm: 多少秒后发送SIGALRM,默认终止进程,返回值是上一个alarm剩余的秒数,后一个alarm覆盖前一个alarm
+pause
 sigpending
 sigsuspend
 siginterrupt
@@ -946,7 +947,7 @@ sigemptyset/sigfillset/sigaddset/sigdelset/sigismember
 sigprocmask/pthread_sigmask
 sigqueue/pthread_sigqueue
 sigwait/sigwaitinfo/sigtimedwait
-signalfd
+signalfd: 文件描述符接收信号,不接收SIGKILL/SIGSTOP
 
 中断
 
