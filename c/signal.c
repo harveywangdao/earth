@@ -213,24 +213,94 @@ void do6()
 	now();
 }
 
+void info(const char *str)
+{
+	time_t now = time(NULL);
+	char *timeStr = ctime(&now);
+	size_t n = strlen(timeStr);
+	if (n >= 1 && timeStr[n-1] == '\n')
+	{
+		timeStr[n-1] = '\0';
+	}
+	printf("%s -- %s\n", timeStr, str);
+}
+
+static void sig_any(int sig)
+{
+	char str[20] = {0};
+	sprintf(str, "sig no: %d", sig);
+	info(str);
+}
+
 void do7()
 {
-	signal(SIGALRM, sig_alarm);
+	//signal(SIGUSR1, SIG_IGN); // 忽略信号,不影响sleep
+	//signal(SIGUSR1, SIG_DFL); // 默认进程终止
+	signal(SIGUSR1, sig_any); // 会先执行信号处理函数,然后sleep退出并返回剩余秒数
 
-	printf("sleep start\n");
-	now();
+	info("sleep1 start");
+	printf("left: %ds\n", sleep(20));
+	info("sleep1 done");
 
-	sleep(2);
+	info("sleep2 start");
+	printf("left: %ds\n", sleep(20));
+	info("sleep2 done");
+}
 
-	printf("sleep done\n");
-	now();
+void do8()
+{
+	//signal(SIGUSR1, SIG_IGN); // 忽略信号,不影响pause
+	//signal(SIGUSR1, SIG_DFL); // 默认进程终止
+	signal(SIGUSR1, sig_any); // 会先执行信号处理函数,然后sleep退出并返回剩余秒数
+
+	info("pause start");
+	pause();
+	info("pause done");
+}
+
+void do9()
+{
+	//signal(SIGUSR1, SIG_IGN); // 忽略信号,不影响pause
+	//signal(SIGUSR1, SIG_DFL); // 默认进程终止
+	signal(SIGUSR1, sig_any); // 会先执行信号处理函数,然后sleep退出并返回剩余秒数
+
+	info("pause start");
+	pause();
+	info("pause done");
+}
+
+void do10()
+{
+	//signal(SIGALRM, sig_any);
+	//signal(SIGVTALRM, sig_any);
+	signal(SIGPROF, sig_any);
+
+	struct itimerval it;
+	it.it_interval.tv_sec = 2;
+	it.it_interval.tv_usec = 0;
+	it.it_value.tv_sec = 5;
+	it.it_value.tv_usec = 0;
+
+	//int which = ITIMER_REAL;
+	//int which = ITIMER_VIRTUAL;
+	int which = ITIMER_PROF;
+
+	setitimer(which, &it, NULL);
+
+	info("setitimer start");
+
+	struct itimerval oit;
+	getitimer(which, &oit);
+	printf("%ld\n", oit.it_interval.tv_sec);
+	printf("%ld\n", oit.it_interval.tv_usec);
+	printf("%ld\n", oit.it_value.tv_sec);
+	printf("%ld\n", oit.it_value.tv_usec);
+
+	while(1);
 }
 
 int main(int argc, char const *argv[])
 {
-	//do1();
-	//do2();
-	//do3();
-	do7();
+	do10();
 	return 0;
 }
