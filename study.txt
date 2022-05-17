@@ -940,7 +940,6 @@ SIGCHLD默认忽略
 
 设置信号处理函数,signal/sigaction,发送信号kill,向自己发信号raise,向线程发送信号,tkill,tgkill
 signal:第一个参数是信号值1-64,第二个参数可以设置三种行为SIG_IGN/SIG_DFL/handler
-<<<<<<< HEAD
 signalfd:文件描述符接收信号,不接收SIGKILL/SIGSTOP
 alarm/ualarm:定时多少秒后发送信号SIGALRM,默认终止进程,返回值是上一个alarm剩余的秒数,后一个alarm覆盖前一个alarm,alarm(0)会清除之前所有的alarm
 sleep/usleep/nanosleep/clock_nanosleep:调用线程进入睡眠直到指定秒之后,如果有未忽略的信号到来则提前退出并返回剩余睡眠的秒数,如果是忽略的信号到来则不影响sleep,如果是信号的默认行为则取决于默认行为是什么
