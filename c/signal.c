@@ -326,21 +326,29 @@ static void print_siginfo(siginfo_t *si)
 
 	tidp = si->si_value.sival_ptr;
 
-	printf("    sival_ptr = %p; ", si->si_value.sival_ptr);
-	printf("    *sival_ptr = 0x%lx\n", (long) *tidp);
+	printf("sival_ptr = %p; ", si->si_value.sival_ptr);
+	printf("*sival_ptr = %ld\n", (long) *tidp);
 
 	or = timer_getoverrun(*tidp);
 	if (or == -1)
 		handle_error("timer_getoverrun");
 	else
-		printf("    overrun count = %d\n", or);
+		printf("overrun count = %d\n", or);
 }
 
 static void handler(int sig, siginfo_t *si, void *uc)
 {
 	printf("caught signal %d\n", sig);
 	print_siginfo(si);
-	signal(sig, SIG_IGN);
+	//signal(sig, SIG_IGN);
+}
+
+static void sa_sigaction_func(int sig, siginfo_t *sinfo, void *ucontext)
+{
+	char str[128] = {0};
+	sprintf(str, "sig no: %d, si_signo: %d, si_errno: %d, si_code: %d, si_pid: %d, si_value.sival_int: %d, si_int: %d", 
+		sig, sinfo->si_signo, sinfo->si_errno, sinfo->si_code, sinfo->si_pid, sinfo->si_value.sival_int, sinfo->si_int);
+	info(str);
 }
 
 // gcc -o app signal.c -lrt
@@ -350,16 +358,15 @@ void do12()
 	struct sigevent sev;
 	timer_t timerid;
 	struct itimerspec its;
-	long long freq_nanosecs = 100;
-	sigset_t mask;
-	struct sigaction sa;
 
+	struct sigaction sa;
 	sa.sa_flags = SA_SIGINFO;
 	sa.sa_sigaction = handler;
 	sigemptyset(&sa.sa_mask);
 	if (sigaction(SIGUSR1, &sa, NULL) == -1)
 		handle_error("sigaction");
 
+	sigset_t mask;
 	sigemptyset(&mask);
 	sigaddset(&mask, SIGUSR1);
 	if (sigprocmask(SIG_SETMASK, &mask, NULL) == -1)
@@ -373,13 +380,26 @@ void do12()
 
 	printf("timer_create timerid: %ld\n", (long)timerid);
 
-	its.it_value.tv_sec = freq_nanosecs / 1000000000;
-	its.it_value.tv_nsec = freq_nanosecs % 1000000000;
-	its.it_interval.tv_sec = its.it_value.tv_sec;
-	its.it_interval.tv_nsec = its.it_value.tv_nsec;
+	its.it_value.tv_sec = 5;
+	its.it_value.tv_nsec = 5;
+	its.it_interval.tv_sec = 5;
+	its.it_interval.tv_nsec = 5;
 
 	if (timer_settime(timerid, 0, &its, NULL) == -1)
 		handle_error("timer_settime");
+
+	struct itimerspec curr_value;
+	if (timer_gettime(timerid, &curr_value) == -1)
+		handle_error("timer_gettime");
+	printf("%ld %ld %ld %ld\n", curr_value.it_value.tv_sec, curr_value.it_value.tv_nsec, curr_value.it_interval.tv_sec, curr_value.it_interval.tv_nsec);
+
+	info("sleep start");
+	sleep(6);
+	info("sleep done");
+
+	if (sigprocmask(SIG_UNBLOCK, &mask, NULL) == -1)
+		handle_error("sigprocmask");
+	info("sigprocmask reset done");
 
 	while(1);
 }
@@ -432,14 +452,6 @@ void do13()
 	while(1);
 }
 
-static void sa_sigaction_func(int sig, siginfo_t *sinfo, void *ucontext)
-{
-	char str[128] = {0};
-	sprintf(str, "sig no: %d, si_signo: %d, si_errno: %d, si_code: %d, si_pid: %d, si_value.sival_int: %d, si_int: %d", 
-		sig, sinfo->si_signo, sinfo->si_errno, sinfo->si_code, sinfo->si_pid, sinfo->si_value.sival_int, sinfo->si_int);
-	info(str);
-}
-
 void do14()
 {
 	struct sigaction act;
@@ -487,10 +499,38 @@ void do16(int argc, char const *argv[])
 	info("sigqueue done");
 }
 
+void do17()
+{
+	signal(SIGUSR1, sig_any);
+	signal(SIGUSR2, sig_any);
+
+	sigset_t set;
+	sigemptyset(&set);
+	sigaddset(&set, SIGUSR1);
+	int sig;
+
+	info("sigwait start");
+	//if (sigwait(&set, &sig) != 0)
+	//	handle_error("sigwait fail");
+	//printf("sig: %d\n", sig);
+
+	siginfo_t sinfo;
+	struct timespec ts;
+	ts.tv_sec = 20;
+	ts.tv_nsec = 3;
+	//if (sigwaitinfo(&set, &sinfo) == -1)
+	if (sigtimedwait(&set, &sinfo, &ts) == -1)
+		handle_error("sigwaitinfo fail");
+	printf("si_signo: %d, si_errno: %d, si_code: %d, si_pid: %d, si_value.sival_int: %d, si_int: %d\n", 
+		sinfo.si_signo, sinfo.si_errno, sinfo.si_code, sinfo.si_pid, sinfo.si_value.sival_int, sinfo.si_int);
+
+	info("sigwait done");
+}
+
 int main(int argc, char const *argv[])
 {
 	printf("pid: %d\n", getpid());
-	do16(argc, argv);
-	//do14();
+	//do16(argc, argv);
+	do12();
 	return 0;
 }
