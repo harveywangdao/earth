@@ -951,9 +951,9 @@ sigemptyset/sigfillset/sigaddset/sigdelset/sigismember:对sigset_t进行操作
 setitimer/getitimer:设置定时器,可重复执行定时任务,三种类型ITIMER_REAL/ITIMER_VIRTUAL统计进程的用户时间/ITIMER_PROF统计进程的用户时间和内核时间,对应信号SIGALRM/SIGVTALRM/SIGPROF
 sigaction:signal的升级版
 sigsuspend:阻塞指定信号,即使接收到该信号也不返回,接收到其它信号才会返回,当sigsuspend返回后自动恢复mask成原来的值,指定信号在阻塞解除后会响应一次,保护不希望由信号中断的代码临界区
+sigqueue/pthread_sigqueue:发送信号给指定pid,可以携带数据
 sigreturn
 sigaltstack
-sigqueue/pthread_sigqueue
 sigwait/sigwaitinfo/sigtimedwait
 siginterrupt
 timer_create/timerfd_create/timer_settime/timer_gettime/timer_getoverrun/timer_delete

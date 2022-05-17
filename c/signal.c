@@ -432,10 +432,11 @@ void do13()
 	while(1);
 }
 
-static void sa_sigaction1(int sig, siginfo_t *sinfo, void *ucontext)
+static void sa_sigaction_func(int sig, siginfo_t *sinfo, void *ucontext)
 {
 	char str[128] = {0};
-	sprintf(str, "sig no: %d, si_signo: %d, si_errno: %d, si_code: %d, si_pid: %d", sig, sinfo->si_signo, sinfo->si_errno, sinfo->si_code, sinfo->si_pid);
+	sprintf(str, "sig no: %d, si_signo: %d, si_errno: %d, si_code: %d, si_pid: %d, si_value.sival_int: %d, si_int: %d", 
+		sig, sinfo->si_signo, sinfo->si_errno, sinfo->si_code, sinfo->si_pid, sinfo->si_value.sival_int, sinfo->si_int);
 	info(str);
 }
 
@@ -445,7 +446,7 @@ void do14()
 	sigemptyset(&act.sa_mask);
 	//act.sa_handler = sig_any;
 	//act.sa_flags = SA_RESTART;
-	act.sa_sigaction = sa_sigaction1;
+	act.sa_sigaction = sa_sigaction_func;
 	act.sa_flags = SA_SIGINFO;
 	act.sa_restorer = NULL;
 	if (sigaction(SIGUSR1, &act, NULL) == -1)
@@ -468,15 +469,28 @@ void do15()
 	info("sigsuspend done");
 }
 
-void do16()
+void do16(int argc, char const *argv[])
 {
+	if (argc != 2)
+	{
+		fprintf(stderr, "use error\n");
+		exit(EXIT_FAILURE);
+	}
+
+	pid_t pid = atoi(argv[1]);
 	union sigval value;
+	value.sival_int = 44;
+
+	info("sigqueue start");
 	if (sigqueue(pid, SIGUSR1, value) == -1)
 		handle_error("sigqueue fail");
+	info("sigqueue done");
 }
 
 int main(int argc, char const *argv[])
 {
-	do16();
+	printf("pid: %d\n", getpid());
+	do16(argc, argv);
+	//do14();
 	return 0;
 }
