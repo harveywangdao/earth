@@ -347,6 +347,7 @@ static void handler(int sig, siginfo_t *si, void *uc)
 
 static void sa_sigaction_func(int sig, siginfo_t *sinfo, void *ucontext)
 {
+	psiginfo(sinfo, "msg");
 	char str[128] = {0};
 	sprintf(str, "sig no: %d, si_signo: %d, si_errno: %d, si_code: %d, si_pid: %d, si_value.sival_int: %d, si_int: %d", 
 		sig, sinfo->si_signo, sinfo->si_errno, sinfo->si_code, sinfo->si_pid, sinfo->si_value.sival_int, sinfo->si_int);
@@ -603,10 +604,18 @@ void do19()
 	}
 }
 
+void do20()
+{
+	psignal(SIGUSR1, "msg"); // msg: User defined signal 1
+	printf("%s\n", strsignal(SIGUSR1));
+
+	printf("%ld\n", sysconf(_SC_SIGQUEUE_MAX));
+}
+
 int main(int argc, char const *argv[])
 {
 	printf("pid: %d\n", getpid());
 	//do16(argc, argv);
-	do19();
+	do20();
 	return 0;
 }

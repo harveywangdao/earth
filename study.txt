@@ -906,6 +906,14 @@ futex: Fast userspace mutexes, 是一种用户态和内核态混合的同步机�
 vfs
 ext3/ext4
 fuse
+statfs/fstatfs/stat/fstat/lstat/fstatat/statvfs/fstatvfs
+readlink/readlinkat/symlink/symlinkat
+access
+chmod/fchmod/fchmodat/chown/fchown/lchown/fchownat
+utime/utimes
+realpath/getcwd/getwd/get_current_dir_name
+chroot/chdir
+open/read/write
 
 IO多路复用:
 poll select epoll
@@ -927,7 +935,7 @@ kill -9 1234,SIGKILL,终止程序,不可捕捉
 ctrl+c产生SIGINT默认反应是进程终止,可以捕捉
 对于需要处理的信号,进程可以指定处理函数,由该函数来处理;也可以忽略某个信号;也可以对该信号的处理保留系统的默认值,大部分的信号缺省操作是使得进程终止
 通过系统调用signal来指定进程对某个信号的处理行为
-SIGSTOP只是要求进程暂时停下手头的工作，休息一下，直到听到SIGCONT的召唤
+SIGSTOP只是要求进程暂时停下手头的工作,休息一下,直到听到SIGCONT的召唤
 SIGKILL/SIGSTOP不能捕捉和忽略
 SIGCHLD默认忽略
 
@@ -950,7 +958,7 @@ sigemptyset/sigfillset/sigaddset/sigdelset/sigismember:对sigset_t进行操作
 setitimer/getitimer:设置定时器,可重复执行定时任务,三种类型ITIMER_REAL/ITIMER_VIRTUAL统计进程的用户时间/ITIMER_PROF统计进程的用户时间和内核时间,对应信号SIGALRM/SIGVTALRM/SIGPROF
 sigaction:signal的升级版
 sigsuspend:阻塞指定信号,即使接收到该信号也不返回,接收到其它信号才会返回,当sigsuspend返回后自动恢复mask成原来的值,指定信号在阻塞解除后会响应一次,保护不希望由信号中断的代码临界区
-sigqueue/pthread_sigqueue:发送信号给指定pid,可以携带数据
+sigqueue/pthread_sigqueue:发送信号给指定pid,可以携带数据,sigqueue函数对不可靠信号不做排队,会丢失信号,kill只是单纯的递送对谁都不排队
 sigwait/sigwaitinfo/sigtimedwait:阻塞指定信号,直到发现该信号是pending则返回,收到其它信号不返回
 timer_create/timer_settime/timer_gettime/timer_getoverrun/timer_delete:创建定时器,通过信号来通知定时器到来
 timerfd_create/timerfd_settime/timerfd_gettime:定时器,不会被信号影响
@@ -967,6 +975,8 @@ gettimeofday/settimeofday
 date/time/ctime/ftime
 adjtime/adjtimex/clock_adjtime/ntp_adjtime
 getcontext/setcontext/makecontext/swapcontext
+sysconf/fpathconf/pathconf/confstr
+system/abort
 
 中断
 
