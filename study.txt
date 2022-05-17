@@ -940,6 +940,7 @@ SIGCHLD默认忽略
 
 设置信号处理函数,signal/sigaction,发送信号kill,向自己发信号raise,向线程发送信号,tkill,tgkill
 signal:第一个参数是信号值1-64,第二个参数可以设置三种行为SIG_IGN/SIG_DFL/handler
+<<<<<<< HEAD
 signalfd:文件描述符接收信号,不接收SIGKILL/SIGSTOP
 alarm/ualarm:定时多少秒后发送信号SIGALRM,默认终止进程,返回值是上一个alarm剩余的秒数,后一个alarm覆盖前一个alarm,alarm(0)会清除之前所有的alarm
 sleep/usleep/nanosleep/clock_nanosleep:调用线程进入睡眠直到指定秒之后,如果有未忽略的信号到来则提前退出并返回剩余睡眠的秒数,如果是忽略的信号到来则不影响sleep,如果是信号的默认行为则取决于默认行为是什么
@@ -950,6 +951,8 @@ sigemptyset/sigfillset/sigaddset/sigdelset/sigismember:对sigset_t进行操作
 setitimer/getitimer:设置定时器,可重复执行定时任务,三种类型ITIMER_REAL/ITIMER_VIRTUAL统计进程的用户时间/ITIMER_PROF统计进程的用户时间和内核时间,对应信号SIGALRM/SIGVTALRM/SIGPROF
 sigaction:signal的升级版
 sigsuspend:阻塞指定信号,即使接收到该信号也不返回,接收到其它信号才会返回,当sigsuspend返回后自动恢复mask成原来的值,指定信号在阻塞解除后会响应一次,保护不希望由信号中断的代码临界区
+sigreturn
+sigaltstack
 sigqueue/pthread_sigqueue
 sigwait/sigwaitinfo/sigtimedwait
 siginterrupt
@@ -959,6 +962,7 @@ clock_getcpuclockid/pthread_getcpuclockid
 gettimeofday/settimeofday
 date/time/ctime/ftime
 adjtime/adjtimex/clock_adjtime/ntp_adjtime
+getcontext/setcontext/makecontext/swapcontext
 
 中断
 
