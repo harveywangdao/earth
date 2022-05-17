@@ -953,7 +953,7 @@ sigsuspend:阻塞指定信号,即使接收到该信号也不返回,接收到其�
 sigqueue/pthread_sigqueue:发送信号给指定pid,可以携带数据
 sigwait/sigwaitinfo/sigtimedwait:阻塞指定信号,直到发现该信号是pending则返回,收到其它信号不返回
 timer_create/timer_settime/timer_gettime/timer_getoverrun/timer_delete:创建定时器,通过信号来通知定时器到来
-timerfd_create/timerfd_settime/timerfd_gettime:
+timerfd_create/timerfd_settime/timerfd_gettime:定时器,不会被信号影响
 sigpause
 sigset/sighold/sigrelse/sigignore
 sigsetjmp/siglongjmp
@@ -962,6 +962,7 @@ siginterrupt
 sigreturn
 clock_gettime/clock_settime/clock_getres:根据clockid获取时间/设置时间/获取精确度
 clock_getcpuclockid/pthread_getcpuclockid
+eventfd:把内存当文件,实际内部是一个8字节的计数器,read之后计数会清零,write则会递增计数器,如果计数器是0则不会通知可读
 gettimeofday/settimeofday
 date/time/ctime/ftime
 adjtime/adjtimex/clock_adjtime/ntp_adjtime

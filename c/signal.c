@@ -10,9 +10,11 @@
 #include <time.h>
 #include <sys/time.h>
 #include <sys/times.h>
+#include <sys/timerfd.h>
 #include <signal.h>
 #include <setjmp.h>
 #include <sys/signalfd.h>
+#include <sys/eventfd.h>
 
 #define handle_error(msg) \
            do { perror(msg); exit(EXIT_FAILURE); } while (0)
@@ -527,10 +529,84 @@ void do17()
 	info("sigwait done");
 }
 
+void do18()
+{
+	signal(SIGUSR1, sig_any);
+
+	int tfd = timerfd_create(CLOCK_REALTIME, TFD_CLOEXEC);
+	if (tfd == -1)
+		handle_error("timerfd_create fail");
+
+	struct itimerspec its;
+	its.it_value.tv_sec = 10;
+	its.it_value.tv_nsec = 0;
+	its.it_interval.tv_sec = 10;
+	its.it_interval.tv_nsec = 0;
+	if (timerfd_settime(tfd, 0, &its, NULL) == -1)
+		handle_error("timerfd_settime fail");
+
+	while(1)
+	{
+		uint64_t dd;
+		info("read start");
+		int n = read(tfd, &dd, sizeof(dd));
+		info("read done");
+		printf("%d, %ld\n", n, dd);
+
+		struct itimerspec its2;
+		if (timerfd_gettime(tfd, &its2) == -1)
+			handle_error("timerfd_gettime fail");
+		printf("%ld %ld %ld %ld\n", its2.it_value.tv_sec, its2.it_value.tv_nsec, its2.it_interval.tv_sec, its2.it_interval.tv_nsec);
+	}
+}
+
+void do19()
+{
+	int efd = eventfd(0, 0);
+
+	switch (fork()) 
+	{
+		case 0: //子进程
+		{
+			uint64_t u1 = 0;
+			for (int i = 0; i < 5; ++i)
+			{
+				int s = write(efd, &u1, sizeof(uint64_t));
+				if (s != sizeof(uint64_t))
+					handle_error("write");
+				printf("child write: %ld, size: %d\n", u1, s);
+				//u1++;
+			}
+			exit(EXIT_SUCCESS);
+		}
+
+		default: //父进程
+		{
+			//sleep(2); //先休眠2秒，等待子进程写完数据
+
+			while(1)
+			{
+				uint64_t u2;
+				info("read start");
+				int s = read(efd, &u2, sizeof(uint64_t));
+				info("read done");
+				if (s != sizeof(uint64_t))
+					handle_error("read");
+				printf("parent read %ld\n", u2);
+			}
+
+			exit(EXIT_SUCCESS);		
+		}
+
+		case -1:
+			handle_error("fork");
+	}
+}
+
 int main(int argc, char const *argv[])
 {
 	printf("pid: %d\n", getpid());
 	//do16(argc, argv);
-	do12();
+	do19();
 	return 0;
 }
