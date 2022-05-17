@@ -384,8 +384,99 @@ void do12()
 	while(1);
 }
 
+void do13()
+{
+	signal(SIGUSR1, sig_any);
+	signal(SIGUSR2, sig_any);
+
+	sigset_t newset, oldset;
+	sigemptyset(&newset);
+	sigaddset(&newset, SIGUSR1);
+	sigaddset(&newset, SIGUSR2);
+	if (sigprocmask(SIG_BLOCK, &newset, &oldset) == -1)
+		handle_error("sigprocmask fail");
+
+	info("sleep1 start");
+	sleep(30);
+	info("sleep1 done");
+
+	sigset_t pendset;
+	if (sigpending(&pendset) == -1)
+		handle_error("sigpending fail");
+
+	int ret = sigismember(&pendset, SIGUSR1);
+	if (ret == 1)
+	{
+		printf("SIGUSR1 is pending\n");
+	}
+	else if (ret == -1)
+	{
+		handle_error("sigismember fail");
+	}
+
+	ret = sigismember(&pendset, SIGUSR2);
+	if (ret == 1)
+	{
+		printf("SIGUSR2 is pending\n");
+	}
+	else if (ret == -1)
+	{
+		handle_error("sigismember fail");
+	}
+
+	info("sigprocmask reset start");
+	if (sigprocmask(SIG_SETMASK, &oldset, NULL) == -1)
+		handle_error("sigprocmask fail");
+	info("sigprocmask reset done");
+
+	while(1);
+}
+
+static void sa_sigaction1(int sig, siginfo_t *sinfo, void *ucontext)
+{
+	char str[128] = {0};
+	sprintf(str, "sig no: %d, si_signo: %d, si_errno: %d, si_code: %d, si_pid: %d", sig, sinfo->si_signo, sinfo->si_errno, sinfo->si_code, sinfo->si_pid);
+	info(str);
+}
+
+void do14()
+{
+	struct sigaction act;
+	sigemptyset(&act.sa_mask);
+	//act.sa_handler = sig_any;
+	//act.sa_flags = SA_RESTART;
+	act.sa_sigaction = sa_sigaction1;
+	act.sa_flags = SA_SIGINFO;
+	act.sa_restorer = NULL;
+	if (sigaction(SIGUSR1, &act, NULL) == -1)
+		handle_error("sigaction fail");
+
+	while(1);
+}
+
+void do15()
+{
+	signal(SIGUSR1, sig_any);
+	signal(SIGUSR2, sig_any);
+
+	sigset_t set;
+	sigemptyset(&set);
+	sigaddset(&set, SIGUSR1);
+
+	info("sigsuspend start");
+	sigsuspend(&set);
+	info("sigsuspend done");
+}
+
+void do16()
+{
+	union sigval value;
+	if (sigqueue(pid, SIGUSR1, value) == -1)
+		handle_error("sigqueue fail");
+}
+
 int main(int argc, char const *argv[])
 {
-	do12();
+	do16();
 	return 0;
 }
