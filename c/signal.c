@@ -624,10 +624,37 @@ void do21()
 	while(1);
 }
 
+static void sig_any2(int sig)
+{
+	char str[20] = {0};
+	char str2[128] = {0};
+	sprintf(str, "sig no: %d", sig);
+	info(str);
+
+	time_t start = time(NULL);
+	while(1)
+	{
+		if (time(NULL) > start+5)
+		{
+			sprintf(str2, "sig_any2 exit, %s", str);
+			info(str2);
+			printf("\n");
+			break;
+		}
+	}
+}
+
+void do22()
+{
+	signal(SIGUSR1, sig_any2);
+	signal(SIGUSR2, sig_any2);
+	while(1);
+}
+
 int main(int argc, char const *argv[])
 {
 	printf("pid: %d\n", getpid());
 	//do16(argc, argv);
-	do4();
+	do22();
 	return 0;
 }
