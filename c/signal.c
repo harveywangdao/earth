@@ -651,10 +651,41 @@ void do22()
 	while(1);
 }
 
+static void sa_sigaction_func2(int sig, siginfo_t *sinfo, void *ucontext)
+{
+	int a = 9;
+	printf("%p\n", &a);
+}
+
+void do23()
+{
+	stack_t ss;
+	ss.ss_sp = malloc(SIGSTKSZ);
+	if (ss.ss_sp == NULL)
+		handle_error("malloc");
+
+	printf("%p\n", ss.ss_sp);
+	printf("SIGSTKSZ: %d\n", SIGSTKSZ);
+
+	ss.ss_size = SIGSTKSZ;
+	ss.ss_flags = 0;
+	if (sigaltstack(&ss, NULL) == -1)
+		handle_error("sigaltstack");
+
+	struct sigaction act;
+	sigemptyset(&act.sa_mask);
+	act.sa_sigaction = sa_sigaction_func2;
+	act.sa_flags = SA_ONSTACK;
+	if (sigaction(SIGUSR1, &act, NULL) == -1)
+		handle_error("sigaction fail");
+
+	while(1);
+}
+
 int main(int argc, char const *argv[])
 {
 	printf("pid: %d\n", getpid());
 	//do16(argc, argv);
-	do22();
+	do23();
 	return 0;
 }
