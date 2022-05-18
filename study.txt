@@ -89,6 +89,8 @@ systemstack: 可以由g0/gsignal/普通g调用,当由普通g调用的时候会�
 mcall: 从普通g栈切换到g0栈,该函数由普通g调用,fn不能返回
 lock/unlock: linux futex系统调用实现
 stopTheWorld/startTheWorld: stopTheWorldWithSema通知所有P上的G被抢占,只设置抢占状态不保证立即被抢占,系统调用tgkill,发送信号给其它M让其停止;startTheWorldWithSema
+preemptall:循环allp调用preemptone,G正在newstack的时候要忽略停止的请求,设置G/P的preempt为true,preemptM-->signalM-->tgkill-->doSigPreempt-->asyncPreempt-->preemptPark
+notetsleep
 
 memory:
 mallocgc
@@ -131,6 +133,7 @@ newproc
 gopark/goready
 gosave/gogo
 gobuf
+goexit
 
 M:
 操作系统线程
