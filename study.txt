@@ -87,10 +87,16 @@ pc: program counter,pc寄存器的作用是存储程序接下来运行的位置
 sp: stack pointer,当前线程使用的栈的栈顶地址
 systemstack: 可以由g0/gsignal/普通g调用,当由普通g调用的时候会切换到g0,调用完再切回普通g栈
 mcall: 从普通g栈切换到g0栈,该函数由普通g调用,fn不能返回
-lock/unlock: linux futex系统调用实现
 stopTheWorld/startTheWorld: stopTheWorldWithSema通知所有P上的G被抢占,只设置抢占状态不保证立即被抢占,系统调用tgkill,发送信号给其它M让其停止;startTheWorldWithSema
 preemptall:循环allp调用preemptone,G正在newstack的时候要忽略停止的请求,设置G/P的preempt为true,preemptM-->signalM-->tgkill-->doSigPreempt-->asyncPreempt-->preemptPark
-notetsleep
+
+lock/unlock:futexsleep/futexwakeup linux futex系统调用实现
+notesleep:不带超时,g0调用
+notetsleep:带超时,一般情况下被g0调用
+notetsleepg:带超时,普通g调用
+notewakeup:唤醒指定线程
+
+gcstopm
 
 memory:
 mallocgc
@@ -119,6 +125,13 @@ runtime.main
 main_main
 
 runtime.abort: INT $3
+
+gcStart
+gcMarkDone
+gcMarkTermination
+gcBgMarkWorker
+gcMark
+gcSweep
 
 G:
 Goroutine协程
@@ -152,9 +165,6 @@ mexit: 退出当前线程
 mstart: 线程开始工作
 mstart1
 mstartfn
-
-notewakeup/futexwakeup
-notesleep/futexsleep
 
 P:
 处理器,提供线程需要的上下文环境,调度等待队列,P本地运行队列最大256
