@@ -869,11 +869,27 @@ Reactor线程模型
 汇编
 
 linux:
+sysconf/fpathconf/pathconf/confstr
+gettimeofday/settimeofday
+date/time/ctime/ftime
+adjtime/adjtimex/clock_adjtime/ntp_adjtime
+clock_gettime/clock_settime/clock_getres:根据clockid获取时间/设置时间/获取精确度
+clock_getcpuclockid/pthread_getcpuclockid
+
 进程:
 栈、堆
 fork/vfork/clone
 进程地址空间
 进程池
+execl/execlp/execle/execv/execvp/execvpe/execve
+wait/waitpid/waitid/wait3/wait4
+exit/_exit/_Exit/exit_group/on_exit/atexit
+gdb/strace/ptrace
+prctl/seccomp
+getrusage
+system
+getpid/getppid
+getcontext/setcontext/makecontext/swapcontext
 
 进程调度:
 
@@ -882,6 +898,8 @@ fork/vfork/clone
 创建进程和线程底层都是调用clone系统调用,fork创建进程时clone不传参数则创建一个完整的进程,pthread_create创建线程时clone会传一些参数,共享地址空间
 线程池
 线程私有变量,pthread_key_create/pthread_setspecific/pthread_getspecific/pthread_key_delete
+gettid
+pthread_self
 
 内存管理:
 malloc/realloc/calloc/free/mmap
@@ -896,6 +914,7 @@ slab分配器
 
 进程间通信IPC:
 管道 命名管道FIFO 共享内存 消息队列 信号 UNIX域 socket DBUS
+eventfd:把内存当文件,实际内部是一个8字节的计数器,read之后计数会清零,write则会递增计数器,如果计数器是0则不会通知可读
 
 同步机制:
 信号量 互斥量 条件变量 读写锁 自旋锁
@@ -938,6 +957,7 @@ ctrl+c产生SIGINT默认反应是进程终止,可以捕捉
 SIGSTOP只是要求进程暂时停下手头的工作,休息一下,直到听到SIGCONT的召唤
 SIGKILL/SIGSTOP不能捕捉和忽略
 SIGCHLD默认忽略
+两个信号同时到达怎么处理
 
 当内核接收到信号后,会将其放到对应进程的信号队列中,同时向进程发送一个中断,使其陷入内核态
 进程从内核态返回到用户态前进行信号检测,或者进程在内核态中,从睡眠状态被唤醒的时候进行信号检测
@@ -952,31 +972,26 @@ signalfd:文件描述符接收信号,不接收SIGKILL/SIGSTOP
 alarm/ualarm:定时多少秒后发送信号SIGALRM,默认终止进程,返回值是上一个alarm剩余的秒数,后一个alarm覆盖前一个alarm,alarm(0)会清除之前所有的alarm
 sleep/usleep/nanosleep/clock_nanosleep:调用线程进入睡眠直到指定秒之后,如果有未忽略的信号到来则提前退出并返回剩余睡眠的秒数,如果是忽略的信号到来则不影响sleep,如果是信号的默认行为则取决于默认行为是什么
 pause:调用进程/线程进入睡眠直到捕捉到信号并且信号处理函数返回
+abort:即使捕捉信号进程也会终止
+pthread_kill:类似kill,给线程发信号
+
+sigaction:signal的升级版
 sigprocmask/pthread_sigmask:阻塞信号;如果当前是阻塞状态,并且同一个信号发送了多次,当阻塞解除时只响应一个信号;函数本身不阻塞
 sigpending:查询当前哪些信号处于pending状态
 sigemptyset/sigfillset/sigaddset/sigdelset/sigismember:对sigset_t进行操作
-setitimer/getitimer:设置定时器,可重复执行定时任务,三种类型ITIMER_REAL/ITIMER_VIRTUAL统计进程的用户时间/ITIMER_PROF统计进程的用户时间和内核时间,对应信号SIGALRM/SIGVTALRM/SIGPROF
-sigaction:signal的升级版
 sigsuspend:阻塞指定信号,即使接收到该信号也不返回,接收到其它信号才会返回,当sigsuspend返回后自动恢复mask成原来的值,指定信号在阻塞解除后会响应一次,保护不希望由信号中断的代码临界区
 sigqueue/pthread_sigqueue:发送信号给指定pid,可以携带数据,sigqueue函数对不可靠信号不做排队,会丢失信号,kill只是单纯的递送对谁都不排队
 sigwait/sigwaitinfo/sigtimedwait:阻塞指定信号,直到发现该信号是pending则返回,收到其它信号不返回
+setitimer/getitimer:设置定时器,可重复执行定时任务,三种类型ITIMER_REAL/ITIMER_VIRTUAL统计进程的用户时间/ITIMER_PROF统计进程的用户时间和内核时间,对应信号SIGALRM/SIGVTALRM/SIGPROF
 timer_create/timer_settime/timer_gettime/timer_getoverrun/timer_delete:创建定时器,通过信号来通知定时器到来
 timerfd_create/timerfd_settime/timerfd_gettime:定时器,不会被信号影响
+
 sigpause
 sigset/sighold/sigrelse/sigignore
-sigsetjmp/siglongjmp
+sigsetjmp/siglongjmp/longjmp/setjmp:调用setjmp的函数返回了上下文将变成无效,longjmp第二个参数成为setjmp的返回值
 sigaltstack/sigstack
 siginterrupt
 sigreturn
-clock_gettime/clock_settime/clock_getres:根据clockid获取时间/设置时间/获取精确度
-clock_getcpuclockid/pthread_getcpuclockid
-eventfd:把内存当文件,实际内部是一个8字节的计数器,read之后计数会清零,write则会递增计数器,如果计数器是0则不会通知可读
-gettimeofday/settimeofday
-date/time/ctime/ftime
-adjtime/adjtimex/clock_adjtime/ntp_adjtime
-getcontext/setcontext/makecontext/swapcontext
-sysconf/fpathconf/pathconf/confstr
-system/abort
 
 中断
 

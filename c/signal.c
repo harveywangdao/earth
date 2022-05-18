@@ -131,9 +131,11 @@ void do3()
 void do4()
 {
 	int n = 0;
-	jmp_buf buf;
+	//jmp_buf buf;
+	sigjmp_buf buf;
 
-	int ret = setjmp(buf);
+	//int ret = setjmp(buf);
+	int ret = sigsetjmp(buf, 1);
 
 	n++;
 	printf("dddd %d, %d\n",ret, n);
@@ -143,7 +145,8 @@ void do4()
 		exit(0);
 	}
 
-	longjmp(buf, 1);
+	//longjmp(buf, 1);
+	siglongjmp(buf, 1);
 }
 
 void do5()
@@ -612,10 +615,19 @@ void do20()
 	printf("%ld\n", sysconf(_SC_SIGQUEUE_MAX));
 }
 
+void do21()
+{
+	signal(SIGABRT, sig_any);
+
+	abort();
+
+	while(1);
+}
+
 int main(int argc, char const *argv[])
 {
 	printf("pid: %d\n", getpid());
 	//do16(argc, argv);
-	do20();
+	do4();
 	return 0;
 }
