@@ -96,7 +96,10 @@ notetsleep:带超时,一般情况下被g0调用
 notetsleepg:带超时,普通g调用
 notewakeup:唤醒指定线程
 
-gcstopm
+gcstopm:stopm
+stopm:mPark->notesleep
+
+exit:exit_group
 
 memory:
 mallocgc
@@ -146,7 +149,7 @@ newproc
 gopark/goready
 gosave/gogo
 gobuf
-goexit
+goexit:goexit1->goexit0,g状态设置成_Gdead,dropg拆解m和g的绑定,把g放到gFree上,重新schedule
 
 M:
 操作系统线程
@@ -172,7 +175,7 @@ P状态:_Pidle/_Prunning/_Psyscall/_Pgcstop/_Pdead
 wakep: 获取一个闲置的P绑定M去执行
 
 schedule:
-全局运行队列sched.runq中有待执行的G时,通过schedtick保证有一定几率会从全局运行队列中查找G(globrunqget),从P本地运行队列中查找待执行的G(runqget),如果前两种方法都没有找到G,会通过findrunnable进行阻塞地查找G,网络轮询器中查找,通过runqsteal尝试从其它随机的P中窃取待运行的G,该函数还可能窃取处理器的计时器
+全局运行队列sched.runq中有待执行的G时,通过schedtick保证有一定几率会从全局运行队列中查找G(globrunqget),从P本地运行队列中查找待执行的G(runqget),如果前两种方法都没有找到G,会通过findrunnable进行阻塞地查找G,网络轮询器中查找,通过runqsteal尝试从其它随机的P中窃取待运行的G,该函数还可能窃取处理器的计时器,gcstopm
 
 LockOSThread/UnlockOSThread/FreeOSMemory/SetGCPercent/SetMaxStack/ReadGCStats/SetPanicOnFault/WriteHeapDump/SetTraceback
 
@@ -195,6 +198,8 @@ mcentral的作用是为所有mcache提供切分好的mspan资源,每个central�
 当mcentral没有空闲的mspan时,会向mheap申请
 而mheap没有资源时,会向操作系统申请新内存,mheap主要用于大对象的内存分配,以及管理未切割的mspan
 大于32KB,会直接从堆上(mheap)上分配对应的数量的内存页(每页大小是8KB)给程序
+
+markroot
 
 协程栈:
 每个goroutine都维护着自己的栈区,栈结构是连续栈,是一块连续的内存,栈区的初始大小是2KB,按照需要增长和收缩,最大1GB
