@@ -97,6 +97,7 @@ notewakeup:唤醒指定线程
 
 gcstopm:stopm->mPark->notesleep
 acquirep:wirep绑定M和P
+releasep:解绑P和M
 
 exit:exit_group
 
@@ -162,9 +163,9 @@ newm: 创建新线程并让线程工作,newm(sysmon, nil, -1)
 allocm: 获取m结构体
 newosproc: 创建系统线程
 mcommoninit: M的一些初始化,创建gsignal
-mexit: 退出当前线程
+mexit: mstart的结尾调用,退出当前线程,释放gsignal栈,从allm移除m
 
-mstart: 线程开始工作
+mstart: 线程开始工作,clone时传进去的函数/systemstack中有调用
 mstart1
 mstartfn
 
