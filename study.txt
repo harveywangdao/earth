@@ -145,7 +145,7 @@ tls: thread local storage 为线程本地存储
 gsignal:signal-handling g
 g0:是持有调度栈的Goroutine,参与运行时的调度过程,包括G的创建/大内存分配/CGO函数的执行
 getg: 返回当前g的指针,在编译的时候才会生成该函数
-newproc
+newproc:创建一个新G,在g0栈里调用该函数,newproc1:从gFree里获取,如果获取不到就new一个g并分配2K栈状态设为_Gdead加到allgs上,参数放入栈,状态设为_Grunnable,goid设置成当前P上的自增值,新G放到当前P的本地队列/全局队列/当前P的下一个要执行的g,wakep->startm获取空闲P,如果没有空闲P直接返回,如果有空闲P就去获取空闲的M(mget),绑定P和M,唤醒M,如果没有空闲M就去newm
 gopark/goready
 gosave/gogo
 gobuf
@@ -159,15 +159,12 @@ osyield: 线程让出cpu,调用系统调用sched_yield
 procyield: 执行PAUSE指令空转
 m0
 startm: 获取一个闲置的M,如果没有就newm一个
-newm: 创建新线程并让线程工作,newm(sysmon, nil, -1)
+newm: 创建新线程并让线程工作,newm(fn, _p_, id),allocm获取M,new一个m对象,mstartfn=mspinning,M初始化,分配g0,(解绑当前的P和M,当前P的状态设置为_Pidle),绑定空闲P和新M,newm1->newosproc->clone->mstart
 allocm: 获取m结构体
 newosproc: 创建系统线程
 mcommoninit: M的一些初始化,创建gsignal
 mexit: mstart的结尾调用,退出当前线程,释放gsignal栈,从allm移除m
-
-mstart: 线程开始工作,clone时传进去的函数/systemstack中有调用
-mstart1
-mstartfn
+mstart: 线程开始工作,clone时传进去的函数/systemstack中有调用,mstart1,当前是g0在执行,保存pc/sp,初始化信号,acquirep->wirep正式绑定空闲P和新M,设置P的状态为_Prunning,schedule获取一个可执行的G,execute绑定M和G,G的状态设置为_Grunning,gogo执行协程的函数
 
 P:
 处理器,提供线程需要的上下文环境,调度等待队列,P本地运行队列最大256
