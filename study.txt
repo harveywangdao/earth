@@ -113,7 +113,7 @@ malloc/calloc/realloc/free/posix_memalign/memfd_create
 bgsweep
 bgscavenge
 sweepone
-gcStart:gcphase设置成_GCmark
+gcStart:gcphase设置成_GCmark,调用时机:mallocgc/runtime.GC/forcegchelper
 gcMarkDone
 gcMarkTermination:gcphase设置成_GCmarktermination,gcphase设置成_GCoff
 gcBgMarkWorker
