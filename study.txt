@@ -104,7 +104,38 @@ dropg:解绑M和G,G的状态改为_Grunning,调用gogo执行协程函数
 exit:exit_group
 
 memory:
-mallocgc
+mallocgc:小于32KB在每个P的cache free list分配,大于32KB直接在堆上分配,0字节直接返回zerobase地址
+_GCoff/_GCmark/_GCmarktermination
+setGCPhase
+
+newobject
+
+posix_memalign
+mmap
+munmap
+msync
+mprotect
+mremap
+mlock
+mlock2
+munlock
+mlockall
+munlockall
+brk
+sbrk
+malloc
+calloc
+realloc
+free
+getpagesize
+memfd_create
+
+gcStart:gcphase设置成_GCmark
+gcMarkDone
+gcMarkTermination:gcphase设置成_GCmarktermination,gcphase设置成_GCoff
+gcBgMarkWorker
+gcMark
+gcSweep
 
 stack:
 newstack
@@ -123,20 +154,9 @@ runtime.check: 检查基础类型是否正确,如int8是不是一个字节
 runtime.args: 处理参数
 runtime.osinit: 获取cpu数量
 runtime.schedinit: 初始化堆栈/环境变量/进程入参/gc
-runtime.newproc: 创建新G运行fn=runtime.main,将G放入当前P的队列,执行wakep
+runtime.newproc: 创建新G运行fn=runtime.main->main_main,将G放入当前P的队列,执行wakep
 runtime.mstart: 保存pc/sp,执行schedule
-
-runtime.main
-main_main
-
 runtime.abort: INT $3
-
-gcStart
-gcMarkDone
-gcMarkTermination
-gcBgMarkWorker
-gcMark
-gcSweep
 
 G:
 Goroutine协程
