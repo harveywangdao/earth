@@ -101,41 +101,30 @@ releasep:解绑P和M
 execute:绑定M和G
 dropg:解绑M和G,G的状态改为_Grunning,调用gogo执行协程函数
 
-exit:exit_group
-
 memory:
+newobject:mallocgc
 mallocgc:小于32KB在每个P的cache free list分配,大于32KB直接在堆上分配,0字节直接返回zerobase地址
-_GCoff/_GCmark/_GCmarktermination
-setGCPhase
+setGCPhase,_GCoff/_GCmark/_GCmarktermination
 
-newobject
+mmap/munmap/msync/mprotect/mremap/mlock/mlock2/munlockmlockall/munlockall
+brk/sbrk/getpagesize
+malloc/calloc/realloc/free/posix_memalign/memfd_create
 
-posix_memalign
-mmap
-munmap
-msync
-mprotect
-mremap
-mlock
-mlock2
-munlock
-mlockall
-munlockall
-brk
-sbrk
-malloc
-calloc
-realloc
-free
-getpagesize
-memfd_create
-
+bgsweep
+bgscavenge
+sweepone
 gcStart:gcphase设置成_GCmark
 gcMarkDone
 gcMarkTermination:gcphase设置成_GCmarktermination,gcphase设置成_GCoff
 gcBgMarkWorker
 gcMark
 gcSweep
+
+throw->fatalthrow->startpanic_m+dopanic_m
+gopanic->fatalpanic->startpanic_m+dopanic_m
+raise->tgkill
+crash->raise(SIGABRT)
+exit->exit_group
 
 stack:
 newstack
