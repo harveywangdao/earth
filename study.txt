@@ -103,8 +103,39 @@ dropg:解绑M和G,G的状态改为_Grunning,调用gogo执行协程函数
 
 memory:
 newobject:mallocgc
-mallocgc:小于32KB在每个P的cache free list分配,大于32KB直接在堆上分配,0字节直接返回zerobase地址
+mallocgc:
+小于32KB在每个P的cache free list分配,0字节直接返回zerobase地址
+大于32KB直接在堆上分配,会判断是否要gc,mcache.allocLarge->mheap.alloc->mheap.allocSpan
 setGCPhase,_GCoff/_GCmark/_GCmarktermination
+
+gcSetTriggerRatio
+memstats.heap_live
+sweepone
+sweep credit
+
+mheap.sweepgen
+mheap.grow
+mheap.freeSpan
+mheap.scavengeAll
+mheap.allocSpan
+mheap.alloc
+mheap.reclaim
+recordspan
+
+pageAlloc.alloc
+pageAlloc.free
+pageAlloc.find
+pageAlloc.allocToCache
+
+pageCache.alloc
+pageCache.flush
+
+allocmcache
+freemcache
+mcache.releaseAll
+mcache.allocLarge
+
+mspan.init
 
 mmap/munmap/msync/mprotect/mremap/mlock/mlock2/munlockmlockall/munlockall
 brk/sbrk/getpagesize
