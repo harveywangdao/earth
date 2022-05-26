@@ -105,8 +105,11 @@ memory:
 newobject:mallocgc
 mallocgc:
 小于32KB在每个P的cache free list分配,0字节直接返回zerobase地址
-大于32KB直接在堆上分配,会判断是否要gc,mcache.allocLarge->mheap.alloc->mheap.allocSpan
+大于32KB直接在堆上分配,会判断是否要gc,mcache.allocLarge->mheap.alloc->mheap.allocSpan(systemstack)
 setGCPhase,_GCoff/_GCmark/_GCmarktermination
+
+page allocator:
+page cache:
 
 gcSetTriggerRatio
 memstats.heap_live
@@ -1068,7 +1071,7 @@ top htop strace perf
 图
 缓存LRU/LFU
 字符串
-
+radix tree
 
 13.其它
 utf-8:
