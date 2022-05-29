@@ -104,18 +104,31 @@ dropg:解绑M和G,G的状态改为_Grunning,调用gogo执行协程函数
 memory:
 newobject:mallocgc
 mallocgc:
-小于32KB在每个P的cache free list分配,0字节直接返回zerobase地址
-大于32KB直接在堆上分配,会判断是否要gc,mcache.allocLarge->mheap.alloc->mheap.allocSpan(systemstack)
-setGCPhase,_GCoff/_GCmark/_GCmarktermination
+大于32KB直接在堆上分配,会判断是否要gc,mcache.allocLarge->mheap.alloc->mheap.allocSpan(systemstack)->pageAlloc.allocToCache,pageCache.alloc,mheap.grow,mheap.sysAlloc,linearAlloc.alloc,sysMap+sysUsed,返回mspan
+小于32KB在每个P的cache free list分配,0字节直接返回zerobase地址,从P上的mcache分配,mcahce.alloc存放每个级别的mspan,如果mcache没有了则mcache.refill->mcentral.cacheSpan,mheap上的mcentral也是按照级别用数组存放,如果mcentral上也没有则mcentral.grow->mheap.alloc
 
-page allocator:
-page cache:
+pp.pcache pageCache
+pp.mspancache buf [128]*mspan
+h.pages pageAlloc
+h.spanalloc fixalloc
+h.arena linearAlloc
+h.arenas []*[]*heapArena
+
+page allocator
+page cache
+chunk
+heap arena
 
 gcSetTriggerRatio
 memstats.heap_live
 sweepone
 sweep credit
 
+madvise
+posix_madvise
+posix_fadvise
+
+mheap.sysAlloc
 mheap.sweepgen
 mheap.grow
 mheap.freeSpan
@@ -139,11 +152,15 @@ mcache.releaseAll
 mcache.allocLarge
 
 mspan.init
+mspan.sweep
+
+mcentral.grow
 
 mmap/munmap/msync/mprotect/mremap/mlock/mlock2/munlockmlockall/munlockall
 brk/sbrk/getpagesize
 malloc/calloc/realloc/free/posix_memalign/memfd_create
 
+setGCPhase,_GCoff/_GCmark/_GCmarktermination
 bgsweep
 bgscavenge
 sweepone
