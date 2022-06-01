@@ -121,7 +121,6 @@ heap arena
 
 gcSetTriggerRatio
 memstats.heap_live
-sweepone
 sweep credit
 
 madvise
@@ -151,9 +150,6 @@ freemcache
 mcache.releaseAll
 mcache.allocLarge
 
-mspan.init
-mspan.sweep
-
 mcentral.grow
 
 mmap/munmap/msync/mprotect/mremap/mlock/mlock2/munlockmlockall/munlockall
@@ -161,15 +157,18 @@ brk/sbrk/getpagesize
 malloc/calloc/realloc/free/posix_memalign/memfd_create
 
 setGCPhase,_GCoff/_GCmark/_GCmarktermination
-bgsweep
-bgscavenge
-sweepone
-gcStart:gcphase设置成_GCmark,调用时机:mallocgc/runtime.GC/forcegchelper
+sweepone: 清扫span,返回清扫的页数,没可清扫的返回^0
+gcStart: 调用时机:mallocgc/runtime.GC/sysmon两分钟唤醒一次forcegchelper,gcphase设置成_GCmark,
 gcMarkDone
 gcMarkTermination:gcphase设置成_GCmarktermination,gcphase设置成_GCoff
 gcBgMarkWorker
 gcMark
-gcSweep
+gcSweep: 在gcMarkTermination里调用,结尾处唤醒bgsweep
+gcWaitOnMark: 等待mark阶段结束,如果当前处于mark阶段当前G就gopark,等待在gcMarkTermination里唤醒该G
+mspan.sweep:  清扫单个堆span
+mspan.init
+bgsweep: 循环调用sweepone
+bgscavenge: sweep结束会唤醒此G,循环调用mheap.pages.(pageAlloc).scavenge
 
 throw->fatalthrow->startpanic_m+dopanic_m
 gopanic->fatalpanic->startpanic_m+dopanic_m
@@ -281,8 +280,6 @@ markroot
 标记终止阶段,暂停程序
 清理阶段,初始化清理状态并关闭写屏障,恢复用户程序,后台并发清理所有的内存管理单元,当goroutine申请新的内存管理单元时就会触发清理
 触发时机,内存使用超过某值,超过两分钟,手动GC
-bgsweep
-bgscavenge
 
 sync.Map:
 通过互斥锁和原子操作来实现近似无锁,空间换时间,延迟删除,删除一个键值只是打标记,只有在迁移dirty数据的时候才清理删除的数据,readOnly向dirty拷贝是遍历,不适合大数据场景
