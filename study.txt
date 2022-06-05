@@ -112,12 +112,11 @@ pp.mspancache buf [128]*mspan
 h.pages pageAlloc
 h.spanalloc fixalloc
 h.arena linearAlloc
-h.arenas []*[]*heapArena
 
 page allocator
 page cache
 chunk
-heap arena
+heap arena: h.arenas []*[]*heapArena 64MB,heapArena存放arena元数据
 
 gcSetTriggerRatio
 memstats.heap_live
@@ -169,6 +168,13 @@ mspan.sweep:  清扫单个堆span
 mspan.init
 bgsweep: 循环调用sweepone
 bgscavenge: sweep结束会唤醒此G,循环调用mheap.pages.(pageAlloc).scavenge
+markroot
+greyobject
+scanobject
+scanblock
+gcDrain
+scanstack
+scanframeworker
 
 throw->fatalthrow->startpanic_m+dopanic_m
 gopanic->fatalpanic->startpanic_m+dopanic_m
