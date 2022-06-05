@@ -101,94 +101,12 @@ releasep:解绑P和M
 execute:绑定M和G
 dropg:解绑M和G,G的状态改为_Grunning,调用gogo执行协程函数
 
-memory:
-newobject:mallocgc
-mallocgc:
-大于32KB直接在堆上分配,会判断是否要gc,mcache.allocLarge->mheap.alloc->mheap.allocSpan(systemstack)->pageAlloc.allocToCache,pageCache.alloc,mheap.grow,mheap.sysAlloc,linearAlloc.alloc,sysMap+sysUsed,返回mspan
-小于32KB在每个P的cache free list分配,0字节直接返回zerobase地址,从P上的mcache分配,mcahce.alloc存放每个级别的mspan,如果mcache没有了则mcache.refill->mcentral.cacheSpan,mheap上的mcentral也是按照级别用数组存放,如果mcentral上也没有则mcentral.grow->mheap.alloc
-
-pp.pcache pageCache
-pp.mspancache buf [128]*mspan
-h.pages pageAlloc
-h.spanalloc fixalloc
-h.arena linearAlloc
-
-page allocator
-page cache
-chunk
-heap arena: h.arenas []*[]*heapArena 64MB,heapArena存放arena元数据
-
-gcSetTriggerRatio
-memstats.heap_live
-sweep credit
-
-madvise
-posix_madvise
-posix_fadvise
-
-mheap.sysAlloc
-mheap.sweepgen
-mheap.grow
-mheap.freeSpan
-mheap.scavengeAll
-mheap.allocSpan
-mheap.alloc
-mheap.reclaim
-recordspan
-
-pageAlloc.alloc
-pageAlloc.free
-pageAlloc.find
-pageAlloc.allocToCache
-
-pageCache.alloc
-pageCache.flush
-
-allocmcache
-freemcache
-mcache.releaseAll
-mcache.allocLarge
-
-mcentral.grow
-
-mmap/munmap/msync/mprotect/mremap/mlock/mlock2/munlockmlockall/munlockall
-brk/sbrk/getpagesize
-malloc/calloc/realloc/free/posix_memalign/memfd_create
-
-setGCPhase,_GCoff/_GCmark/_GCmarktermination
-sweepone: 清扫span,返回清扫的页数,没可清扫的返回^0
-gcStart: 调用时机:mallocgc/runtime.GC/sysmon两分钟唤醒一次forcegchelper,gcphase设置成_GCmark,
-gcMarkDone
-gcMarkTermination:gcphase设置成_GCmarktermination,gcphase设置成_GCoff
-gcBgMarkWorker
-gcMark
-gcSweep: 在gcMarkTermination里调用,结尾处唤醒bgsweep
-gcWaitOnMark: 等待mark阶段结束,如果当前处于mark阶段当前G就gopark,等待在gcMarkTermination里唤醒该G
-mspan.sweep:  清扫单个堆span
-mspan.init
-bgsweep: 循环调用sweepone
-bgscavenge: sweep结束会唤醒此G,循环调用mheap.pages.(pageAlloc).scavenge
-markroot
-greyobject
-scanobject
-scanblock
-gcDrain
-scanstack
-scanframeworker
-
 throw->fatalthrow->startpanic_m+dopanic_m
 gopanic->fatalpanic->startpanic_m+dopanic_m
 raise->tgkill
 crash->raise(SIGABRT)
 exit->exit_group
-
-stack:
-newstack
-stackalloc
-stackfree
-copystack
-shrinkstack
-morestack
+LockOSThread/UnlockOSThread/FreeOSMemory/SetGCPercent/SetMaxStack/ReadGCStats/SetPanicOnFault/WriteHeapDump/SetTraceback
 
 main:
 _rt0_amd64_linux
@@ -242,8 +160,6 @@ wakep: 获取一个闲置的P绑定M去执行
 schedule:
 全局运行队列sched.runq中有待执行的G时,通过schedtick保证有一定几率会从全局运行队列中查找G(globrunqget),从P本地运行队列中查找待执行的G(runqget),如果前两种方法都没有找到G,会通过findrunnable进行阻塞地查找G,网络轮询器中查找,通过runqsteal尝试从其它随机的P中窃取待运行的G,该函数还可能窃取处理器的计时器,gcstopm
 
-LockOSThread/UnlockOSThread/FreeOSMemory/SetGCPercent/SetMaxStack/ReadGCStats/SetPanicOnFault/WriteHeapDump/SetTraceback
-
 netpoll:
 当网络请求阻塞时,调度器会让当前阻塞的G放入网络轮询器中,由网络轮询器处理异步网络系统调用,从而让出P执行其它goroutine,
 当异步网络调用由网络轮询器完成后,再由sysmon监控线程将其切换回来继续执行
@@ -264,13 +180,64 @@ mcentral的作用是为所有mcache提供切分好的mspan资源,每个central�
 而mheap没有资源时,会向操作系统申请新内存,mheap主要用于大对象的内存分配,以及管理未切割的mspan
 大于32KB,会直接从堆上(mheap)上分配对应的数量的内存页(每页大小是8KB)给程序
 
-markroot
+newobject:mallocgc
+mallocgc:
+大于32KB直接在堆上分配,会判断是否要gc,mcache.allocLarge->mheap.alloc->mheap.allocSpan(systemstack)->pageAlloc.allocToCache,pageCache.alloc,mheap.grow,mheap.sysAlloc,linearAlloc.alloc,sysMap+sysUsed,返回mspan
+小于32KB在每个P的cache free list分配,0字节直接返回zerobase地址,从P上的mcache分配,mcahce.alloc存放每个级别的mspan,如果mcache没有了则mcache.refill->mcentral.cacheSpan,mheap上的mcentral也是按照级别用数组存放,如果mcentral上也没有则mcentral.grow->mheap.alloc
+
+pp.pcache pageCache
+pp.mspancache buf [128]*mspan
+mheap.pages pageAlloc
+mheap.spanalloc fixalloc: 用于分配mspan结构体
+mheap.cachealloc fixalloc: 用于分配mcache结构体
+mheap.arena linearAlloc
+heap arena: mheap.arenas []*[]*heapArena 64MB,heapArena存放arena元数据
+page allocator
+page cache
+sweep credit
+chunk
+memstats
+
+mheap.sysAlloc
+mheap.sweepgen
+mheap.grow
+mheap.freeSpan
+mheap.scavengeAll
+mheap.allocSpan
+mheap.alloc
+mheap.reclaim
+
+pageAlloc.alloc
+pageAlloc.free
+pageAlloc.find
+pageAlloc.allocToCache
+pageCache.alloc
+pageCache.flush
+
+allocmcache
+freemcache
+mcache.releaseAll
+mcache.allocLarge
+
+mcentral.grow
+
+mmap/munmap/msync/mprotect/mremap/mlock/mlock2/munlockmlockall/munlockall
+madvise/posix_madvise/posix_fadvise
+brk/sbrk/getpagesize
+malloc/calloc/realloc/free/posix_memalign/memfd_create
 
 协程栈:
 每个goroutine都维护着自己的栈区,栈结构是连续栈,是一块连续的内存,栈区的初始大小是2KB,按照需要增长和收缩,最大1GB
 分段栈,栈空间会以双向链表的形式串联起来,如果协程的栈几乎充满,那么任意的函数调用都会触发栈的扩容,当函数返回后又会触发栈的收缩,如果在一个循环中调用函数,栈分配释放造成巨大开销,热分裂问题
 连续栈,栈空间不足时,初始化一片比旧栈大两倍的新栈并将原栈中的所有值都迁移到新的栈中,将指向旧栈对应变量的指针重新指向新栈
 分配类似堆内存的分配
+
+newstack
+stackalloc
+stackfree
+copystack
+shrinkstack
+morestack
 
 内存回收gc:
 三色标记
@@ -286,6 +253,27 @@ markroot
 标记终止阶段,暂停程序
 清理阶段,初始化清理状态并关闭写屏障,恢复用户程序,后台并发清理所有的内存管理单元,当goroutine申请新的内存管理单元时就会触发清理
 触发时机,内存使用超过某值,超过两分钟,手动GC
+
+setGCPhase,_GCoff/_GCmark/_GCmarktermination
+gcStart: 调用时机:mallocgc/runtime.GC/sysmon两分钟唤醒一次forcegchelper,gcphase设置成_GCmark,
+gcMarkDone
+gcMarkTermination: gcphase设置成_GCmarktermination,gcphase设置成_GCoff
+gcBgMarkWorker
+gcMark
+gcSweep: 在gcMarkTermination里调用,结尾处唤醒bgsweep
+gcWaitOnMark: 等待mark阶段结束,如果当前处于mark阶段当前G就gopark,等待在gcMarkTermination里唤醒该G
+sweepone: 清扫span,返回清扫的页数,没可清扫的返回^0,nextSpanForSweep找到需要sweep的span,调用mspan.sweep,如果清扫完会激活新一轮的scavenge
+mspan.sweep: 清扫单个堆span
+mspan.init
+bgsweep: 循环调用sweepone
+bgscavenge: sweep结束会唤醒此G,循环调用mheap.pages.(pageAlloc).scavenge
+markroot
+greyobject
+scanobject
+scanblock
+gcDrain
+scanstack
+scanframeworker
 
 sync.Map:
 通过互斥锁和原子操作来实现近似无锁,空间换时间,延迟删除,删除一个键值只是打标记,只有在迁移dirty数据的时候才清理删除的数据,readOnly向dirty拷贝是遍历,不适合大数据场景
