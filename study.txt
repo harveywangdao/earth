@@ -337,12 +337,13 @@ defer:
 deferprocStack&deferreturn
 先执行return再执行defer
 defer函数的入参取决于执行到defer那一行时是什么值,入参放在deferprocStack函数入参_defer结构体的下面位置
+gp._defer,defer以链表的形式存储
 
 panic&recover:
 只能recover本协程内的panic
 gopanic&gorecover
 数组切片越界;nil指针野指针;往已经close的chan里发送数据;并发读写相同map;interface{}断言未接收第二个返回值
-前一个panic会被后一个panic覆盖
+gp._panic,panic以链表的形式存储
 
 闭包函数:
 定义在一个函数内部的函数,闭包是将函数内部和函数外部连接起来的桥梁,局部变量变成全局变量

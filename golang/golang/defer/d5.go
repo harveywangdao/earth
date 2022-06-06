@@ -25,25 +25,26 @@ func do1() int {
 
 func do2() {
 	defer func() {
-		/*if e := recover(); e != nil {
-			fmt.Println(e)
-		}
 		if e := recover(); e != nil {
 			fmt.Println(e)
 		}
-		if e := recover(); e != nil {
-			fmt.Println(e)
-		}*/
 		println("111")
+		panic("ddd")
 	}()
 
 	defer func() {
+		/*if e := recover(); e != nil {
+			fmt.Println(e)
+		}*/
 		println("222")
 		panic("aaa")
 		println("333")
 	}()
 
 	defer func() {
+		if e := recover(); e != nil {
+			fmt.Println(e)
+		}
 		println("444")
 		panic("bbb")
 		println("555")
