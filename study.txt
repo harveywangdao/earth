@@ -344,6 +344,7 @@ panic&recover:
 gopanic&gorecover
 数组切片越界;nil指针野指针;往已经close的chan里发送数据;并发读写相同map;interface{}断言未接收第二个返回值
 gp._panic,panic以链表的形式存储
+多个panic,recover的时候只返回最新的一个(链表头部)
 
 闭包函数:
 定义在一个函数内部的函数,闭包是将函数内部和函数外部连接起来的桥梁,局部变量变成全局变量
