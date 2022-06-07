@@ -183,7 +183,9 @@ mcentral的作用是为所有mcache提供切分好的mspan资源,每个central�
 newobject:mallocgc
 mallocgc:
 大于32KB直接在堆上分配,会判断是否要gc,mcache.allocLarge->mheap.alloc->mheap.allocSpan(systemstack)->pageAlloc.allocToCache,pageCache.alloc,mheap.grow,mheap.sysAlloc,linearAlloc.alloc,sysMap+sysUsed,返回mspan
-小于32KB在每个P的cache free list分配,0字节直接返回zerobase地址,从P上的mcache分配,mcahce.alloc存放每个级别的mspan,如果mcache没有了则mcache.refill->mcentral.cacheSpan,mheap上的mcentral也是按照级别用数组存放,如果mcentral上也没有则mcentral.grow->mheap.alloc
+
+小于32KB在每个P的cache free list分配,0字节直接返回zerobase地址
+从P上的mcache分配,mcahce.alloc存放每个级别的mspan,如果mcache上的mspan没有可用空间则调用mcache.refill->mcentral.cacheSpan去获取新的mspan,这个mspan至少有一个未使用的对象,获取到新的mspan后放入mcache.alloc对应级别上,旧的mspan调用mcentral.uncacheSpan放入fullSwept,mheap上的mcentral也是按照级别用数组存放,如果mcentral上也没有则mcentral.grow->mheap.alloc
 
 pp.pcache pageCache
 pp.mspancache buf [128]*mspan
