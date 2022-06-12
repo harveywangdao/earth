@@ -259,7 +259,7 @@ morestack
 触发时机,内存使用超过某值,超过两分钟,手动GC
 
 setGCPhase,_GCoff/_GCmark/_GCmarktermination
-gcStart: 调用时机:mallocgc/runtime.GC/sysmon两分钟唤醒一次forcegchelper,将剩余未清扫的span清扫完成,启动gomaxprocs个gcBgMarkWorker(如果以前启动过就不用重复启动),stopTheWorldWithSema,gcphase设置成_GCmark,gcMarkRootPrepare栈/全局变量入队列,gcMarkTinyAllocs标记小对象为灰色,startTheWorldWithSema
+gcStart: 调用时机:mallocgc/runtime.GC/sysmon两分钟唤醒一次forcegchelper,将剩余未清扫的span清扫完成,启动gomaxprocs个gcBgMarkWorker,如果以前启动过就不用重复启动,stopTheWorldWithSema,gcphase设置成_GCmark,gcMarkRootPrepare栈/全局变量入队列,gcMarkTinyAllocs标记小对象为灰色,startTheWorldWithSema
 gcMarkDone1
 gcMarkTermination: gcphase设置成_GCmarktermination,gcphase设置成_GCoff
 gcBgMarkWorker
