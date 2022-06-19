@@ -259,10 +259,16 @@ morestack
 触发时机,内存使用超过某值,超过两分钟,手动GC
 
 setGCPhase,_GCoff/_GCmark/_GCmarktermination
-gcStart: 调用时机:mallocgc/runtime.GC/sysmon两分钟唤醒一次forcegchelper,将剩余未清扫的span清扫完成,启动gomaxprocs个gcBgMarkWorker,如果以前启动过就不用重复启动,stopTheWorldWithSema,gcphase设置成_GCmark,gcMarkRootPrepare栈/全局变量入队列,gcMarkTinyAllocs标记小对象为灰色,startTheWorldWithSema
-gcMarkDone1
+gcStart: 调用时机:mallocgc/runtime.GC/sysmon两分钟唤醒一次forcegchelper,将剩余未清扫的span清扫完成,启动gomaxprocs个gcBgMarkWorker,如果以前启动过就不用重复启动,stopTheWorldWithSema,gcphase设置成_GCmark,gcMarkRootPrepare栈和全局变量入队列,gcMarkTinyAllocs标记小对象为灰色,startTheWorldWithSema
+gcBgMarkWorker: 执行gcDrain的协程
+gcDrain: 在work buffers里扫描roots和objects,将灰色对象变黑,直到所有工作都做完,GC结束前返回,循环调用markroot,循环调用scanobject,gcFlushBgCredit
+markroot: flushmcache,markrootBlock,scanblock,markrootFreeGStacks,markrootSpans,scanstack
+scanobject: 调用greyobject
+scanblock: 类似scanobject,scan non-heap roots,调用greyobject
+scanstack: 调用前需要suspendG,调用后需要resumeG,扫描G的栈,栈上的指针都变成灰色,调用scanblock
+greyobject: 通过位操作设置为灰色
+gcMarkDone
 gcMarkTermination: gcphase设置成_GCmarktermination,gcphase设置成_GCoff
-gcBgMarkWorker
 gcMark
 gcSweep: 在gcMarkTermination里调用,结尾处唤醒bgsweep
 gcWaitOnMark: 等待mark阶段结束,如果当前处于mark阶段当前G就gopark,等待在gcMarkTermination里唤醒该G
@@ -271,13 +277,9 @@ mspan.sweep: 清扫单个堆span
 mspan.init
 bgsweep: 循环调用sweepone
 bgscavenge: sweep结束会唤醒此G,循环调用mheap.pages.(pageAlloc).scavenge
-markroot
-greyobject
-scanobject
-scanblock
-gcDrain
-scanstack
 scanframeworker
+gcAssistAlloc
+stackpoolfree
 
 sync.Map:
 通过互斥锁和原子操作来实现近似无锁,空间换时间,延迟删除,删除一个键值只是打标记,只有在迁移dirty数据的时候才清理删除的数据,readOnly向dirty拷贝是遍历,不适合大数据场景
