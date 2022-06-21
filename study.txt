@@ -212,7 +212,7 @@ mheap.sweepgen
 mheap.grow
 mheap.freeSpan
 mheap.scavengeAll
-mheap.allocSpan: 小内存从pageCache分配,pageCache.alloc
+mheap.allocSpan: 小内存从pageCache分配,pageCache.alloc,pp.mspancache分配mspan结构体
 mheap.alloc
 mheap.reclaim
 
@@ -220,7 +220,7 @@ pageAlloc.alloc
 pageAlloc.free
 pageAlloc.find: 从radix tree查找npages
 pageAlloc.allocToCache: 返回pageCache
-pageCache.alloc
+pageCache.alloc: 从page cache分配npages
 pageCache.flush
 
 allocmcache
