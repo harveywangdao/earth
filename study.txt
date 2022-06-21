@@ -189,9 +189,15 @@ mallocgc:
 小于32KB在每个P的cache free list分配,0字节直接返回zerobase地址
 从P上的mcache分配,mcahce.alloc存放每个级别的mspan,如果mcache上的mspan没有可用空间则调用mcache.refill->mcentral.cacheSpan去获取新的mspan,这个mspan至少有一个未使用的对象,获取到新的mspan后放入mcache.alloc对应级别上,旧的mspan调用mcentral.uncacheSpan放入fullSwept,mheap上的mcentral也是按照级别用数组存放,如果mcentral上也没有则mcentral.grow->mheap.alloc
 
+arena: 64MB
+pageSize: 8KB
+chunk: 4MB
+arenaIndex spanOf
+chunkIndex chunkOf pallocData
+
 pp.pcache pageCache
-pp.mspancache buf [128]*mspan
 mheap.pages pageAlloc
+pp.mspancache buf [128]*mspan
 mheap.spanalloc fixalloc: 用于分配mspan结构体
 mheap.cachealloc fixalloc: 用于分配mcache结构体
 mheap.arena linearAlloc
@@ -199,7 +205,6 @@ heap arena: mheap.arenas []*[]*heapArena 64MB,heapArena存放arena元数据
 page allocator
 page cache
 sweep credit
-chunk
 memstats
 
 mheap.sysAlloc
@@ -207,14 +212,14 @@ mheap.sweepgen
 mheap.grow
 mheap.freeSpan
 mheap.scavengeAll
-mheap.allocSpan
+mheap.allocSpan: 小内存从pageCache分配,pageCache.alloc
 mheap.alloc
 mheap.reclaim
 
 pageAlloc.alloc
 pageAlloc.free
-pageAlloc.find
-pageAlloc.allocToCache
+pageAlloc.find: 从radix tree查找npages
+pageAlloc.allocToCache: 返回pageCache
 pageCache.alloc
 pageCache.flush
 
