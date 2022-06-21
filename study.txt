@@ -192,8 +192,8 @@ mallocgc:
 arena: 64MB
 pageSize: 8KB
 chunk: 4MB
-arenaIndex spanOf
-chunkIndex chunkOf pallocData
+arenaIndex spanOf *mspan
+chunkIndex chunkOf *pallocData
 
 pp.pcache pageCache
 mheap.pages pageAlloc
@@ -201,34 +201,33 @@ pp.mspancache buf [128]*mspan
 mheap.spanalloc fixalloc: 用于分配mspan结构体
 mheap.cachealloc fixalloc: 用于分配mcache结构体
 mheap.arena linearAlloc
-heap arena: mheap.arenas []*[]*heapArena 64MB,heapArena存放arena元数据
+mheap.arenas []*[]*heapArena: heapArena存放arena元数据
 page allocator
 page cache
 sweep credit
 memstats
 
-mheap.sysAlloc
-mheap.sweepgen
+mheap.alloc: mheap.reclaim分配前先sweep即将要分配的页数,mheap.allocSpan
+mheap.allocSpan: 返回全新的mspan,小内存从P上的pageCache分配,如果P上的pageCache未初始化则调用mheap.pages.allocToCache分配一个pageCache,调用pageCache.alloc分配内存,再从P上的mspancache分配mspan结构体,如果P上没有,调用mheap.pages.alloc分配内存,如果依然没有则调用mheap.grow,mheap.spanalloc.alloc分配mspan结构体,mspan结构体初始化
 mheap.grow
-mheap.freeSpan
+mheap.sysAlloc
 mheap.scavengeAll
-mheap.allocSpan: 小内存从pageCache分配,pageCache.alloc,pp.mspancache分配mspan结构体
-mheap.alloc
-mheap.reclaim
+mheap.freeSpan: mheap.pages.free释放内存,mspan结构体放回P上的mspancache,如果已满则mheap.spanalloc.free
 
-pageAlloc.alloc
-pageAlloc.free
+pageAlloc.alloc: 分配npages内存,pageAlloc.find寻找npages内存
 pageAlloc.find: 从radix tree查找npages
-pageAlloc.allocToCache: 返回pageCache
-pageCache.alloc: 从page cache分配npages
-pageCache.flush
+pageAlloc.free: 释放npages内存
+pageAlloc.allocToCache: 如果P上的pageCache是空的调用此方法分配pageCache,返回pageCache
+pageCache.alloc: 从P上的pcache(pageCache)分配npages,不加锁
 
 allocmcache
 freemcache
 mcache.releaseAll
 mcache.allocLarge
 
-mcentral.grow
+mcentral.cacheSpan: 返回一个mspan
+mcentral.uncacheSpan: 回收一个mspan
+mcentral.grow: mheap.alloc从mheap上分配一个mspan
 
 mmap/munmap/msync/mprotect/mremap/mlock/mlock2/munlockmlockall/munlockall
 madvise/posix_madvise/posix_fadvise
