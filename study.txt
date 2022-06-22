@@ -202,6 +202,7 @@ mheap.spanalloc fixalloc: 用于分配mspan结构体
 mheap.cachealloc fixalloc: 用于分配mcache结构体
 mheap.arena linearAlloc
 mheap.arenas []*[]*heapArena: heapArena存放arena元数据
+mheap.heapArenaAlloc linearAlloc
 page allocator
 page cache
 sweep credit
@@ -209,11 +210,13 @@ memstats
 
 mheap.alloc: mheap.reclaim分配前先sweep即将要分配的页数,mheap.allocSpan
 mheap.allocSpan: 返回全新的mspan,小内存从P上的pageCache分配,如果P上的pageCache未初始化则调用mheap.pages.allocToCache分配一个pageCache,调用pageCache.alloc分配内存,再从P上的mspancache分配mspan结构体,如果P上没有,调用mheap.pages.alloc分配内存,如果依然没有则调用mheap.grow,mheap.spanalloc.alloc分配mspan结构体,mspan结构体初始化
-mheap.grow
-mheap.sysAlloc
+mheap.grow: 增加npage给heap,mheap.pages.grow
+mheap.sysAlloc: mheap.arena.alloc
 mheap.scavengeAll
 mheap.freeSpan: mheap.pages.free释放内存,mspan结构体放回P上的mspancache,如果已满则mheap.spanalloc.free
 
+pageAlloc.grow: pageAlloc.sysGrow
+pageAlloc.sysGrow: 
 pageAlloc.alloc: 分配npages内存,pageAlloc.find寻找npages内存
 pageAlloc.find: 从radix tree查找npages
 pageAlloc.free: 释放npages内存
