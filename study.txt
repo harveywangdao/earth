@@ -195,6 +195,8 @@ chunk: 4MB
 arenaIndex spanOf *mspan
 chunkIndex chunkOf *pallocData
 
+pp.mcache *mcache
+mcache.alloc []*mspan
 pp.pcache pageCache
 mheap.pages pageAlloc
 pp.mspancache buf [128]*mspan
@@ -205,6 +207,14 @@ page allocator
 page cache
 sweep credit
 memstats
+
+mspan.nextFreeIndex: 放回空闲对象的位置
+mcache.nextFree: mcache.refill,mspan.nextFreeIndex
+mcache.refill: 获得一个新mspan,至少有一个空闲空间,在当前mcache满的情况下才会调用,满的mspan调用mcentral.uncacheSpan,通过mcentral.cacheSpan获取新的mspan,新mspan放入mcache.alloc
+
+mcentral.cacheSpan: 返回一个mspan,从partialSwept/partialUnswept/fullUnswept获取mspan,如果依然没有mspan则调用mcentral.grow
+mcentral.uncacheSpan: 回收一个mspan
+mcentral.grow: mheap.alloc从mheap上分配一个mspan
 
 mheap.alloc: mheap.reclaim分配前先sweep即将要分配的页数,mheap.allocSpan
 mheap.allocSpan: 返回全新的mspan,小内存从P上的pageCache分配,如果P上的pageCache未初始化则调用mheap.pages.allocToCache分配一个pageCache,调用pageCache.alloc分配内存,再从P上的mspancache分配mspan结构体,如果P上没有,调用mheap.pages.alloc分配内存,如果依然没有则调用mheap.grow,mheap.spanalloc.alloc分配mspan结构体,mspan结构体初始化
@@ -225,10 +235,6 @@ allocmcache
 freemcache
 mcache.releaseAll
 mcache.allocLarge
-
-mcentral.cacheSpan: 返回一个mspan
-mcentral.uncacheSpan: 回收一个mspan
-mcentral.grow: mheap.alloc从mheap上分配一个mspan
 
 mmap/munmap/msync/mprotect/mremap/mlock/mlock2/munlockmlockall/munlockall
 madvise/posix_madvise/posix_fadvise
