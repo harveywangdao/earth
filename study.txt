@@ -217,9 +217,9 @@ mcentral.uncacheSpan: 回收一个mspan
 mcentral.grow: mheap.alloc从mheap上分配一个mspan
 
 mheap.alloc: mheap.reclaim分配前先sweep即将要分配的页数,mheap.allocSpan
-mheap.allocSpan: 返回全新的mspan,小内存从P上的pageCache分配,如果P上的pageCache未初始化则调用mheap.pages.allocToCache分配一个pageCache,调用pageCache.alloc分配内存,再从P上的mspancache分配mspan结构体,如果P上没有,调用mheap.pages.alloc分配内存,如果依然没有则调用mheap.grow,mheap.spanalloc.alloc分配mspan结构体,mspan结构体初始化
+mheap.allocSpan: 返回全新的mspan,小内存从P上的pageCache分配,如果P上的pageCache未初始化则调用mheap.pages.allocToCache分配一个pageCache,调用pageCache.alloc分配内存,再从P上的mspancache分配mspan结构体,如果P上没有,调用mheap.pages.alloc分配内存,如果依然没有则调用mheap.grow向OS申请内存再mheap.pages.alloc,mheap.spanalloc.alloc分配mspan结构体,mspan结构体初始化
 mheap.grow: 增加npage给heap,mheap.sysAlloc,mheap.pages.grow
-mheap.sysAlloc: 返回准备状态的内存区域,分配nbytes的arena空间,更新mheap.arenas元信息,sysReserve,sysMap,更新allArenas
+mheap.sysAlloc: 返回准备状态的内存区域,分配nbytes的arena空间,更新mheap.arenas元信息,sysReserve,sysMap,向OS申请内存,更新allArenas
 mheap.scavengeAll
 mheap.freeSpan: mheap.pages.free释放内存,mspan结构体放回P上的mspancache,如果已满则mheap.spanalloc.free
 

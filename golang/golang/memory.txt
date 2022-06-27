@@ -1,0 +1,42 @@
+heapAddrBits = 48
+pallocChunksL1Bits = 13
+pallocChunksL2Bits = 13
+pallocChunksL1Shift = 13
+summaryL0Bits = 14
+logMaxPackedValue = 21
+heapArenaBytes = 64MB 2^26
+
+levelBits = [5]uint{
+  14,
+  3,
+  3,
+  3,
+  3,
+}
+
+levelShift = [5]uint{
+  34,
+  31,
+  28,
+  25,
+  22,
+}
+
+levelLogPages = [5]uint{
+  21,
+  18,
+  15,
+  12,
+  9,
+}
+
+1 chunk = 512 pages
+1 chunk = 4MB bytes 2^22
+1 page = 8KB bytes
+
+level1 0     1
+level2 32G   64G
+       2^35
+
+summary [5][]pallocSum
+chunks [2^13]*[2^13]pallocData
