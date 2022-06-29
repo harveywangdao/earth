@@ -278,7 +278,7 @@ scanstack: 调用前需要suspendG,调用后需要resumeG,扫描G的栈,栈上�
 greyobject: 通过位操作设置为灰色
 gcMarkDone: 标记阶段到标记终止阶段,gcMarkTermination
 gcMarkTermination: gcphase设置成_GCmarktermination,gcMark,gcphase设置成_GCoff,=,gcSweep,startTheWorldWithSema,p.mcache.prepareForSweep()
-gcMark: 
+gcMark: 检查gc完成,设置memstats
 gcSweep: 在gcMarkTermination里调用,结尾处唤醒bgsweep
 gcWaitOnMark: 等待mark阶段结束,如果当前处于mark阶段当前G就gopark,等待在gcMarkTermination里唤醒该G
 sweepone: 清扫span,返回清扫的页数,没可清扫的返回^0,nextSpanForSweep找到需要sweep的span,调用mspan.sweep,如果清扫完会激活新一轮的scavenge
