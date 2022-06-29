@@ -230,7 +230,6 @@ pageAlloc.grow: pageAlloc.sysGrow
 pageAlloc.sysGrow: 更新summary,sysMap
 pageAlloc.alloc: 分配npages内存,pageAlloc.find寻找npages内存
 pageAlloc.find: 从radix tree查找npages
-pageAlloc.free: 释放npages内存
 pageAlloc.allocToCache: 如果P上的pageCache是空的调用此方法分配pageCache,返回pageCache
 pageCache.alloc: 从P上的pcache(pageCache)分配npages,不加锁
 
@@ -281,10 +280,20 @@ gcMarkTermination: gcphase设置成_GCmarktermination,gcMark,gcphase设置成_GC
 gcMark: 检查gc完成,设置memstats
 gcSweep: 在gcMarkTermination里调用,结尾处唤醒bgsweep
 gcWaitOnMark: 等待mark阶段结束,如果当前处于mark阶段当前G就gopark,等待在gcMarkTermination里唤醒该G
-sweepone: 清扫span,返回清扫的页数,没可清扫的返回^0,nextSpanForSweep找到需要sweep的span,调用mspan.sweep,如果清扫完会激活新一轮的scavenge
-mspan.sweep: 清扫单个堆span
-mspan.init
-bgsweep: 循环调用sweepone
+
+bgsweep: 循环调用sweepone,循环调用freeSomeWbufs,做完后gopark
+sweepone: 清扫mspan,返回清扫的页数,没可清扫的返回^0,nextSpanForSweep找到需要sweep的mspan,调用mspan.sweep,如果清扫完会激活新一轮的scavenge
+mheap.nextSpanForSweep: 从mcentral fullUnswept/partialUnswept找未sweep的mspan
+mspan.sweep: 清扫单个堆span,mheap.freeSpan
+freeSomeWbufs: mheap.freeManual释放workbuf使用的mspan
+mheap.freeSpan: mheap.freeSpanLocked释放spanAllocHeap类型
+mheap.freeManual: mheap.freeSpanLocked释放spanAllocWorkBuf/spanAllocStack类型
+mheap.freeSpanLocked: mheap.pages.free释放pages,mheap.freeMSpanLocked释放mspan对象
+mheap.freeMSpanLocked: 释放一个mspan对象,先放入pp.mspancache,如果pp.mspancache已满,则调用mheap.spanalloc.free
+pageAlloc.free: 释放npages内存
+getempty/putempty: 返回空的workbuf/存储空的workbuf
+mheap.allocManual/mheap.freeManual: 分配释放栈内存和workbuf
+
 bgscavenge: sweep结束会唤醒此G,循环调用mheap.pages.(pageAlloc).scavenge
 scanframeworker
 gcAssistAlloc
