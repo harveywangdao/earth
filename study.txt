@@ -274,7 +274,7 @@ markroot: flushmcache,markrootBlock,scanblock,markrootFreeGStacks,markrootSpans,
 scanobject: 调用greyobject
 scanblock: 类似scanobject,scan non-heap roots,调用greyobject
 scanstack: 调用前需要suspendG,调用后需要resumeG,扫描G的栈,栈上的指针都变成灰色,调用scanblock
-greyobject: 通过位操作设置为灰色
+greyobject: 通过位操作设置为灰色,设置mspan.gcmarkBits对应位上为1即为标记过
 gcMarkDone: 标记阶段到标记终止阶段,gcMarkTermination
 gcMarkTermination: gcphase设置成_GCmarktermination,gcMark,gcphase设置成_GCoff,=,gcSweep,startTheWorldWithSema,p.mcache.prepareForSweep()
 gcMark: 检查gc完成,设置memstats
@@ -284,7 +284,7 @@ gcWaitOnMark: 等待mark阶段结束,如果当前处于mark阶段当前G就gopar
 bgsweep: 循环调用sweepone,循环调用freeSomeWbufs,做完后gopark
 sweepone: 清扫mspan,返回清扫的页数,没可清扫的返回^0,nextSpanForSweep找到需要sweep的mspan,调用mspan.sweep,如果清扫完会激活新一轮的scavenge
 mheap.nextSpanForSweep: 从mcentral fullUnswept/partialUnswept找未sweep的mspan
-mspan.sweep: 清扫单个堆span,mheap.freeSpan
+mspan.sweep: 清扫单个mspan,设置mspan.allocCount/mspan.freeindex=0/mspan.allocCache/mspan.allocBits=mspan.gcmarkBits,如果这个mspan没有一个对象被使用则调用mheap.freeSpan
 freeSomeWbufs: mheap.freeManual释放workbuf使用的mspan
 mheap.freeSpan: mheap.freeSpanLocked释放spanAllocHeap类型
 mheap.freeManual: mheap.freeSpanLocked释放spanAllocWorkBuf/spanAllocStack类型
@@ -295,6 +295,11 @@ getempty/putempty: 返回空的workbuf/存储空的workbuf
 mheap.allocManual/mheap.freeManual: 分配释放栈内存和workbuf
 
 bgscavenge: sweep结束会唤醒此G,循环调用mheap.pages.(pageAlloc).scavenge
+pageAlloc.scavenge: scavengeReserve,scavengeOne,scavengeUnreserve
+pageAlloc.scavengeReserve: 预留连续内存用于scavenge
+pageAlloc.scavengeOne: scavengeRangeLocked
+pageAlloc.scavengeRangeLocked: sysUnused,scavenged.setRange
+pageAlloc.scavengeUnreserve: 未scavenge的内存再存起来
 scanframeworker
 gcAssistAlloc
 stackpoolfree
