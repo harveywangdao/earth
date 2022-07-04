@@ -124,13 +124,13 @@ runtime.mstart: 保存pc/sp,执行schedule
 runtime.abort: INT $3
 
 G:
-Goroutine协程
+Goroutine协程,初始2KB栈
 G状态:_Grunning/_Gwaiting/_Grunnable/_Gsyscall/_Gidle/_Gdead/_Gcopystack/_Gpreempted
 G存储在,LRQ本地运行队列/GRQ全局运行队列/Netpoller网络轮询器/系统调用/锁/chan receive/chan send/select,本地P运行队列没有剩余空间时会使用全局队列
 GC sweep/GC scavenge/force gc/GC worker
 tls: thread local storage 为线程本地存储
-gsignal:signal-handling g
-g0:是持有调度栈的Goroutine,参与运行时的调度过程,包括G的创建/大内存分配/CGO函数的执行
+gsignal:signal-handling g,32KB栈
+g0:8KB栈,是持有调度栈的Goroutine,参与运行时的调度过程,包括G的创建/大内存分配/CGO函数的执行
 getg: 返回当前g的指针,在编译的时候才会生成该函数
 newproc:创建一个新G,在g0栈里调用该函数,newproc1:从gFree里获取,如果获取不到就new一个g并分配2K栈状态设为_Gdead加到allgs上,参数放入栈,状态设为_Grunnable,goid设置成当前P上的自增值,新G放到当前P的本地队列/全局队列/当前P的下一个要执行的g,wakep->startm获取空闲P,如果没有空闲P直接返回,如果有空闲P就去获取空闲的M(mget),绑定P和M,唤醒M,如果没有空闲M就去newm
 gopark/goready
@@ -244,13 +244,17 @@ malloc/calloc/realloc/free/posix_memalign/memfd_create
 连续栈,栈空间不足时,初始化一片比旧栈大两倍的新栈并将原栈中的所有值都迁移到新的栈中,将指向旧栈对应变量的指针重新指向新栈
 分配类似堆内存的分配
 
-newstack
-stackalloc: 小栈,大栈mheap.allocManual分配mspan
-stackfree: 大栈,_GCoff期间直接调用mheap.freeManual,否则放入stackLarge,小栈,在mspan标记对应的空间未使用s.allocCount--,如果s.allocCount=0并且是_GCoff则调用mheap.freeManual
+morestack: g0/gsignal不调用morestack,newstack
+newstack: 扩大栈,copystack
+stackalloc: 生成新G的时候调用stackalloc,小栈从mcache.stackcache内分配,如果mcache.stackcache是空的则调用stackcacherefill,大栈从stackLarge分配,如果stackLarge是空的则调用mheap.allocManual分配新的mspan
+stackfree: 大栈_GCoff期间直接调用mheap.freeManual,否则放入stackLarge,小栈放回mcache.stackcache,如果mcache.stackcache超过32KB则调用stackcacherelease
 copystack: stackalloc分配新栈空间,adjustsudogs/syncadjustsudogs,memmove拷贝数据,adjustctxt,adjustdefers,adjustpanics,gentraceback调整指针的值,stackfree释放老空间
 shrinkstack: 当前使用的栈空间小于总空间的1/4的时候才会缩栈,调用copystack缩小成原来的1/2
-morestack
 freeStackSpans: gcMarkTermination内调用,stackpool/stackLarge未使用的mspan会调用mheap.freeManual释放,
+stackpoolalloc: 从stackpool获取第一个mspan,如果stackpool是空的则调用mheap.allocManual返回一个新的mspan并放入stackpool,s.allocCount++,如果这个mspan用完了则从stackpool移除
+stackpoolfree: 如果mspan有可用空间则放入stackpool,mspan.allocCount--,如果mspan.allocCount=0并且是_GCoff那么mheap.freeManual并且从stackpool移除
+stackcacherefill: 循环调用stackpoolalloc生成16KB可用内存放入mcache.stackcache
+stackcacherelease: mcache.stackcache保留16KB内存,其它内存循环调用stackpoolfree放回stackpool
 
 内存回收gc:
 三色标记
