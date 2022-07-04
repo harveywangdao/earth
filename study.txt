@@ -245,11 +245,12 @@ malloc/calloc/realloc/free/posix_memalign/memfd_create
 分配类似堆内存的分配
 
 newstack
-stackalloc
-stackfree
-copystack
-shrinkstack
+stackalloc: 小栈,大栈mheap.allocManual分配mspan
+stackfree: 大栈,_GCoff期间直接调用mheap.freeManual,否则放入stackLarge,小栈,在mspan标记对应的空间未使用s.allocCount--,如果s.allocCount=0并且是_GCoff则调用mheap.freeManual
+copystack: stackalloc分配新栈空间,adjustsudogs/syncadjustsudogs,memmove拷贝数据,adjustctxt,adjustdefers,adjustpanics,gentraceback调整指针的值,stackfree释放老空间
+shrinkstack: 当前使用的栈空间小于总空间的1/4的时候才会缩栈,调用copystack缩小成原来的1/2
 morestack
+freeStackSpans: gcMarkTermination内调用,stackpool/stackLarge未使用的mspan会调用mheap.freeManual释放,
 
 内存回收gc:
 三色标记
@@ -302,7 +303,6 @@ pageAlloc.scavengeRangeLocked: sysUnused,scavenged.setRange
 pageAlloc.scavengeUnreserve: 未scavenge的内存再存起来
 scanframeworker
 gcAssistAlloc
-stackpoolfree
 write barriers
 
 sync.Map:
