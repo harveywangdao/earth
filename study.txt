@@ -272,7 +272,7 @@ stackcacherelease: mcache.stackcache保留16KB内存,其它内存循环调用sta
 触发时机,内存使用超过某值,超过两分钟,手动GC
 
 setGCPhase,_GCoff/_GCmark/_GCmarktermination
-gcStart: 调用时机:mallocgc/runtime.GC/sysmon两分钟唤醒一次forcegchelper,将剩余未清扫的span清扫完成,启动gomaxprocs个gcBgMarkWorker,如果以前启动过就不用重复启动,stopTheWorldWithSema,gcphase设置成_GCmark,gcMarkRootPrepare栈和全局变量入队列,gcMarkTinyAllocs标记小对象为灰色,startTheWorldWithSema
+gcStart: 调用时机:mallocgc/runtime.GC/sysmon两分钟唤醒一次forcegchelper,将剩余未清扫的span清扫完成,启动gomaxprocs个gcBgMarkWorker,如果以前启动过就不用重复启动,stopTheWorldWithSema,finishsweep_m,gcphase设置成_GCmark,gcMarkRootPrepare栈和全局变量入队列,gcMarkTinyAllocs标记小对象为灰色,startTheWorldWithSema
 gcBgMarkWorker: 执行gcDrain的协程
 gcDrain: 在work buffers里扫描roots和objects,将灰色对象变黑,直到所有工作都做完,GC结束前返回,循环调用markroot,循环调用scanobject,gcFlushBgCredit
 markroot: flushmcache,markrootBlock,scanblock,markrootFreeGStacks,markrootSpans,scanstack
@@ -286,8 +286,19 @@ gcMark: 检查gc完成,设置memstats
 gcSweep: 在gcMarkTermination里调用,结尾处唤醒bgsweep
 gcWaitOnMark: 等待mark阶段结束,如果当前处于mark阶段当前G就gopark,等待在gcMarkTermination里唤醒该G
 gcAssistAlloc: 普通G分配内存mallocgc并且处于标记阶段时,如果gcAssistBytes小于0就会调用此函数,辅助gc标记至少64KB,gcDrainN
-write barriers:
-为什么STW:
+
+write barriers: p.wbBuf每个P都有一个write barrier buf
+hybrid barrier: Yuasa-style deletion barrier,Dijkstra insertion barrier
+gcWriteBarrier: 编译器插入到代码里,调用wbBufFlush
+wbBufFlush: flush当前P的write barrier buf到gc workbuf,调用wbBufFlush1,标记指针指向的mspan,gcw.putBatch将所有指针放入gcw,此时对象是灰色
+bulkBarrierPreWrite: typedmemmove/typedslicecopy/typedmemclr/memclrHasPointers调用该函数,memmove前执行,src=0时memclr,wbBuf.putFast,wbBufFlush
+bulkBarrierPreWriteSrcOnly: makeslicecopy/growslice调用该函数,同bulkBarrierPreWrite
+bulkBarrierBitmap: bulkBarrierPreWrite内调用,同bulkBarrierPreWrite
+typeBitsBulkBarrier: 管道传数据专用,同bulkBarrierPreWrite
+
+标记起始阶段STW: finishsweep_m需要STW是为了当前不会有并发的sweep发生,这样才能保证所有的mspan都被sweep;gcMarkRootPrepare需要STW是为了计算root(全局变量)对象数量,设置nDataRoots/nBSSRoots/nSpanRoots;gcMarkTinyAllocs遍历所有P将mcache.tiny标记成灰色
+标记终止阶段STW: 写屏障标记完成
+_type: itab iface symtab
 
 bgsweep: 循环调用sweepone,循环调用freeSomeWbufs,做完后gopark
 sweepone: 清扫mspan,返回清扫的页数,没可清扫的返回^0,nextSpanForSweep找到需要sweep的mspan,调用mspan.sweep,如果清扫完会激活新一轮的scavenge
