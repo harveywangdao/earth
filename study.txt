@@ -278,13 +278,16 @@ gcDrain: 在work buffers里扫描roots和objects,将灰色对象变黑,直到所
 markroot: flushmcache,markrootBlock,scanblock,markrootFreeGStacks,markrootSpans,scanstack
 scanobject: 调用greyobject
 scanblock: 类似scanobject,scan non-heap roots,调用greyobject
-scanstack: 调用前需要suspendG,调用后需要resumeG,扫描G的栈,栈上的指针都变成灰色,调用scanblock
+scanstack: 调用前需要suspendG,调用后需要resumeG,扫描G的栈,栈上的指针都变成灰色,调用scanblock,scanframeworker扫描栈帧局部变量/入参/返回值
 greyobject: 通过位操作设置为灰色,设置mspan.gcmarkBits对应位上为1即为标记过
-gcMarkDone: 标记阶段到标记终止阶段,gcMarkTermination
-gcMarkTermination: gcphase设置成_GCmarktermination,gcMark,gcphase设置成_GCoff,=,gcSweep,startTheWorldWithSema,p.mcache.prepareForSweep()
+gcMarkDone: 最后一个终止标记的协程调用,标记终止阶段,stopTheWorldWithSema,唤醒所有辅助G,gcMarkTermination
+gcMarkTermination: gcphase设置成_GCmarktermination,gcMark,gcphase设置成_GCoff,gcSweep,startTheWorldWithSema,freeStackSpans,每个P执行一次mcache.prepareForSweep
 gcMark: 检查gc完成,设置memstats
 gcSweep: 在gcMarkTermination里调用,结尾处唤醒bgsweep
 gcWaitOnMark: 等待mark阶段结束,如果当前处于mark阶段当前G就gopark,等待在gcMarkTermination里唤醒该G
+gcAssistAlloc: 普通G分配内存mallocgc并且处于标记阶段时,如果gcAssistBytes小于0就会调用此函数,辅助gc标记至少64KB,gcDrainN
+write barriers:
+为什么STW:
 
 bgsweep: 循环调用sweepone,循环调用freeSomeWbufs,做完后gopark
 sweepone: 清扫mspan,返回清扫的页数,没可清扫的返回^0,nextSpanForSweep找到需要sweep的mspan,调用mspan.sweep,如果清扫完会激活新一轮的scavenge
@@ -305,9 +308,6 @@ pageAlloc.scavengeReserve: 预留连续内存用于scavenge
 pageAlloc.scavengeOne: scavengeRangeLocked
 pageAlloc.scavengeRangeLocked: sysUnused,scavenged.setRange
 pageAlloc.scavengeUnreserve: 未scavenge的内存再存起来
-scanframeworker
-gcAssistAlloc
-write barriers
 
 sync.Map:
 通过互斥锁和原子操作来实现近似无锁,空间换时间,延迟删除,删除一个键值只是打标记,只有在迁移dirty数据的时候才清理删除的数据,readOnly向dirty拷贝是遍历,不适合大数据场景
