@@ -256,6 +256,8 @@ stackpoolfree: 如果mspan有可用空间则放入stackpool,mspan.allocCount--,�
 stackcacherefill: 循环调用stackpoolalloc生成16KB可用内存放入mcache.stackcache
 stackcacherelease: mcache.stackcache保留16KB内存,其它内存循环调用stackpoolfree放回stackpool
 
+go1.17函数入参/返回值,使用了9个通用寄存器,依次是AX/BX/CX/DI/SI/R8/R9/R10/R11,超出部分按顺序放在栈上
+
 内存回收gc:
 三色标记
 开始所有对象都是白色的
@@ -289,7 +291,7 @@ gcAssistAlloc: 普通G分配内存mallocgc并且处于标记阶段时,如果gcAs
 
 write barriers: p.wbBuf每个P都有一个write barrier buf
 hybrid barrier: Yuasa-style deletion barrier,Dijkstra insertion barrier
-gcWriteBarrier: 编译器插入到代码里,调用wbBufFlush
+gcWriteBarrier: 编译器插入到代码里,将指针放入wbBuf,满了则调用wbBufFlush
 wbBufFlush: flush当前P的write barrier buf到gc workbuf,调用wbBufFlush1,标记指针指向的mspan,gcw.putBatch将所有指针放入gcw,此时对象是灰色
 bulkBarrierPreWrite: typedmemmove/typedslicecopy/typedmemclr/memclrHasPointers调用该函数,memmove前执行,src=0时memclr,wbBuf.putFast,wbBufFlush
 bulkBarrierPreWriteSrcOnly: makeslicecopy/growslice调用该函数,同bulkBarrierPreWrite
@@ -500,7 +502,9 @@ go tool pack c file.a main.go
 //go:generate stringer -type=Life
 插件: go build -buildmode=plugin add.go
 
-runtime
+编译器
+汇编
+链接器
 反射reflect
 定时器
 gin/beego/grpc/Restful/fasthttp
