@@ -289,10 +289,12 @@ gcSweep: 在gcMarkTermination里调用,结尾处唤醒bgsweep
 gcWaitOnMark: 等待mark阶段结束,如果当前处于mark阶段当前G就gopark,等待在gcMarkTermination里唤醒该G
 gcAssistAlloc: 普通G分配内存mallocgc并且处于标记阶段时,如果gcAssistBytes小于0就会调用此函数,辅助gc标记至少64KB,gcDrainN
 
-write barriers: p.wbBuf每个P都有一个write barrier buf
-hybrid barrier: Yuasa-style deletion barrier,Dijkstra insertion barrier,混合写屏障 = 删除写屏障 + 插入写屏障
-强三色不变式: 永远不会出现黑色对象指向白色对象
-弱三色不变式
+write barriers: p.wbBuf每个P都有一个write barrier buf,防止一个白色对象被黑色对象引用,只要满足强/弱三色不变式的其中一种,即可保证对象不被丢失
+hybrid barrier: Yuasa-style deletion barrier,Dijkstra insertion barrier,混合写屏障=删除写屏障+插入写屏障
+强三色不变式: 永远不会出现黑色对象指向白色对象,强制性的不允许黑色对象引用白色对象
+弱三色不变式: 黑色对象可以引用白色对象,白色对象存在其它灰色对象对它的引用,或者可达它的链路上游存在灰色对象
+插入屏障: 是对象被引用时触发的机制,插入屏障拦截将白色指针插入黑色对象的操作,标记其对应对象为灰色状态,这样就不存在黑色对象引用白色对象的情况,满足了强三色不变式,插入屏障是一个很耗费性能的行为,而栈需要更高的性能要求,因此插入屏障技术只运用在堆内存空间里不会运用到栈里
+删除屏障: 是对象被删除时触发的机制,删除屏障也是拦截写操作,因为它是写入一个空对象,具体的操作是被删除的对象如果自身为灰色或者白色,那么被标记为灰色,满足了弱三色不变式原则,保护灰色对象到白色对象的可达路径不会断
 
 gcWriteBarrier: 编译器插入到代码里,将指针放入wbBuf,满了则调用wbBufFlush
 wbBufFlush: flush当前P的write barrier buf到gc workbuf,调用wbBufFlush1,标记指针指向的mspan,gcw.putBatch将所有指针放入gcw,此时对象是灰色
