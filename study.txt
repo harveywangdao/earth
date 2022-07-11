@@ -290,7 +290,10 @@ gcWaitOnMark: 等待mark阶段结束,如果当前处于mark阶段当前G就gopar
 gcAssistAlloc: 普通G分配内存mallocgc并且处于标记阶段时,如果gcAssistBytes小于0就会调用此函数,辅助gc标记至少64KB,gcDrainN
 
 write barriers: p.wbBuf每个P都有一个write barrier buf
-hybrid barrier: Yuasa-style deletion barrier,Dijkstra insertion barrier
+hybrid barrier: Yuasa-style deletion barrier,Dijkstra insertion barrier,混合写屏障 = 删除写屏障 + 插入写屏障
+强三色不变式: 永远不会出现黑色对象指向白色对象
+弱三色不变式
+
 gcWriteBarrier: 编译器插入到代码里,将指针放入wbBuf,满了则调用wbBufFlush
 wbBufFlush: flush当前P的write barrier buf到gc workbuf,调用wbBufFlush1,标记指针指向的mspan,gcw.putBatch将所有指针放入gcw,此时对象是灰色
 bulkBarrierPreWrite: typedmemmove/typedslicecopy/typedmemclr/memclrHasPointers调用该函数,memmove前执行,src=0时memclr,wbBuf.putFast,wbBufFlush
