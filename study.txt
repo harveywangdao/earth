@@ -304,7 +304,7 @@ bulkBarrierBitmap: bulkBarrierPreWrite内调用,同bulkBarrierPreWrite
 typeBitsBulkBarrier: 管道传数据专用,同bulkBarrierPreWrite
 
 标记起始阶段STW: finishsweep_m需要STW是为了当前不会有并发的sweep发生,这样才能保证所有的mspan都被sweep;gcMarkRootPrepare需要STW是为了计算root(全局变量)对象数量,设置nDataRoots/nBSSRoots/nSpanRoots;gcMarkTinyAllocs遍历所有P将mcache.tiny标记成灰色
-标记终止阶段STW: 写屏障标记完成
+标记终止阶段STW: 每个P执行wbBufFlush1,把P上的写屏障放入gcw,如果gcw不为空那么startTheWorldWithSema,gcMarkDone再从头开始执行,如果每个P上的gcw都是空的,设置gcBlackenEnabled,设置gcphase为_GCmarktermination,gcMark,设置gcphase为_GCoff,gcSweep,设置一些全局变量memstats/work/sweep
 _type: itab iface symtab
 
 bgsweep: 循环调用sweepone,循环调用freeSomeWbufs,做完后gopark
