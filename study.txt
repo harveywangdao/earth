@@ -295,17 +295,14 @@ hybrid barrier: Yuasa-style deletion barrier,Dijkstra insertion barrier,混合�
 弱三色不变式: 黑色对象可以引用白色对象,白色对象存在其它灰色对象对它的引用,或者可达它的链路上游存在灰色对象
 插入屏障: 是对象被引用时触发的机制,插入屏障拦截将白色指针插入黑色对象的操作,标记其对应对象为灰色状态,这样就不存在黑色对象引用白色对象的情况,满足了强三色不变式,插入屏障是一个很耗费性能的行为,而栈需要更高的性能要求,因此插入屏障技术只运用在堆内存空间里不会运用到栈里
 删除屏障: 是对象被删除时触发的机制,删除屏障也是拦截写操作,因为它是写入一个空对象,具体的操作是被删除的对象如果自身为灰色或者白色,那么被标记为灰色,满足了弱三色不变式原则,保护灰色对象到白色对象的可达路径不会断
-
 gcWriteBarrier: 编译器插入到代码里,将指针放入wbBuf,满了则调用wbBufFlush
 wbBufFlush: flush当前P的write barrier buf到gc workbuf,调用wbBufFlush1,标记指针指向的mspan,gcw.putBatch将所有指针放入gcw,此时对象是灰色
 bulkBarrierPreWrite: typedmemmove/typedslicecopy/typedmemclr/memclrHasPointers调用该函数,memmove前执行,src=0时memclr,wbBuf.putFast,wbBufFlush
 bulkBarrierPreWriteSrcOnly: makeslicecopy/growslice调用该函数,同bulkBarrierPreWrite
 bulkBarrierBitmap: bulkBarrierPreWrite内调用,同bulkBarrierPreWrite
 typeBitsBulkBarrier: 管道传数据专用,同bulkBarrierPreWrite
-
 标记起始阶段STW: finishsweep_m需要STW是为了当前不会有并发的sweep发生,这样才能保证所有的mspan都被sweep;gcMarkRootPrepare需要STW是为了计算root(全局变量)对象数量,设置nDataRoots/nBSSRoots/nSpanRoots;gcMarkTinyAllocs遍历所有P将mcache.tiny标记成灰色
 标记终止阶段STW: 每个P执行wbBufFlush1,把P上的写屏障放入gcw,如果gcw不为空那么startTheWorldWithSema,gcMarkDone再从头开始执行,如果每个P上的gcw都是空的,设置gcBlackenEnabled,设置gcphase为_GCmarktermination,gcMark,设置gcphase为_GCoff,gcSweep,设置一些全局变量memstats/work/sweep
-_type: itab iface symtab
 
 bgsweep: 循环调用sweepone,循环调用freeSomeWbufs,做完后gopark
 sweepone: 清扫mspan,返回清扫的页数,没可清扫的返回^0,nextSpanForSweep找到需要sweep的mspan,调用mspan.sweep,如果清扫完会激活新一轮的scavenge
@@ -507,11 +504,16 @@ go tool pack c file.a main.go
 //go:generate stringer -type=Life
 插件: go build -buildmode=plugin add.go
 
+定时器:
+time.Sleep: timeSleep
+
+_type: itab iface symtab
+net
+泛型
 编译器
 汇编
 链接器
 反射reflect
-定时器
 gin/beego/grpc/Restful/fasthttp
 cgo
 
