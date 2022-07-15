@@ -505,7 +505,10 @@ go tool pack c file.a main.go
 插件: go build -buildmode=plugin add.go
 
 定时器:
-time.Sleep: timeSleep
+time.Sleep: timeSleep,resettimer
+resettimer: modtimer
+modtimer: doaddtimer,wakeNetPoller
+doaddtimer: 在当前P的heap上增加定时器
 
 _type: itab iface symtab
 net
