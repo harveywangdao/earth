@@ -509,6 +509,20 @@ time.Sleep: timeSleep,resettimer
 resettimer: modtimer
 modtimer: doaddtimer,wakeNetPoller
 doaddtimer: 在当前P的heap上增加定时器
+dodeltimer: 删除当前P的heap上的定时器,指定第几个timer
+runtimer: runOneTimer真正运行一个timer
+cleantimers: dodeltimer0移除pp.timers第一个timer,
+adjusttimers: 调整pp.timers,该删的删
+addtimer: cleantimers,doaddtimer
+deltimer: 不会真正删除timer,只会标记status
+
+checkTimers: 调度器调用,adjusttimers,runtimer
+
+time.NewTimer: startTimer->addtimer
+Timer.Reset: resetTimer->resettimer
+time.NewTicker: startTimer->addtimer
+Ticker.Stop: stopTimer->deltimer
+Ticker.Reset: modTimer->modtimer
 
 _type: itab iface symtab
 net
