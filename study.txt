@@ -15,6 +15,7 @@ array:
 arr2:=arr1是值复制,拷贝所有数据
 可以range,会完全复制整个数组,编译器优化实际只有一份内存,有待研究?
 可以直接==判断
+append第一个参数必须是切片,第二个参数可以是单个类型/string/slice,string/slice要加三个点,返回值也是一个切片
 
 string:
 有len无cap
@@ -163,8 +164,19 @@ schedule:
 全局运行队列sched.runq中有待执行的G时,通过schedtick保证有一定几率会从全局运行队列中查找G(globrunqget),从P本地运行队列中查找待执行的G(runqget),如果前两种方法都没有找到G,会通过findrunnable进行阻塞地查找G,网络轮询器中查找,通过runqsteal尝试从其它随机的P中窃取待运行的G,该函数还可能窃取处理器的计时器,gcstopm
 
 netpoll:
-当网络请求阻塞时,调度器会让当前阻塞的G放入网络轮询器中,由网络轮询器处理异步网络系统调用,从而让出P执行其它goroutine,
+当网络请求阻塞时,调度器会让当前阻塞的G放入网络轮询器中,由网络轮询器处理异步网络系统调用,从而让出P执行其它G
 当异步网络调用由网络轮询器完成后,再由sysmon监控线程将其切换回来继续执行
+netpoll: 调用时机,startTheWorldWithSema/findrunnable/pollWork(gc过程中执行)/sysmon(10ms一次)
+epollcreate1(EPOLL_CLOEXEC)
+epollctl EPOLL_CTL_ADD/EPOLL_CTL_MOD/EPOLL_CTL_DEL EPOLLIN/EPOLLOUT 
+EPOLLET边沿触发(go使用ET),对于读事件EPOLLIN,只有socket上的数据从无到有EPOLLIN才会触发,对于写事件EPOLLOUT,只有在socket写缓冲区从不可写变为可写EPOLLOUT才会触发
+EPOLLLT水平触发,对于读事件EPOLLIN只要socket上有未读完的数据EPOLLIN就会一直触发,对于写事件EPOLLOUT只要socket可写,EPOLLOUT就会一直触发
+EPOLLRDHUP检查对方是否关闭socket
+epoll_wait
+Listen->listenTCP->internetSocket->socket->sysSocket->syscall.Socket->netFD.listenStream->syscall.Bind->syscall.Listen->netFD.init->FD.Init->pollDesc.init->runtime_pollOpen->netpollopen
+TCPListener.Accept->TCPListener.accept->netFD.accept->FD.Accept->pollDesc.waitRead->runtime_pollWait->poll_runtime_pollWait->netpollblock->gopark->syscall.Accept4(s, syscall.SOCK_NONBLOCK|syscall.SOCK_CLOEXEC)
+TCPConn.Read->conn.Read->netFD.Read->FD.Read->pollDesc.waitRead->syscall.Read
+Dial->Dialer.Dial->Dialer.DialContext->sysDialer.dialSerial->sysDialer.dialSingle->sysDialer.dialTCP->sysDialer.doDialTCP->internetSocket->socket->sysSocket->syscall.Socket->netFD.dial->netFD.connect->syscall.Connect
 
 sysmon:
 每隔20us~10ms轮询一次,独立于GMP之外,独立的M
@@ -434,7 +446,6 @@ go tool compile -m main.go
 为了解决反码运算后产生-0的问题产生了补码
 计算机实际用补码参与运算,获得的结果需要转换成原码
 
-性能优化:
 pprof:
 net/http/pprof runtime/pprof
 go tool pprof http://localhost:6060/debug/pprof/heap
@@ -511,28 +522,49 @@ modtimer: doaddtimer,wakeNetPoller
 doaddtimer: 在当前P的heap上增加定时器
 dodeltimer: 删除当前P的heap上的定时器,指定第几个timer
 runtimer: runOneTimer真正运行一个timer
-cleantimers: dodeltimer0移除pp.timers第一个timer,
+cleantimers: dodeltimer0移除pp.timers第一个timer
 adjusttimers: 调整pp.timers,该删的删
 addtimer: cleantimers,doaddtimer
 deltimer: 不会真正删除timer,只会标记status
-
 checkTimers: 调度器调用,adjusttimers,runtimer
-
 time.NewTimer: startTimer->addtimer
 Timer.Reset: resetTimer->resettimer
 time.NewTicker: startTimer->addtimer
 Ticker.Stop: stopTimer->deltimer
 Ticker.Reset: modTimer->modtimer
 
-_type: itab iface symtab
-net
-泛型
-编译器
-汇编
-链接器
+性能优化:
+select中的case太多会降低性能
+map中的value如果没有使用到可以用struct{},减小内存占用
+map中key和value尽量不使用指针减少gc压力
+map只能扩容不能缩容,可以适当地重置map
+不要在循环中使用defer
+尽量不使用reflect,反射耗性能
+不要从大的slice和string截取部分数据,因为其它部分的数据不会被gc
+频繁拼接string考虑预先分配一个大空间,把待拼接的string拷贝进去,如strings.Builder,而不是使用+
+slice/array的单个元素如果很大的话可以考虑for/range只返回索引,避免不必要的内存拷贝
+slice可以提前预分配空间,避免append时频繁扩容
+
+fmt:
+每次打印从sync.Pool获取结构体空间,使用完,如果空间大于64KB直接交给gc,如果小于64KB就放回sync.Pool
+打印结构体会使用到reflect
+
+泛型:
+~粗略匹配
+编译为代码中所有类型的具体函数,会导致代码膨胀
+comparable
+
+gin/beego/grpc/Restful/fasthttp:
+
+
+wasm
+iface/eface _type/_func itab symtab traceback
+编译器/汇编/链接器
 反射reflect
-gin/beego/grpc/Restful/fasthttp
 cgo
+C
+C++
+Rust
 
 
 2.MySQL
