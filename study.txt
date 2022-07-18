@@ -554,15 +554,14 @@ fmt:
 编译为代码中所有类型的具体函数,会导致代码膨胀
 comparable
 
-gin/beego/grpc/Restful/fasthttp:
-
+gin/grpc/fasthttp/net/http:
+路由匹配,前缀树算法
 
 wasm
 iface/eface _type/_func itab symtab traceback
 编译器/汇编/链接器
 反射reflect
 cgo
-C
 C++
 Rust
 
