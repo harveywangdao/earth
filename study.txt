@@ -554,8 +554,10 @@ fmt:
 编译为代码中所有类型的具体函数,会导致代码膨胀
 comparable
 
-gin/grpc/fasthttp/net/http:
-路由匹配,前缀树算法
+gin: 路由匹配,前缀树算法
+grpc: 
+fasthttp: Request/Response结构体通过sync.Pool获取,内部大量使用了sync.Pool去提高性能,减少[]byte转换string,不支持http2.0,复用goroutine/协程池通过chan唤醒或退出
+net/http: 更稳定,支持在接收/发送大的body的时候不把所有数据都放内存,会把一部分数据先放到磁盘
 
 wasm
 iface/eface _type/_func itab symtab traceback
