@@ -557,7 +557,29 @@ comparable
 gin: 路由匹配用的是前缀树算法
 grpc: 
 net/http&fasthttp: nethttp更稳定,fasthttp中Request/Response结构体通过sync.Pool获取,内部大量使用了sync.Pool去提高性能,减少[]byte转换string,不支持http2.0,复用goroutine/协程池通过chan唤醒或退出;两者都支持在服务端接收大的body(multipart/form-data数据)的时候把数据先放到磁盘,都支持流式读取body数据;
-fasthttp与nethttp对responsebody处理的不同之处,fasthttp会等用户handler返回才会开始写body,nethttp内部用了个2kb的缓冲区,如果写满了handler仍然没有返回,会自动切换为chunked编码然后开始写响应头和body,这之后再更改响应头就无效了,因为body已经开始返回给客户端了,如果没有超过2kb,技术上是可以再更改响应头的,但是为了提供一个统一的接口,nethttp禁止了这样的行为
+fasthttp与nethttp对responsebody处理的不同之处,fasthttp会等用户handler返回才会开始写body,nethttp内部用了个2kb的缓冲区,如果写满了handler仍然没有返回,会自动切换为chunked编码然后开始写响应头和body,这之后再更改响应头就无效
+
+ServeHTTP
+
+type conn struct {
+  rwc net.Conn
+  r *connReader
+  bufr *bufio.Reader
+  bufw *bufio.Writer
+}
+
+type chunkWriter struct {
+  res *response
+  wroteHeader bool
+  chunking bool
+}
+
+type response struct {
+  conn *conn
+  w  *bufio.Writer
+  cw chunkWriter
+  handlerHeader Header
+}
 
 wasm
 iface/eface _type/_func itab symtab traceback
@@ -962,25 +984,29 @@ reset认证: reset报文,将真实客户端IP加入白名单
 接收窗口(rwnd)
 
 
-7.HTTP HTTP2 TLS/SSL
-状态码:
-200 请求成功
-301 资源（网页等）被永久转移到其它URL
+7.HTTP websocket HTTP2 TLS/SSL
+GET(获取资源)/POST(创建修改资源)/PUT(幂等)/HEAD(验证uri是否有效不返回body)/DELETE(删除资源)
+CONNECT: HTTP1.1的方法,隧道代理使用CONNECT方法建立连接,开启一个客户端与所请求资源之间的双向沟通的通道,客户端要求代理服务器将TCP连接作为通往目的主机隧道,之后该服务器会代替客户端与目的主机建立连接,连接建立好之后代理服务器会面向客户端发送或接收TCP消息流
+OPTIONS: 用来询问服务器对应路由支持哪些方法,也可以传递*获取整个服务器支持的方法;检测某个接口是否支持跨域,复杂跨域请求之前先发送一个OPTIONS请求,浏览器根据返回的Access-Control-Allow-Origin,Access-Control-Allow-Headers,Access-Control-*来判断当前网页能否请求跨域资源
+TRACE: 原样返回任意客户端请求的任何内容,主要用于测试或诊断,追踪路劲
 
+状态码:
 1xx 信息响应
 2xx 成功响应
 3xx 重定向
 4xx 客户端错误
 5xx 服务器错误
 
-301 MovedPermanently 永久移动
+100 Continue客户端应当继续发送请求
+200 请求成功
+204 No Content成功处理但在返回的响应报文中不含实体的主体部分
+301 MovedPermanently 资源（网页等）被永久转移到其它URL
 302 Found 临时移动,与301类似,但资源只是临时被移动,客户端应继续使用原有URI
-
+304 Not Modified未修改,自从上次请求后请求的网页未修改过服务器返回此响应时不会返回网页内容
 400 Bad Request
 401 Unauthorized
 403 Forbidden
 404 请求的资源（网页等）不存在
-
 500 InternalServerError
 501 NotImplemented
 502 BadGateway
@@ -988,25 +1014,73 @@ reset认证: reset报文,将真实客户端IP加入白名单
 504 GatewayTimeout
 505 HTTPVersionNotSupported
 
+请求体:
 包含请求方法、URI、HTTP版本信息
 header
 body
 
+响应体:
 包含HTTP版本、状态码、状态码的原因短语
 header
 body
 
-HTTP 2.0 和 HTTP1.1 区别
+Request Headers:
+Host: a.com
+Trailer: key1标识在body的后面会有类似key1: value1的首部字段,Trailer可以使用在HTTP/1.1版本分块传输编码时
+Connection: close通知对端自己发送完数据会断开链接(HTTP1.0默认方式)、keep-alive通知对端自己发送完数据不会断开链接(HTTP1.1默认方式)
+Accept-Encoding: gzip, deflate, br
+Accept-Language: zh-CN,zh;q=0.9
+Accept: "/"
+Accept-Control-Request-Headers: xx
+Accept-Control-Request-Method: POST
+Cookie: a=1; b=2
+Authorization: xxx
+Origin: https://a.com
+Referer: https://a.com
+User-Agent: Mozilla/5.0
+
+Response Headers:
+Date: Wed, 20 Jul 2022 13:00:45 GMT
+Server: xxx
+Content-Type: application/json;charset=utf-8  text/html  image/jpeg  application/javascript  application/xml
+Content-Length: 200
+Content-Encoding: gzip
+Content-Language: zh-CN
+Content-Md5: xxx
+Transfer-Encoding: chunked 分块传输
+Cache-Control: max-age=31536000 no-cache
+Pragma: no-cache(禁用缓存) Pragma旧产物 优先级从高到低是Pragma->Cache-Control->Expires
+Location: a.com/b  重定向
+Set-Cookie: status=enable; expires=Tue, 05 Jul 2018 02:01:22 GMT; path=/; domain=.example.com;
+Allow: HEAD,GET,POST
+Access-Control-Allow-Origin: *
+Access-Control-Allow-Methods: GET, POST, PUT
+Access-Control-Allow-Credentials: true 表示是否允许发送Cookie
+Access-Control-Allow-Headers: X-Custom-Header
+Access-Control-Max-Age: 3600  设置在3600秒不需要再发送预校验请求
+Access-Control-Expose-Headers: FooBar
+
+HTTP 2.0和HTTP1.1区别
 多路复用 二进制分帧层
 首部压缩
 HTTP2支持服务器推送
 
-跨域CORS 同源策略 JSONP
+Cookie: NAME=VALUE; expires=DATE; Max-Age=3600(存活多少秒,IE不支持); path=PATH; domain=域名(域名匹配才会带上cookie); Secure(仅在HTTPS时才会发送) HttpOnly(使Cookie不能被js脚本访问,其主要目的为防止跨站脚本攻击Cross-sitescripting/XSS对Cookie的信息窃取)
+
+缓存控制:
+Pragma: 有两个字段Pragma和Expires,Pragma的值为no-cache时表示禁用缓存,Expires表示该缓存的有效时间
+Cache-Control: 请求,no-cache(不使用缓存要向原服务器发起请求)/no-store(内容不保存到缓存)/max-age(告知server,client可以接收一个存在时间不超过多少秒的资源);响应,no-cache(不使用缓存要向server发起请求)/no-store(内容不保存到缓存)/max-age(告知client资源在多少秒内是新鲜的无需向server发起请求),no-store优先级最高
+缓存校验:
+Last-Modified: 服务端在返回资源时会将该资源的最后更改时间通过Last-Modified字段返回给客户端,客户端下次请求时通过If-Modified-Since或者If-Unmodified-Since带上Last-Modified,服务端检查该时间是否与服务器的最后修改时间一致:如果一致则返回304状态码,不返回资源;如果不一致则返回200和修改后的资源并带上新的时间,If-Modified-Since(告诉服务器如果时间一致返回状态码304),If-Unmodified-Since(告诉服务器如果时间不一致返回状态码412)
+etag: 服务器通过某个算法对资源进行计算取得一串值(类似于文件的md5值)之后将该值通过etag返回给客户端,客户端下次请求时通过If-None-Match或If-Match带上该值,服务器对该值进行对比校验,如果一致则不要返回资源,If-None-Match(告诉服务器如果一致,返回状态码304,不一致则返回资源),If-Match(告诉服务器如果不一致,返回状态码412)
+
+跨域CORS: 跨域资源共享,同源(协议域名端口号都一样)策略,当前网页访问一个host和自己不一样的服务器,这时浏览器为了安全会根据一些条件判断是否能请求并且接收到响应,对于复杂请求先发送OPTIONS预检请求(preflight),通过OPTIONS的响应判断是否能进行跨域请求,一旦服务器通过了预检请求,以后每次浏览器正常的CORS请求,就都跟简单请求一样会有一个Origin头信息字段;对于简单请求(HEAD/GET/POST,头部不超过Accept、Accept-Language、Content-Language、Last-Event-ID、Content-Type:只限三个application/x-www-form-urlencoded、multipart/form-data、text/plain)则直接请求,浏览器在请求头部插入Origin,浏览器判断响应是否允许跨域决定是否将响应给到页面
+JSONP只支持GET请求,CORS支持所有类型的HTTP请求,JSONP的优势在于支持老式浏览器,以及可以向不支持CORS的网站请求数据
+
 CSRF/XSRF XSS
 JWT Session Token
-SSRF:
-由攻击者构造形成由服务端发起请求的一个安全漏洞,一般情况下,SSRF攻击的目标是从外网无法访问的内部系统,正是因为它是由服务端发起的所以它能够请求到与它相连而与外网隔离的内部系统
-形成的原因大都是由于服务端提供了从其他服务器应用获取数据的功能且没有对目标地址做过滤与限制,比如从指定URL地址获取网页文本内容,加载指定地址的图片,下载
+
+SSRF:由攻击者构造形成由服务端发起请求的一个安全漏洞,一般情况下,SSRF攻击的目标是从外网无法访问的内部系统,正是因为它是由服务端发起的所以它能够请求到与它相连而与外网隔离的内部系统;形成的原因大都是由于服务端提供了从其他服务器应用获取数据的功能且没有对目标地址做过滤与限制,比如从指定URL地址获取网页文本内容,加载指定地址的图片,下载
 
 
 8.Kubernetes
