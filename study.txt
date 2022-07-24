@@ -557,14 +557,81 @@ comparable
 gin: 路由匹配用的是前缀树算法
 grpc:
 net/http:
-Server.Serve->conn.serve->conn.readRequest->readRequest->readTransfer->ServeHTTP->finishRequest
+Serve->Server.Serve->conn.serve->conn.readRequest->readRequest->readTransfer->ServeHTTP->finishRequest
 NewRequest->NewRequestWithContext->Client.Do->Client.do->Client.send->send->Transport.RoundTrip->Transport.roundTrip->Transport.getConn->Transport.queueForDial->Transport.dialConnFor->Transport.dialConn->Transport.dial->Transport.DialContext->Dialer.DialContext->persistConn.readLoop->persistConn.writeLoop->persistConn.roundTrip->persistConn.readResponse->ReadResponse
+
+tls: NPN/ALPN OCSP在线证书状态协议验证SSL证书的有效性,以确保它未被吊销,
+ServeTLS->Server.ServeTLS->tls.NewListener->Server.Serve->Conn.Handshake->Conn.handshakeFn->Conn.serverHandshake->Conn.readClientHello->serverHandshakeState.handshake->serverHandshakeState.processClientHello->serverHandshakeState.pickCipherSuite->serverHandshakeState.doFullHandshake->serverHandshakeState.establishKeys->serverHandshakeState.readFinished->serverHandshakeState.sendSessionTicket->serverHandshakeState.sendFinished
+Transport.dialConn->persistConn.addTLS->tls.Client->Conn.Handshake
+
+TLS:
+https://www.thesslstore.com/blog/explaining-ssl-handshake
+密码套件: TLS_RSA_WITH_AES_128_GCM_SHA256/TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA 密钥交换算法 + 签名算法 + 对称加密算法 + 摘要算法
+非对称加密需要应用到复杂的数学运算,虽然保证了安全,但速度很慢
+加密套件列表: openssl ciphers -v
+数字证书的签发流程:
+CA会把一些基本信息例如持有者、用途、有效信息等打包,然后运用Hash算法得到一个Hash值
+CA会使用自己的私钥将这个Hash值加密,生成一个Certificate Signature证书签名,CA对证书进行了签名
+最后将签名加到证书文件形成数字证书
+客户端验证证书的流程:
+客户端使用同样的Hash算法,得到该证书的Hash值H1
+浏览器使用CA的公钥,解密Certificate Signature中的内容,得到Hash值H2
+如果H1等于H2则证明可信
+Session ID: 为第一次握手时候发送的Session ID字段的值,服务器端会维护对于该Session ID对应的通信密钥,当Client再次连接的时候,只需要在头部中加上Session ID,即可通知Server重新使用上次协商过的通信密钥进行通信,这样就不需要每一次都重新协商来浪费资源,同时由于不需要完整的握手过程,所以握手时间也减少了1 RTT
+Session Ticket: Server会在握手结束后向Client发送被加密的恢复连接所需要的数据,同时Server无需保存任何信息,且由于此时握手已经完成,所以信道是安全的,在下次建立TLS连接时,Client只需要在第一次握手时发送上次收到的被加密的恢复连接所需的数据,Server则可以通过只有自己知道的密钥解密该握手数据,并重新使用上次的通信密钥
+为什么会有pre_master: 兼容RSA和DH算法
+
+TLS 1.0-TLS 1.2: 耗时2-RTT TLS 1.0 = SSL 3.1
+RSA算法:
+1.client->Client Hello->server
+加密套件列表+client_random+压缩算法+Session ID+SSL/TLS版本
+2.1.client<-Server Hello<-server
+选择使用的加密套件+server_random+压缩方法+Session ID+SSL/TLS版本
+2.2.client<-Certificate/Server Key Exchange/Server Hello Done<-server
+服务端证书(包括公钥+签名+持有者信息+有效时间+证书认证机构CA的信息)
+3.1.client->Client Key Exchange->server
+客户端验证服务端证书,通过后客户端生成一个预主密钥然后从服务器发送的证书中提取公钥,利用证书的公钥对预主密钥进行RSA加密再发送给服务端,此时客户端开始根据client_random+server_random+预主密钥生成主密钥,此密钥用于给后续传输的数据进行加解密
+3.2.client->ChangeCipherSpec/Finished->server
+告诉服务端它后续将切换到使用协商好的加密密钥对数据进行加密再传输
+4.client<-ChangeCipherSpec/Finished<-server
+从消息中提取加密过的预主密钥然后拿证书的私钥解密获取预主密钥,服务端根据预主密钥+client_random+server_random生成主密钥,告诉客户端后续将切换到使用协商好的加密密钥对数据进行加密再传输
+
+DH算法: Diffie-Hellman
+客户端和服务器都各自产生一个随机数,生成一个私钥,然后根据公开的DH算法算出自己的公钥,再把这个公钥通过TLS互换,只要有了自己的私钥和对方的公钥,就可以解密报文,即使公钥被截取了,在不知道私钥的情况下也无法计算出密钥,但是DH算法存在计算效率的问题,所以出现了ECDHE密钥协商算法
+客户端与服务端都需要各自生成一对公私钥,交换各自本次会话临时生成的密钥对的公钥
+客户端私钥+服务端公钥,根据椭圆算法算出预主密钥
+服务端私钥+客户端公钥,根据椭圆算法算出预主密钥
+1.client->Client Hello->server
+加密套件列表+client_random+压缩算法+Session ID+SSL/TLS版本
+2.client<-Server Hello<-server
+服务端返回使用的加密套件+server_random+压缩方法+Session ID+SSL/TLS版本,服务端证书(包括公钥+签名+持有者信息+有效时间+证书认证机构CA的信息),同时服务器利用私钥将client_random,server_random,server_params签名,然后将签名和server_params发送给客户端
+3.client->server
+客户端验证服务端证书和server_params签名,通过后将client_params传递给服务器,此时客户端通过client_params+server_params生成预主密钥(因ECDHE计算基于椭圆曲线离散对数通过这两个DH参数就能计算出pre_random),客户端根据预主密钥+client_random+server_random生成主密钥,
+告诉服务端它后续将切换到使用协商好的加密密钥对数据进行加密再传输
+4.client<-server
+通过client_params+server_params生成预主密钥,预主密钥+client_random+server_random生成主密钥,告诉客户端后续将切换到使用协商好的加密密钥对数据进行加密再传输
+
+TLS 1.3: 耗时1-RTT
+前向安全性: 指的是过去的通信的安全性不会受到未来的密钥泄露事件的影响
+DHE/ECDHE算法: ECC椭圆曲线离散对数,ECDHE用于密钥交换,ECDSA用于数字签名
+双方事先确定好使用什么椭圆曲线,和曲线上的基点G,两个参数都是公开的
+双方各自随机生成私钥d,将G乘以私钥d得到公钥Q(Q=Gd),客户端的公私钥为d1和Q1,服务器的公私钥为d2和Q2
+双方交换公钥,客户端计算d1Q2,服务器计算d2Q1,由乘法交换律和结合律得d2Q1 = d2d1G = d1d2G = d1Q2,双方的坐标都是一样的,实现了共享密钥
+1.client->server
+加密套件列表+TLS版本+client_random+client_params
+2.client<-server
+确认的加密套件+TLS版本+证书+server_random+server_params
+服务端/客户端通过client_params+server_params生成预主密钥,再通过预主密钥+client_random+server_random生成主密钥
+
+PSK: Pre-share key 0-RTT
+
+http2.0: 只能在TLS情况下使用
 fasthttp:
 nethttp更稳定,fasthttp中Request/Response结构体通过sync.Pool获取,内部大量使用了sync.Pool去提高性能,减少[]byte转换string,不支持http2.0,复用goroutine/协程池通过chan唤醒或退出;两者都支持在服务端接收大的body(multipart/form-data数据)的时候把数据先放到磁盘,都支持流式读取body数据;fasthttp与nethttp对responsebody处理的不同之处,fasthttp会等用户handler返回才会开始写body,nethttp内部用了个2kb的缓冲区,如果写满了handler仍然没有返回,会自动切换为chunked编码然后开始写响应头和body,这之后再更改响应头就无效
 
 wasm
 iface/eface _type/_func itab symtab traceback
-编译器/汇编/链接器
+编译器/汇编/链接器/ast
 反射reflect
 cgo
 C++
