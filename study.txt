@@ -562,7 +562,12 @@ tls:
 ServeTLS->Server.ServeTLS->tls.NewListener->Server.Serve->Conn.Handshake->Conn.handshakeFn->Conn.serverHandshake->Conn.readClientHello->serverHandshakeState.handshake->serverHandshakeState.processClientHello->serverHandshakeState.pickCipherSuite->serverHandshakeState.doFullHandshake->serverHandshakeState.establishKeys->serverHandshakeState.readFinished->serverHandshakeState.sendSessionTicket->serverHandshakeState.sendFinished
 Transport.dialConn->persistConn.addTLS->tls.Client->Conn.Handshake->Conn.clientHandshake->clientHandshakeState.handshake->clientHandshakeState.processServerHello->clientHandshakeState.pickCipherSuite->clientHandshakeState.doFullHandshake->clientHandshakeState.establishKeys->clientHandshakeState.sendFinished->clientHandshakeState.readSessionTicket->clientHandshakeState.readFinished
 
-websocket: 
+websocket: x/net/websocket
+Dial->DialConfig->dialWithDialer->Dialer.Dial->NewClient->hybiClientHandshake->http.ReadResponse->newHybiClientConn->newHybiConn
+Handler.ServeHTTP->Server.serveWebSocket->newServerConn->hybiServerHandshaker.ReadHandshake->hybiServerHandshaker.AcceptHandshake->hybiServerHandshaker.NewServerConn->newHybiServerConn->newHybiConn
+Conn.Write->hybiFrameWriterFactory.NewFrameWriter->hybiFrameWriter.Write
+Conn.Read->hybiFrameReaderFactory.NewFrameReader->hybiFrameHandler.HandleFrame->hybiFrameReader.Read
+
 http2.0: 只能在TLS情况下使用
 grpc:
 gin: 路由匹配用的是前缀树算法
@@ -1131,6 +1136,22 @@ DHE/ECDHE算法: ECC椭圆曲线离散对数,ECDHE用于密钥交换,ECDSA用于
 服务端/客户端通过client_params+server_params生成预主密钥,再通过预主密钥+client_random+server_random生成主密钥
 
 PSK: Pre-share key 0-RTT
+
+websocket:
+GET http://a.com HTTP/1.1
+Host: http://a.com
+Upgrade: websocket
+Connection: Upgrade
+Sec-WebSocket-Key: xxx
+Origin: http://a.com
+Sec-WebSocket-Version: 13
+Sec-WebSocket-Protocol: a,b
+
+HTTP/1.1 101 Switching Protocols
+Upgrade: websocket
+Connection: Upgrade
+Sec-WebSocket-Accept: xxx
+Sec-WebSocket-Protocol: a
 
 
 8.Kubernetes
