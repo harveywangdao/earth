@@ -554,14 +554,18 @@ fmt:
 编译为代码中所有类型的具体函数,会导致代码膨胀
 comparable
 
-gin: 路由匹配用的是前缀树算法
-grpc:
 net/http:
 Serve->Server.Serve->conn.serve->conn.readRequest->readRequest->readTransfer->ServeHTTP->finishRequest
 NewRequest->NewRequestWithContext->Client.Do->Client.do->Client.send->send->Transport.RoundTrip->Transport.roundTrip->Transport.getConn->Transport.queueForDial->Transport.dialConnFor->Transport.dialConn->Transport.dial->Transport.DialContext->Dialer.DialContext->persistConn.readLoop->persistConn.writeLoop->persistConn.roundTrip->persistConn.readResponse->ReadResponse
 
-tls: NPN/ALPN OCSP在线证书状态协议验证SSL证书的有效性,以确保它未被吊销,
-ServeTLS->Server.ServeTLS->tls.NewListener->Server.Serve->Conn.Handshake->Conn.handshakeFn->Conn.serverHandshake->Conn.readClientHello->serverHandshakeState.handshake->serverHandshakeState.processClientHello->serverHandshakeState.pickCipherSuite->serverHandshakeState.doFullHandshake->serverHandshakeState.establishKeys->serverHandshakeState.readFinished->serverHandshakeState.sendSessionTicket->serverHandshakeState.sendFinished
+tls: NPN/ALPN OCSP在线证书状态协议验证SSL证书的有效性,以确保它未被吊销
+ServeTLS->Server.ServeTLS->tls.NewListener->Server.Serve->Conn.Handshake->Conn.handshakeFn->Conn.serverHandshake->Conn.readClientHello->Conn.readHandshake->Conn.readRecord->Conn.readRecordOrCCS->Conn.readFromUntil
+
+
+
+
+
+->serverHandshakeState.handshake->serverHandshakeState.processClientHello->serverHandshakeState.pickCipherSuite->serverHandshakeState.doFullHandshake->serverHandshakeState.establishKeys->serverHandshakeState.readFinished->serverHandshakeState.sendSessionTicket->serverHandshakeState.sendFinished
 Transport.dialConn->persistConn.addTLS->tls.Client->Conn.Handshake
 
 TLS:
@@ -626,8 +630,9 @@ DHE/ECDHE算法: ECC椭圆曲线离散对数,ECDHE用于密钥交换,ECDSA用于
 PSK: Pre-share key 0-RTT
 
 http2.0: 只能在TLS情况下使用
-fasthttp:
-nethttp更稳定,fasthttp中Request/Response结构体通过sync.Pool获取,内部大量使用了sync.Pool去提高性能,减少[]byte转换string,不支持http2.0,复用goroutine/协程池通过chan唤醒或退出;两者都支持在服务端接收大的body(multipart/form-data数据)的时候把数据先放到磁盘,都支持流式读取body数据;fasthttp与nethttp对responsebody处理的不同之处,fasthttp会等用户handler返回才会开始写body,nethttp内部用了个2kb的缓冲区,如果写满了handler仍然没有返回,会自动切换为chunked编码然后开始写响应头和body,这之后再更改响应头就无效
+grpc:
+gin: 路由匹配用的是前缀树算法
+fasthttp: nethttp更稳定,fasthttp中Request/Response结构体通过sync.Pool获取,内部大量使用了sync.Pool去提高性能,减少[]byte转换string,不支持http2.0,复用goroutine/协程池通过chan唤醒或退出;两者都支持在服务端接收大的body(multipart/form-data数据)的时候把数据先放到磁盘,都支持流式读取body数据;fasthttp与nethttp对responsebody处理的不同之处,fasthttp会等用户handler返回才会开始写body,nethttp内部用了个2kb的缓冲区,如果写满了handler仍然没有返回,会自动切换为chunked编码然后开始写响应头和body,这之后再更改响应头就无效
 
 wasm
 iface/eface _type/_func itab symtab traceback
