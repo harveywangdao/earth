@@ -559,14 +559,8 @@ Serve->Server.Serve->conn.serve->conn.readRequest->readRequest->readTransfer->Se
 NewRequest->NewRequestWithContext->Client.Do->Client.do->Client.send->send->Transport.RoundTrip->Transport.roundTrip->Transport.getConn->Transport.queueForDial->Transport.dialConnFor->Transport.dialConn->Transport.dial->Transport.DialContext->Dialer.DialContext->persistConn.readLoop->persistConn.writeLoop->persistConn.roundTrip->persistConn.readResponse->ReadResponse
 
 tls: NPN/ALPN OCSP在线证书状态协议验证SSL证书的有效性,以确保它未被吊销
-ServeTLS->Server.ServeTLS->tls.NewListener->Server.Serve->Conn.Handshake->Conn.handshakeFn->Conn.serverHandshake->Conn.readClientHello->Conn.readHandshake->Conn.readRecord->Conn.readRecordOrCCS->Conn.readFromUntil
-
-
-
-
-
-->serverHandshakeState.handshake->serverHandshakeState.processClientHello->serverHandshakeState.pickCipherSuite->serverHandshakeState.doFullHandshake->serverHandshakeState.establishKeys->serverHandshakeState.readFinished->serverHandshakeState.sendSessionTicket->serverHandshakeState.sendFinished
-Transport.dialConn->persistConn.addTLS->tls.Client->Conn.Handshake
+ServeTLS->Server.ServeTLS->tls.NewListener->Server.Serve->Conn.Handshake->Conn.handshakeFn->Conn.serverHandshake->Conn.readClientHello->serverHandshakeState.handshake->serverHandshakeState.processClientHello->serverHandshakeState.pickCipherSuite->serverHandshakeState.doFullHandshake->serverHandshakeState.establishKeys->serverHandshakeState.readFinished->serverHandshakeState.sendSessionTicket->serverHandshakeState.sendFinished
+Transport.dialConn->persistConn.addTLS->tls.Client->Conn.Handshake->Conn.clientHandshake->clientHandshakeState.handshake->clientHandshakeState.processServerHello->clientHandshakeState.pickCipherSuite->clientHandshakeState.doFullHandshake->clientHandshakeState.establishKeys->clientHandshakeState.sendFinished->clientHandshakeState.readSessionTicket->clientHandshakeState.readFinished
 
 TLS:
 https://www.thesslstore.com/blog/explaining-ssl-handshake
