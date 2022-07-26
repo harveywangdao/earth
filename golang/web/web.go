@@ -118,30 +118,6 @@ func https2web() {
 	log.Fatal(srv.ListenAndServeTLS("../http/ca/server.crt", "../http/ca/server.key"))
 }
 
-func https2web_client() {
-	client := &http.Client{
-		Transport: xx,
-	}
-
-	req, err := http.NewRequest(http.MethodGet, "http://localhost:9997", nil)
-	if err != nil {
-		log.Fatal(err)
-		return
-	}
-	req.Proto = "HTTP/2.0"
-	req.ProtoMajor = 2
-	req.ProtoMinor = 0
-	resp, err := client.Do(req)
-	if err != nil {
-		log.Fatal(err)
-		return
-	}
-	defer resp.Body.Close()
-
-	log.Println(resp.Status)
-	log.Println(resp.Proto)
-}
-
 func http2web() {
 	go http2web_client()
 

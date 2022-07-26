@@ -1,0 +1,33 @@
+package main
+
+import (
+	"crypto/tls"
+	"log"
+	"net/http"
+)
+
+func do1() {
+	client := &http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{},
+		},
+	}
+	req, err := http.NewRequest(http.MethodGet, "http://localhost:8564", nil)
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
+	defer resp.Body.Close()
+
+	log.Println(resp.Status)
+	log.Println(resp.Proto)
+}
+
+func main() {
+	do1()
+}
