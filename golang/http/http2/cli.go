@@ -9,10 +9,12 @@ import (
 func do1() {
 	client := &http.Client{
 		Transport: &http.Transport{
-			TLSClientConfig: &tls.Config{},
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: true,
+			},
 		},
 	}
-	req, err := http.NewRequest(http.MethodGet, "http://localhost:8564", nil)
+	req, err := http.NewRequest(http.MethodGet, "https://localhost:8564", nil)
 	if err != nil {
 		log.Fatal(err)
 		return
@@ -29,5 +31,6 @@ func do1() {
 }
 
 func main() {
+	log.SetFlags(log.Lshortfile | log.LstdFlags)
 	do1()
 }

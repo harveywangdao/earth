@@ -576,7 +576,11 @@ ListenAndServeTLS->Server.ListenAndServeTLS/ServeTLS->Server.ServeTLS->Server.se
 
 Transport.roundTrip->Transport.onceSetNextProtoDefaults->http2configureTransports
 
-conn.serve
+http2Transport.dialTLS
+http2serverConn.unHandler
+http2serverConn.writeFrame->http2serverConn.scheduleFrameWrite->http2serverConn.startFrameWrite
+
+conn.serve->http2Server.ServeConn->http2serverConn.serve
 Transport.dialConn
 
 grpc:
