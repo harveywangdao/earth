@@ -21,10 +21,10 @@ func do1() {
 		return
 	}
 
-	req.Proto = "HTTP/2.0"
-	req.ProtoMajor = 2
-	req.ProtoMinor = 0
-
+	/*	req.Proto = "HTTP/2.0"
+		req.ProtoMajor = 2
+		req.ProtoMinor = 0
+	*/
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Fatal(err)
