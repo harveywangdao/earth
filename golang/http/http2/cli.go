@@ -9,6 +9,7 @@ import (
 func do1() {
 	client := &http.Client{
 		Transport: &http.Transport{
+			ForceAttemptHTTP2: true,
 			TLSClientConfig: &tls.Config{
 				InsecureSkipVerify: true,
 			},
@@ -19,6 +20,11 @@ func do1() {
 		log.Fatal(err)
 		return
 	}
+
+	req.Proto = "HTTP/2.0"
+	req.ProtoMajor = 2
+	req.ProtoMinor = 0
+
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Fatal(err)
