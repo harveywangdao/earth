@@ -569,17 +569,18 @@ Conn.Write->hybiFrameWriterFactory.NewFrameWriter->hybiFrameWriter.Write
 Conn.Read->hybiFrameReaderFactory.NewFrameReader->hybiFrameHandler.HandleFrame->hybiFrameReader.Read
 
 http2.0: 只能在TLS情况下使用 ALPN
+request和对应的response使用同一个StreamID,同一个请求HEADERS和DATA使用同一个StreamID
+HEADERS是由一个或多个frame组成的,第一个frame是Headers类型,后面的是Continuation(0x9)类型,每个frame都包含帧首部(帧长度+帧类型+flags)+流标识符+优先值+帧净荷
+DATA类型数据会发送一个或多个frame,每个frame的类型都是DATA
+
 http2Transport.dialTLS
 http2serverConn.writeFrame->http2serverConn.scheduleFrameWrite->http2serverConn.startFrameWrite
 
 conn.serve->http2Server.ServeConn->http2serverConn.serve
 
-http2clientConnPool.GetClientConn->http2clientConnPool.getClientConn->http2clientConnPool.getStartDialLocked->http2dialCall.dial->http2Transport.dialClientConn->http2Transport.newClientConn->http2ClientConn.readLoop->http2clientConnReadLoop.run->http2Framer.ReadFrame->http2clientConnReadLoop.processHeaders/processData
+http2clientConnPool.GetClientConn->http2clientConnPool.getClientConn->http2clientConnPool.getStartDialLocked->http2dialCall.dial->http2Transport.dialClientConn->http2Transport.newClientConn->http2ClientConn.readLoop->http2clientConnReadLoop.run->http2Framer.ReadFrame->http2readFrameHeader->http2typeFrameParser->http2parseHeadersFrame/http2parseDataFrame->http2Framer.readMetaFrame->http2clientConnReadLoop.processHeaders/processData
 
-Transport.roundTrip->http2Transport.RoundTrip->http2Transport.RoundTripOpt->http2clientConnPool.GetClientConn->http2ClientConn.RoundTrip->http2clientStream.doRequest->http2clientStream.writeRequest->http2clientStream.encodeAndWriteHeaders->http2clientStream.writeRequestBody
-
-http2clientStream.encodeAndWriteHeaders->http2ClientConn.encodeHeaders->http2ClientConn.writeHeaders->http2Framer.WriteHeaders->http2Framer.WriteContinuation
-http2Framer.WriteHeaders->http2Framer.startWrite->http2Framer.endWrite
+Transport.roundTrip->http2Transport.RoundTrip->http2Transport.RoundTripOpt->http2clientConnPool.GetClientConn->http2ClientConn.RoundTrip->http2clientStream.doRequest->http2clientStream.writeRequest->http2clientStream.encodeAndWriteHeaders->http2ClientConn.encodeHeaders->http2ClientConn.writeHeaders->http2Framer.WriteHeaders->http2Framer.WriteContinuation->http2clientStream.writeRequestBody->http2Framer.WriteData->http2Framer.WriteDataPadded->http2Framer.startWrite->http2Framer.endWrite
 
 HTTP2.0:
 https://httpwg.org/specs/rfc9113.html https://httpwg.org/specs/rfc7541.html
