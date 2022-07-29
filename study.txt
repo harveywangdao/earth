@@ -582,6 +582,8 @@ conn.serve->http2Server.ServeConn->http2serverConn.serve->http2serverConn.writeF
 
 http2chunkWriter.Write->http2responseWriterState.writeChunk->http2serverConn.writeHeaders->http2serverConn.writeDataFromHandler->http2serverConn.writeFrameFromHandler->http2serverConn.writeFrame
 
+http2ClientConn.encodeHeaders->http2ClientConn.writeHeader->Encoder.WriteField
+
 HTTP2.0:
 https://httpwg.org/specs/rfc9113.html https://httpwg.org/specs/rfc7541.html
 HTTP2.0和HTTP1.1区别: 多路复用/二进制分帧层/首部压缩/HTTP2支持服务器推送,HTTP2.0是在SPDY基础上形成的下一代HTTP,目的是通过支持请求与响应的多路复用来较少延迟,通过压缩HTTPS首部字段将协议开销降低,同时增加请求优先级和服务器端推送的支持,二进制分帧层将所有的传输信息分割为更小的消息和帧,进行二进制格式编码
@@ -594,8 +596,8 @@ flags: 用于不同的帧类型定义特定的消息标志,比如DATA帧就可�
 流: 是连接中的一个虚拟信道,可以承载双向消息传输,每个流有唯一整数标识符,为了防止两端流ID冲突,客户端发起的流具有奇数ID,服务器端发起的流具有偶数ID,所有HTTP2.0通信都在一个TCP连接上完成, 这个连接可以承载任意数量的双向数据流Stream,每个数据流以消息的形式发送而消息由一或多个帧组成,这些帧可以乱序发送,然后根据每个帧首部的流标识符重新组装
 多路复用共享连接: HTTP2.0成功解决了HTTP1.x的队首阻塞问题(TCP层的阻塞仍无法解决)
 服务端推送: 服务端可以根据客户端的请求,提前返回多个响应,推送额外的资源给客户端,PUSH_PROMISE帧是服务端向客户端有意推送资源的信号,如果客户端不需要服务端Push,可在SETTINGS帧中设定服务端流的值为0禁用此功能;PUSH_PROMISE帧中只包含预推送资源的首部,如果客户端对PUSH_PROMISE帧没有意见,服务端在PUSH_PROMISE帧后发送响应的DATA帧开始推送资源,如果客户端已经缓存该资源,不需要再推送,可以选择拒绝PUSH_PROMISE帧;PUSH_PROMISE必须遵循请求-响应原则,只能借着对请求的响应推送资源
-首部压缩: HTTP2.0在客户端和服务端之间使用首部表来跟踪和存储之前发送的键-值对,首部表在连接过程中始终存在,新增的键-值对会更新到表尾,不需要每次通信都需要再携带首部;HTTP2.0使用了首部压缩技术,压缩算法使用HPACK
-基于ALPN的协商过程: 支持HTTP2.0的浏览器可以在TLS会话层自发完成和服务端的协议协商以确定是否使用HTTP2.0通信,TLS1.2中引入了扩展字段以允许协议的扩展,其中ALPN协议(Application Layer Protocol Negotiation,应用层协议协商,前身是NPN)
+首部压缩: 首部压缩技术,压缩算法HPACK,在客户端和服务端之间使用首部表来跟踪和存储之前发送的kv,首部表在连接过程中始终存在,新增的kv会更新到表尾,不需要每次通信都需要再携带首部,静态表(从1开始计数,一共61个)/动态表(从62开始计数),SETTINGS可以设置动态表size,kv采用哈夫曼编码,编码:操作码/在表中的索引(这个索引可能是hearder中key值的索引也可能是整个键值对的索引)/是否使用哈夫曼编码/key的长度/key的编码/value的长度/value的编码
+基于ALPN的协商过程: 支持HTTP2.0的浏览器可以在TLS会话层自发完成和服务端的协议协商以确定是否使用HTTP2.0通信,TLS1.2中引入了扩展字段以允许协议的扩展,ALPN协议(Application Layer Protocol Negotiation,应用层协议协商,前身是NPN)
 基于HTTP的协商过程: HTTP Upgrade机制
 HTTP Upgrade request
 GET / HTTP/1.1
