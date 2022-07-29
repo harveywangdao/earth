@@ -578,7 +578,9 @@ http2clientConnPool.GetClientConn->http2clientConnPool.getClientConn->http2clien
 
 Transport.roundTrip->http2Transport.RoundTrip->http2Transport.RoundTripOpt->http2clientConnPool.GetClientConn->http2ClientConn.RoundTrip->http2clientStream.doRequest->http2clientStream.writeRequest->http2clientStream.encodeAndWriteHeaders->http2ClientConn.encodeHeaders->http2ClientConn.writeHeaders->http2Framer.WriteHeaders->http2Framer.WriteContinuation->http2clientStream.writeRequestBody->http2Framer.WriteData->http2Framer.WriteDataPadded->http2Framer.startWrite->http2Framer.endWrite
 
-conn.serve->http2Server.ServeConn->http2serverConn.serve->http2serverConn.writeFrame->http2serverConn.scheduleFrameWrite->http2serverConn.startFrameWrite->
+conn.serve->http2Server.ServeConn->http2serverConn.serve->http2serverConn.writeFrame->http2serverConn.scheduleFrameWrite->http2serverConn.startFrameWrite->http2serverConn.readFrames->http2Framer.ReadFrame->http2serverConn.processFrameFromReader->http2serverConn.processFrame->http2serverConn.processHeaders->http2serverConn.newWriterAndRequest->http2serverConn.newWriterAndRequestNoBody->http2serverConn.runHandler->http2serverConn.processData
+
+http2chunkWriter.Write->http2responseWriterState.writeChunk->http2serverConn.writeHeaders->http2serverConn.writeDataFromHandler->http2serverConn.writeFrameFromHandler->http2serverConn.writeFrame
 
 HTTP2.0:
 https://httpwg.org/specs/rfc9113.html https://httpwg.org/specs/rfc7541.html
