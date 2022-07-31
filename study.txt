@@ -555,6 +555,8 @@ fmt:
 comparable
 
 net/http:
+h1客户端对于同一个host可以和服务端建立多个tcp链接(受MaxIdleConns/MaxConnsPerHost/MaxIdleConnsPerHost制约),每个请求独占一个链接直到收到响应
+h2客户端对于同一个host只建立一条tcp,多个请求多路复用
 Serve->Server.Serve->conn.serve->conn.readRequest->readRequest->readTransfer->ServeHTTP->finishRequest
 NewRequest->NewRequestWithContext->Client.Do->Client.do->Client.send->send->Transport.RoundTrip->Transport.roundTrip->Transport.getConn->Transport.queueForDial->Transport.dialConnFor->Transport.dialConn->Transport.dial->Transport.DialContext->Dialer.DialContext->persistConn.readLoop->persistConn.writeLoop->persistConn.roundTrip->persistConn.readResponse->ReadResponse
 
@@ -573,6 +575,8 @@ request和对应的response使用同一个StreamID,同一个请求HEADERS和DATA
 HEADERS是由一个或多个frame组成的,第一个frame是Headers类型,后面的是Continuation(0x9)类型,每个frame都包含帧首部(帧长度+帧类型+flags)+流标识符+优先值+帧净荷
 DATA类型数据会发送一个或多个frame,每个frame的类型都是DATA
 TLS版本不低于1.2
+
+h2怎么保证两端的头部信息一致?
 
 http2clientConnPool.GetClientConn->http2clientConnPool.getClientConn->http2clientConnPool.getStartDialLocked->http2dialCall.dial->http2Transport.dialClientConn->http2Transport.dialTLS->http2Transport.newClientConn->http2ClientConn.readLoop->http2clientConnReadLoop.run->http2Framer.ReadFrame->http2readFrameHeader->http2typeFrameParser->http2parseHeadersFrame/http2parseDataFrame->http2Framer.readMetaFrame->http2clientConnReadLoop.processHeaders/processData
 
