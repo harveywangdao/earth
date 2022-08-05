@@ -576,8 +576,9 @@ request和对应的response使用同一个StreamID,同一个请求HEADERS和DATA
 HEADERS是由一个或多个frame组成的,第一个frame是Headers类型,后面的是Continuation(0x9)类型,每个frame都包含帧首部(帧长度+帧类型+flags)+流标识符+优先值+帧净荷
 DATA类型数据会发送一个或多个frame,每个frame的类型都是DATA
 TLS版本不低于1.2
-
-h2怎么保证两端的头部信息一致?
+h2怎么保证两端的头部信息一致:
+客户端的编码器发送到服务端的解码器,因为只有一条TCP链接,先发的数据肯定先到,保证了顺序,服务端的编码器发送到客户端的编码器,也是同理,客户端的编码器和客户端的解码器用的是不同的动态表
+客户端发来的Setting改变服务端编码器动态表的大小,然后服务端发送001的头部编码改变客户端的解码器动态表大小
 
 Transport.roundTrip->Transport.onceSetNextProtoDefaults->http2configureTransports->http2registerHTTPSProtocol->Transport.RegisterProtocol->Transport.altProto->Transport.TLSNextProto->upgradeFn->Transport.alternateRoundTripper->http2noDialH2RoundTripper.RoundTrip->http2Transport.RoundTrip->http2Transport.RoundTripOpt->http2noDialClientConnPool.GetClientConn->http2clientConnPool.getClientConn->Transport.getConn->Transport.queueForIdleConn->Transport.queueForDial->Transport.dialConnFor->Transport.dialConn->persistConn.addTLS->upgradeFn->http2clientConnPool.addConnIfNeeded->http2addConnCall.run->http2Transport.NewClientConn->http2Transport.newClientConn->http2Transport.RoundTrip->http2Transport.RoundTripOpt->http2noDialClientConnPool.GetClientConn->http2clientConnPool.getClientConn->http2ClientConn.RoundTrip->http2clientStream.doRequest->http2clientStream.writeRequest->http2clientStream.encodeAndWriteHeaders->http2ClientConn.encodeHeaders->http2ClientConn.writeHeaders->http2Framer.WriteHeaders->http2Framer.WriteContinuation->http2clientStream.writeRequestBody->http2Framer.WriteData->http2Framer.WriteDataPadded->http2Framer.startWrite->http2Framer.endWrite
 
