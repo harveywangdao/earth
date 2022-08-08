@@ -600,7 +600,7 @@ frame:
 DATA(0x0):用于传输HTTP消息体
 HEADERS(0x1):用于传输首部字段
 PRIORITY(0x2):用于指定或重新指定引用资源的优先级
-RST_STREAM(0x3):用于通知流的非正常终止
+RST_STREAM(0x3):用于通知流的非正常终止,StreamID是一个正常流的StreamID,载荷是4字节的ErrCode,服务端handler遇到panic会给客户端发RST_STREAM
 SETTINGS(0x4):用于约定客户端和服务端的配置数据比如设置初识的双向流量控制窗口大小
 PUSH_PROMISE(0x5):服务端推送许可
 PING(0x6):用于测量来自发送方的最小往返时间以及确定空闲连接是否仍然有效,StreamID是0,有效载荷8字节,Ping请求->Ping响应携带Ack flag
