@@ -601,11 +601,19 @@ DATA(0x0):用于传输HTTP消息体
 HEADERS(0x1):用于传输首部字段
 PRIORITY(0x2):用于指定或重新指定引用资源的优先级
 RST_STREAM(0x3):用于通知流的非正常终止,StreamID是一个正常流的StreamID,载荷是4字节的ErrCode,服务端handler遇到panic会给客户端发RST_STREAM
-SETTINGS(0x4):用于约定客户端和服务端的配置数据比如设置初识的双向流量控制窗口大小
-PUSH_PROMISE(0x5):服务端推送许可
+SETTINGS(0x4):用于约定客户端和服务端的配置数据比如设置初始的双向流量控制窗口大小/HPACK动态表大小/是否允许push/最大帧大小1MB/同一个链接最大流数250,StreamID是0,载荷是2ID+4value字节的倍数,收到消息的一方要返回ack
+PUSH_PROMISE(0x5):服务端推送许可,客户端的一个请求除了正常响应外还有可能收到一个PUSH_PROMISE消息,使用关联请求的StreamID,载荷是PromiseID+头部数据,如果头部数据过大则继续发送Continuation帧,再发送Data帧数据,此时的Data帧把PromiseID当成StreamID
 PING(0x6):用于测量来自发送方的最小往返时间以及确定空闲连接是否仍然有效,StreamID是0,有效载荷8字节,Ping请求->Ping响应携带Ack flag
 GOAWAY(0x7):用于通知对端停止在当前连接中创建流,启动连接关闭或发出严重错误状态信号,StreamID是0,载荷:LastStreamID+ErrCode+debugData,客户端收到后比LastStreamID大的流都会被abort,然后从链接池删除链接;服务端收到goaway会返回一个goaway给客户端并携带LastStreamID,服务端所有流都执行完后服务端优雅退出关闭链接
-WINDOW_UPDATE(0x8):用于调整个别流或个别连接的流量
+WINDOW_UPDATE(0x8):用于调整个别流或个别连接的流量,streamID如果是0则应用于整个链接,否则应用于某个流,载荷是4字节表示增量
+客户端链接cc.flow 初始2^16/WindowUpdate更新
+客户端流cs.flow 初始2^16或SETTINGS设置/WindowUpdate更新 writeRequestBody减少
+客户端链接cc.inflow 初始2^16+2^30/readResponseBody时小于2^29就增加到2^30,并发送WindowUpdate更新服务端的sc.flow
+客户端流cs.inflow 初始4MB/readResponseBody时小于4MB-4KB就增加大4MB,并发送WindowUpdate更新服务端的st.flow 接收Data数据减少
+服务端链接sc.flow 初始2^16/WindowUpdate更新
+服务端流st.flow 初始2^16或SETTINGS设置/WindowUpdate更新 scheduleFrameWrite减少
+服务端链接sc.inflow 初始2^16/noteBodyRead时更新并发送WindowUpdate给客户端cc.flow
+服务端流st.inflow 初始2^20/noteBodyRead时更新并发送WindowUpdate给客户端cs.flow 接收Data数据减少
 CONTINUATION(0x9):header过大时拆分成多个帧,第一个帧是HEADERS类型,从第二个帧是Continuation类型
 flags:
 用于不同的帧类型定义特定的消息标志,比如DATA帧就可以使用End Stream:true表示该条消息通信完毕,Data:EndStream(0x1)/Padded(0x8);Headers:EndStream(0x1)/EndHeaders(0x4)/Padded(0x8)/Priority(0x20);Settings:Ack(0x1);Ping:Ack(0x1)
@@ -616,7 +624,7 @@ flags:
 消息:
 一系列DATA帧和HEADERS帧组成了请求消息
 stream:
-是连接中的一个虚拟信道,可以承载双向消息传输,每个流有唯一整数标识符,为了防止两端流ID冲突,客户端发起的流具有奇数ID,服务器端发起的流具有偶数ID,所有HTTP2.0通信都在一个TCP连接上完成, 这个连接可以承载任意数量的双向数据流Stream,每个数据流以消息的形式发送而消息由一或多个帧组成,这些帧可以乱序发送,然后根据每个帧首部的流标识符重新组装
+是连接中的一个虚拟信道,可以承载双向消息传输,每个流有唯一整数标识符,为了防止两端流ID冲突,客户端发起的流具有奇数ID,服务器端发起的流具有偶数ID,所有HTTP2.0通信都在一个TCP连接上完成, 这个连接可以承载任意数量的双向数据流Stream,每个数据流以消息的形式发送而消息由一或多个帧组成,这些帧可以乱序发送,然后根据每个帧首部的流标识符重新组装;流状态:Idle/Open/HalfClosedLocal/HalfClosedRemote/Closed
 多路复用:
 HTTP2.0成功解决了HTTP1.x的队首阻塞问题(TCP层的阻塞仍无法解决)
 服务端推送:
