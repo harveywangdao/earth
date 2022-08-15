@@ -597,14 +597,15 @@ ClientConn: {
     ip4
   }
 }
+resolver.ClientConn = ccResolverWrapper
+balancer.SubConn = acBalancerWrapper
+balancer.Builder = pickfirstBuilder
+balancer.ClientConn = ccBalancerWrapper
+balancer.Balancer = pickfirstBalancer
 
-ClientConn.newAddrConn
-ClientConn.removeAddrConn
+DialContext->newCCResolverWrapper->passthroughBuilder.Build->ccResolverWrapper.UpdateState->ClientConn.updateResolverState->ClientConn.maybeApplyDefaultServiceConfig->ClientConn.applyServiceConfigAndBalancer->ccBalancerWrapper.switchTo->ccBalancerWrapper.handleSwitchTo->Balancer.SwitchTo->pickfirstBuilder.Build->ccBalancerWrapper.updateClientConnState->ccBalancerWrapper.handleClientConnStateChange->Balancer.UpdateClientConnState->pickfirstBalancer.UpdateClientConnState->balancerWrapper.NewSubConn->ccBalancerWrapper.NewSubConn->ClientConn.newAddrConn->acBalancerWrapper.Connect/acBalancerWrapper.UpdateAddresses->addrConn.connect->addrConn.resetTransport->addrConn.tryAllAddrs->addrConn.createTransport->NewClientTransport->newHTTP2Client
 
-ccBalancerWrapper.NewSubConn
-
-acBalancerWrapper.Connect/acBalancerWrapper.UpdateAddresses->addrConn.connect->addrConn.resetTransport->addrConn.tryAllAddrs->addrConn.createTransport->NewClientTransport->newHTTP2Client
-
+ClientConn.Invoke->invoke->newClientStream->newClientStreamWithParams
 Server.Serve->Server.handleRawConn->Server.newHTTP2Transport->NewServerTransport
 
 resolver
