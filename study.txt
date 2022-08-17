@@ -607,6 +607,10 @@ DialContext->newCCResolverWrapper->passthroughBuilder.Build->ccResolverWrapper.U
 
 ClientConn.Invoke->invoke->newClientStream->newClientStreamWithParams->clientStream.withRetry->csAttempt.getTransport->ClientConn.getTransport->pickerWrapper.pick->picker.Pick->addrConn.getReadyTransport->csAttempt.newStream->http2Client.NewStream->http2Client.createHeaderFields->http2Client.newStream->controlBuffer.executeAndPut->itemList.enqueue->controlBuffer.get->itemList.dequeue->loopyWriter.handle->loopyWriter.headerHandler/loopyWriter.preprocessData->loopyWriter.writeHeader->loopyWriter.processData
 
+clientStream.SendMsg->prepareMsg->csAttempt.sendMsg->http2Client.Write
+clientStream.RecvMsg->csAttempt.recvMsg->recv->recvAndDecompress->parser.recvMsg->recvBufferReader.Read->recvBufferReader.read->recvBuffer.get
+http2Client.reader->http2Client.operateHeaders->http2Client.handleData->Stream.write->recvBuffer.put
+
 Server.Serve->Server.handleRawConn->Server.newHTTP2Transport->NewServerTransport
 
 resolver
