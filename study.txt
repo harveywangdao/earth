@@ -605,7 +605,8 @@ balancer.Balancer = pickfirstBalancer
 
 DialContext->newCCResolverWrapper->passthroughBuilder.Build->ccResolverWrapper.UpdateState->ClientConn.updateResolverState->ClientConn.maybeApplyDefaultServiceConfig->ClientConn.applyServiceConfigAndBalancer->ccBalancerWrapper.switchTo->ccBalancerWrapper.handleSwitchTo->Balancer.SwitchTo->pickfirstBuilder.Build->ccBalancerWrapper.updateClientConnState->ccBalancerWrapper.handleClientConnStateChange->Balancer.UpdateClientConnState->pickfirstBalancer.UpdateClientConnState->balancerWrapper.NewSubConn->ccBalancerWrapper.NewSubConn->ClientConn.newAddrConn->acBalancerWrapper.Connect/acBalancerWrapper.UpdateAddresses->addrConn.connect->addrConn.resetTransport->addrConn.tryAllAddrs->addrConn.createTransport->NewClientTransport->newHTTP2Client
 
-ClientConn.Invoke->invoke->newClientStream->newClientStreamWithParams
+ClientConn.Invoke->invoke->newClientStream->newClientStreamWithParams->clientStream.withRetry->csAttempt.getTransport->ClientConn.getTransport->pickerWrapper.pick->picker.Pick->addrConn.getReadyTransport->csAttempt.newStream->http2Client.NewStream->http2Client.createHeaderFields->http2Client.newStream->controlBuffer.executeAndPut->itemList.enqueue->controlBuffer.get->itemList.dequeue->loopyWriter.handle->loopyWriter.headerHandler/loopyWriter.preprocessData->loopyWriter.writeHeader->loopyWriter.processData
+
 Server.Serve->Server.handleRawConn->Server.newHTTP2Transport->NewServerTransport
 
 resolver
