@@ -611,7 +611,7 @@ clientStream.SendMsg->prepareMsg->csAttempt.sendMsg->http2Client.Write
 clientStream.RecvMsg->csAttempt.recvMsg->recv->recvAndDecompress->parser.recvMsg->recvBufferReader.Read->recvBufferReader.read->recvBuffer.get
 http2Client.reader->http2Client.operateHeaders->http2Client.handleData->Stream.write->recvBuffer.put
 
-Server.Serve->Server.handleRawConn->Server.newHTTP2Transport->NewServerTransport
+Server.Serve->Server.handleRawConn->Server.newHTTP2Transport->NewServerTransport->Server.serveStreams->http2Server.HandleStreams->http2Server.operateHeaders/http2Server.handleData->Server.handleStream->Server.processUnaryRPC/Server.processStreamingRPC->recvAndDecompress->Server.sendResponse->http2Server.Write
 
 resolver
 
