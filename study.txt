@@ -554,7 +554,7 @@ fmt:
 编译为代码中所有类型的具体函数,会导致代码膨胀
 comparable
 
-ip/dns:
+ip/dns/unix:
 net/http:
 https://httpwg.org/specs/rfc7230.html
 h1客户端对于同一个host可以和服务端建立多个tcp链接(受MaxIdleConns/MaxConnsPerHost/MaxIdleConnsPerHost制约),每个请求独占一个链接直到收到响应
