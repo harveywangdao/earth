@@ -554,6 +554,7 @@ fmt:
 编译为代码中所有类型的具体函数,会导致代码膨胀
 comparable
 
+ip/dns:
 net/http:
 https://httpwg.org/specs/rfc7230.html
 h1客户端对于同一个host可以和服务端建立多个tcp链接(受MaxIdleConns/MaxConnsPerHost/MaxIdleConnsPerHost制约),每个请求独占一个链接直到收到响应
@@ -587,22 +588,6 @@ http2chunkWriter.Write->http2responseWriterState.writeChunk->http2serverConn.wri
 http2ClientConn.encodeHeaders->http2ClientConn.writeHeader->Encoder.WriteField
 
 grpc:
-ClientConn: {
-  serviceA: {
-    ip1,
-    ip2
-  },
-  serviceB: {
-    ip3,
-    ip4
-  }
-}
-resolver.ClientConn = ccResolverWrapper
-balancer.SubConn = acBalancerWrapper
-balancer.Builder = pickfirstBuilder
-balancer.ClientConn = ccBalancerWrapper
-balancer.Balancer = pickfirstBalancer
-
 DialContext->newCCResolverWrapper->passthroughBuilder.Build->ccResolverWrapper.UpdateState->ClientConn.updateResolverState->ClientConn.maybeApplyDefaultServiceConfig->ClientConn.applyServiceConfigAndBalancer->ccBalancerWrapper.switchTo->ccBalancerWrapper.handleSwitchTo->Balancer.SwitchTo->pickfirstBuilder.Build->ccBalancerWrapper.updateClientConnState->ccBalancerWrapper.handleClientConnStateChange->Balancer.UpdateClientConnState->pickfirstBalancer.UpdateClientConnState->balancerWrapper.NewSubConn->ccBalancerWrapper.NewSubConn->ClientConn.newAddrConn->acBalancerWrapper.Connect/acBalancerWrapper.UpdateAddresses->addrConn.connect->addrConn.resetTransport->addrConn.tryAllAddrs->addrConn.createTransport->NewClientTransport->newHTTP2Client
 
 ClientConn.Invoke->invoke->newClientStream->newClientStreamWithParams->clientStream.withRetry->csAttempt.getTransport->ClientConn.getTransport->pickerWrapper.pick->picker.Pick->addrConn.getReadyTransport->csAttempt.newStream->http2Client.NewStream->http2Client.createHeaderFields->http2Client.newStream->controlBuffer.executeAndPut->itemList.enqueue->controlBuffer.get->itemList.dequeue->loopyWriter.handle->loopyWriter.headerHandler/loopyWriter.preprocessData->loopyWriter.writeHeader->loopyWriter.processData
@@ -613,21 +598,10 @@ http2Client.reader->http2Client.operateHeaders->http2Client.handleData->Stream.w
 
 Server.Serve->Server.handleRawConn->Server.newHTTP2Transport->NewServerTransport->Server.serveStreams->http2Server.HandleStreams->http2Server.operateHeaders/http2Server.handleData->Server.handleStream->Server.processUnaryRPC/Server.processStreamingRPC->recvAndDecompress->Server.sendResponse->http2Server.Write
 
-resolver:
-passthrough
-dns
-unix
-manual
+resolver:passthrough/dns/unix/manual
+balancer:pickfirst/roundrobin/weightedroundrobin/weightedtarget/grpclb/rls
 
-balancer:
-pickfirst
-roundrobin
-weightedroundrobin
-weightedtarget
-grpclb
-rls
-
-gin: 路由匹配用的是前缀树算法
+gin: 路由匹配用的是前缀树算法,中间件
 fasthttp: nethttp更稳定,fasthttp中Request/Response结构体通过sync.Pool获取,内部大量使用了sync.Pool去提高性能,减少[]byte转换string,不支持http2.0,复用goroutine/协程池通过chan唤醒或退出;两者都支持在服务端接收大的body(multipart/form-data数据)的时候把数据先放到磁盘,都支持流式读取body数据;fasthttp与nethttp对responsebody处理的不同之处,fasthttp会等用户handler返回才会开始写body,nethttp内部用了个2kb的缓冲区,如果写满了handler仍然没有返回,会自动切换为chunked编码然后开始写响应头和body,这之后再更改响应头就无效
 
 wasm
