@@ -554,7 +554,6 @@ fmt:
 编译为代码中所有类型的具体函数,会导致代码膨胀
 comparable
 
-ip/dns/unix:
 net/http:
 https://httpwg.org/specs/rfc7230.html
 h1客户端对于同一个host可以和服务端建立多个tcp链接(受MaxIdleConns/MaxConnsPerHost/MaxIdleConnsPerHost制约),每个请求独占一个链接直到收到响应
@@ -971,22 +970,20 @@ Pulsar
 事务
 
 
-6.网络/TCP/IP/UDP
+6.网络/IP/TCP/UDP
 物理层
 数据链路层 ARP RARP
 网络层 IP ICMP IGMP
 传输层 TCP UDP
 应用层 HTTP FTP TFTP SMTP DNS
 
+TCP:
 三次握手 避免重复连接
 四次挥手
 粘包
 DDOS
 半连接队列
 全连接队列
-
-最大传输单元(MTU) 1500字节
-MSS （最大报文段长度）536
 
 SYN Flood
 Syn Cache: 不直接分配TCB,使用更少的数据记录状态
@@ -1001,6 +998,51 @@ reset认证: reset报文,将真实客户端IP加入白名单
 窗口值的大小就代表能够发送出去的但还没有收到ACK的最大数据报文段
 拥塞窗口(cwnd)
 接收窗口(rwnd)
+
+最大传输单元(MTU) 1500字节
+MSS （最大报文段长度）536
+
+NAT:
+ip raw:
+unix:
+广播:
+路由:
+路由选择算法 路由表
+静态路由算法:Dijkstra算法(最短路径算法)/扩散法
+动态路由算法:距离向量路由算法
+RIP/BGP/OSPF
+链路状态最短路由优先算法SPF
+路由收敛原理
+
+DNS:
+Domain Name System,协议支持TCP和UDP,常用端口是53,每一级域名的长度限制是63,域名总长度限制是253
+UDP查询中能保证性能的最大长度是512字节,要让所有根域名服务器数据能包含在512字节的UDP包中,根服务器只能限制在13个,而且每个服务器要使用字母表中单字母名
+当一个域名对应多个IP时,当你查询这个域名的IP,会返回离你最近的IP
+访问本地的DNS缓存,/etc/hosts,本地DNS服务器(递归解析服务器),根域名服务器,顶级域名服务器,权威域名服务器
+/etc/nsswitch.conf 决定resolving顺序
+/etc/resolv.conf配置本地DNS服务器
+递归解析服务器: 递归DNS服务器,自动递归查询方便用户一次性得到结果,递归解析服务器通过请求一级一级的权威域名服务器,获得下一目标的地址,直到找到目标域名的权威域名服务器,一般由ISP提供,公共递归解析服务器如谷歌的8.8.8.8,联通的114.114.114.114
+根域名. 全球有13个根域名解析服务器,A.ROOT-SERVERS.NET一直到M.ROOT-SERVERS.NET
+顶级域名 通用顶级域名gTLD比如.com和.net,国别顶级域名ccTLD比如.cn和.us 顶级域名由国际域名管理机构ICANN控制
+一级域名 权威域名服务器 .example.com 次级域名
+二级域名
+三级域名
+A 地址记录(Ipv4)
+AAAA 地址记录（Ipv6）
+CNAME 别名记录
+MX 邮件服务器记录
+NS 名字服务器记录
+PTR 反向记录
+RT 路由穿透记录
+SRV TCP服务器信息记录
+TXT 域名对应的文本信息
+nslookup www.baidu.com 114.114.114.114
+dig www.baidu.com
+dig -x 192.30.252.153
+dig @1.1.1.1 es6.ruanyifeng.com
+dig @192.33.4.12 es6.ruanyifeng.com
+dig @192.41.162.30 es6.ruanyifeng.com
+dig @172.64.32.123 es6.ruanyifeng.com
 
 
 7.HTTP1.1 TLS/SSL websocket HTTP2
