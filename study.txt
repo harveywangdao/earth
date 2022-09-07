@@ -603,9 +603,11 @@ balancer:pickfirst/roundrobin/weightedroundrobin/weightedtarget/grpclb/rls
 gin: 路由匹配用的是前缀树算法,中间件
 fasthttp: nethttp更稳定,fasthttp中Request/Response结构体通过sync.Pool获取,内部大量使用了sync.Pool去提高性能,减少[]byte转换string,不支持http2.0,复用goroutine/协程池通过chan唤醒或退出;两者都支持在服务端接收大的body(multipart/form-data数据)的时候把数据先放到磁盘,都支持流式读取body数据;fasthttp与nethttp对responsebody处理的不同之处,fasthttp会等用户handler返回才会开始写body,nethttp内部用了个2kb的缓冲区,如果写满了handler仍然没有返回,会自动切换为chunked编码然后开始写响应头和body,这之后再更改响应头就无效
 
+tar/zip/gzip/bzip2/aes/ecdsa/hmac/md5/sha256/x509/crc32/math/regexp
+sql/html/image/mime
 wasm
 iface/eface _type/_func itab symtab traceback
-编译器/汇编/链接器/ast
+编译器/汇编/链接器/ast/dwarf/elf
 反射reflect
 cgo
 C++
@@ -981,13 +983,25 @@ Pulsar
 传输层 TCP UDP
 应用层 HTTP FTP TFTP SMTP DNS
 
-TCP:
+MTU: Maximum Transmit Unit,最大传输单元,由数据链路层提供给网络层最大一次传输数据的大小,一般MTU=1500字节
+MSS：Maximum Segment Size,TCP提交给IP层最大分段大小,不包含TCP Header和TCP Option,只包含TCP Payload,MSS是TCP用来限制应用层最大的发送字节数
+MSS = 1500- 20(IP Header) -20 (TCP Header) = 1460 byte
+为什么MTU一般是1500:如果MTU太小则传输效率低,因为头部字段是固定长度的,每次传输都要带上头部;如果MTU太大容易出现丢包
+
+UDP:
+发送端发了10次接收端也会接收10次
+
+TCP: 面向连接 可靠的 基于字节流
 三次握手 避免重复连接
 四次挥手
-粘包
+发送端发了10次接收端不一定接收10次
 DDOS
 半连接队列
 全连接队列
+Nagle算法:等待多个数据包,避免发送小的数据包,长度达到MSS立刻发送否则等待下一个包到来,如果下一包到来后两个包的总长度超过MSS的话就会进行拆分发送;等待超时(一般为200ms)立即发送;导致粘包和性能问题,一般也会把它关掉
+粘包:加入特殊标志;加入消息长度信息;CRC;UDP无粘包问题,UDP每个包包头都有长度字段;IP层也没有粘包问题,如果数据量很大数据会被切片,每个切片数据通过IP包发送会携带偏移量
+TCP分段时使用MSS,IP分片时使用MTU
+TCP队头阻塞:由于前面的数据丢失导致后面的数据没办法及时给到应用层的现象,乱序包放入乱序队列,乱序队列用的是接收缓冲区的内存,乱序的情况越多,接收缓冲区的内存就被占用的越多,对应的接收窗口就会变小,网络吞吐就变差
 
 SYN Flood
 Syn Cache: 不直接分配TCB,使用更少的数据记录状态
@@ -1017,6 +1031,11 @@ unix:
 RIP/BGP/OSPF
 链路状态最短路由优先算法SPF
 路由收敛原理
+匹配IP长度->管理距离(优先选手动配的静态路由,次优选OSPF动态学习过来的表项)->路径成本(度量值metrics)->等价路径(等价多路径ECMP)
+等价多路径路由ECMP:选择多条路径传输,提高链路带宽,同时利用五元组做哈希键进行路径选择,保证了同一条连接的数据包走同一条路径,减少了乱序的情况(乱序会降低TCP传输性能)
+traceroute baidu.com
+route
+nc -p 6666 baidu.com 80
 
 DNS:
 Domain Name System,协议支持TCP和UDP,常用端口是53,每一级域名的长度限制是63,域名总长度限制是253
@@ -1479,7 +1498,11 @@ utf-8是变长的编码方式,使用1~4个字节表示一个符号,utf-8编码�
 1110xxxx 10xxxxxx 10xxxxxx
 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
 
-设计模式
+设计模式:
+简单工厂: 提供一个方法返回指定的对象,如NewXXX("product1"),函数的返回类型是抽象产品,根据传入的产品名返回具体产品(具体的结构体),缺点是当需要增加一个产品时要在NewXXX中增加一个case,产品数量过多显得臃肿
+工厂方法: 多态性工厂模式,定义一个创建对象的接口,但由实现这个接口的工厂类来决定实例化哪个产品类,工厂方法把类的实例化推迟到子类中进行,当增加一个产品时只需增加一个相应的工厂类的子类
+抽象工厂: 每个工厂有相同的产品族
+
 音视频/流媒体
 推荐系统
 人工智能
