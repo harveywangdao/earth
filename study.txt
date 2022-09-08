@@ -624,9 +624,14 @@ InnoDB和MyISAM
 B树的所有节点既存放键(key)也存放数据(data),而B+树只有叶子节点存放key和data,其他内节点只存放key
 B+树的叶子节点有一条引用链指向与它相邻的叶子节点
 
-执行流程
-mvcc 快照读 当前读 ReadView
-隔离级别 读取未提交 读取已提交 可重复读 可串行化
+执行流程: 连接器(管理链接权限验证,user表/db表/tables_priv表/columns_priv表),查询缓存如果存在直接返回(key是具体的SQL语句value是结果的集合,8.0版本以后缓存被官方删除掉),分析器(词法语法分析),优化器(生成执行计划),执行器(调用存储引擎的API),innodb引擎,写Undo Log(写存储指针和事务ID),记录是否在内存中,不在则去磁盘读取,写Redo Log,写binlog,提交事务,刷Redo Log,刷binlog
+隔离级别: 读取未提交 读取已提交 可重复读 可串行化
+MVCC: 多版本并发控制 快照读 当前读
+Read View: 存放着一个列表,记录当前数据库系统中活跃的读写事务,用来判断某一个版本是否对当前事务可见
+creator_trx_id(创建当前Read View所对应的事务ID)
+m_ids(所有当前未提交事务的事务ID,也就是活跃事务的事务id列表)
+min_trx_id(m_ids里最小的事务id值)
+max_trx_id(InnoDB需要分配给下一个事务的事务ID值)
 
 InnoDB 通过数据行的 DB_TRX_ID 和 Read View 来判断数据的可见性
 DB_TRX_ID(6字节): 表示最后一次插入或更新该行的事务 id
@@ -649,8 +654,8 @@ select ... for update X锁 排他锁
 
 ACID 原子性 一致性 隔离性 持久性
 
-脏读
-幻读
+脏读: 一个事务读取到了另一个事务没有提交的内容
+幻读: 一个事务读取到了另一个事务提交的内容,特别是多了一行,select for update解决
 不可重复读
 
 回表
@@ -685,7 +690,7 @@ LIKE
 UNION
 COUNT/SUM/AVG/MAX/MIN
 DISTINCT
-HAVING
+HAVING:WHERE聚合前筛选记录,HAVING聚合后使用,WHERE>聚合函数(SUM,MIN,MAX,COUNT)>HAVING,HAVING和GROUP BY组合用,SELECT name,COUNT(score) nums FROM t GROUP BY name HAVING nums>2;
 USING
 IS NULL/IS NOT NULL
 IN/NOT IN
