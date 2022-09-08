@@ -1330,7 +1330,42 @@ Upgrade: h2c
 8.Kubernetes
 Pod Deployment Service DaemonSet StatefulSet ReplicaSet Job Label Namespace ConfigMap Secret Ingress
 Volume PersistentVolume PersistentVolumeClaim StorageClass
-kube-apiserver etcd kube-scheduler kube-controller-manager kubelet kube-proxy
+ServiceAccount RBAC
+etcd
+kube-apiserver: 对外提供restful接口,唯一连接etcd服务,将对etcd的操作封装成接口供其它服务调用;有认证/鉴权/准入/限流的作用,
+
+kube-scheduler: 调度器
+Watch机制来发现集群中新创建且尚未被调度到Node上的Pod,scheduler会将发现的每一个未调度的Pod调度到一个合适的Node上来运行
+scheduler维护待调度的podQueue并监听apiserver
+创建Pod时通过apiserver将Pod元数据写入etcd
+scheduler通过Informer监听Pod状态
+添加新的Pod时会将Pod添加到podQueue
+主程序不断从podQueue中提取Pods并按照一定的算法将节点分配给Pods
+节点上的kubelet也侦听apiserver,如果发现有新的Pod已调度到该节点,则将通过CRI调用高级容器运行时来运行容器
+如果scheduler无法调度Pod,则如果启用了优先级和抢占功能则首先进行抢占尝试,删除节点上具有低优先级的Pod,然后将要调度的Pod调度到该节点,如果未启用抢占或抢占尝试失败,则相关信息将记录在日志中,并且Pod将添加到podQueue的末尾
+预选,输入是所有节点,输出是满足预选条件的节点,如检查候选Node的可用资源能否满足Pod的资源要求,Node的label必须与Pod的Selector一致
+优选,输入是预选阶段筛选出的节点,优选会根据优先策略为通过预选的Nodes进行打分排名,选择得分最高的Node,例如资源越富裕负载越小的Node可能具有越高的排名,如果存在多个得分最高的Node,scheduler会从中随机选取一个
+
+kube-controller-manager: 控制器
+它通过apiserver监控整个集群的状态并确保集群处于预期的工作状态
+Replication Controller/Node Controller/CronJob Controller/Daemon Controller/Deployment Controller/Endpoint Controller/Garbage Collector/Namespace Controller/Job Controller/Pod AutoScaler/ReplicaSet Controller/Service Controller/ServiceAccount Controller/StatefulSet Controller/Volume Controller/Resource quota Controller
+
+kubelet:
+Pod被调度到对应的宿主机,创建这个Pod,管理这个Pod的生命周期
+通过Watch机制监听了与自己相关的Pod对象的变化
+调用下层容器运行时,不会直接调用Docker的API,通过CRI(容器运行时接口)的gRPC接口来间接执行
+CAdvisor集成在Kubelet中的容器监控工具用于收集本节点和容器的监控信息
+GCManager清理未使用的镜像和容器
+CPUManager
+ProberManager实现对容器的健康检查
+StatusManager将pod状态信息同步到apiserver
+
+kube-proxy:
+service组件的虚拟IP服务
+User space模式/iptables模式/IPVS模式
+
+coredns
+flannel
 
 
 9.微服务/服务网格
