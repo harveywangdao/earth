@@ -1,773 +1,139 @@
-一、事务/隔离级别
-mysql -u root -p
+1.部署
+docker pull mysql:latest
+docker pull mysql:8.0.30
+docker pull mysql:5.7.39
+docker pull mysql:5.6.51
 
-事务特征： ACID
-原子性： 要么全部完成，要么全部取消
-隔离性： 多个事务并行结果依然正确
-持久性： 一旦事务提交，不管发生什么（崩溃或者出错），数据要保存在数据库中
-一致性： 最终的数据正确
+docker run --name mysql8.0 -e MYSQL_ROOT_PASSWORD=180498 -d mysql:8.0.30
+docker exec -it mysql8.0 bash
+mysql -u root -p180498
 
-隔离级别：
-串行化Serializable： SQLite
-可重复读Repeatable read： MySQL
-读取已提交Read committed： PostgreSQL
-读取未提交Read uncommitted： 
+docker rm $(docker ps -a -q)
 
-MVCC多版本并发控制：
-DB_TRX_ID
-DB_ROLL_PTR
-DB_ROW_ID
-delete flag
-
-undo日志：
-insert undo log
-update undo log
-purge undo log
-
-Read View
-
-
-幻读
-脏写
-脏读
-
-当前读
-快照读
-
-行锁
-表锁
-gap锁
-next-key锁
-
-redo log
-undo log
-binlog
-
-一主一从
-一主多从
-数据如何同步、数据丢失怎么办
-
-CREATE DATABASE paper;
+create database paper;
 use paper;
 
-CREATE TABLE IF NOT EXISTS `t1`(
-   `id` BIGINT(20) NOT NULL AUTO_INCREMENT,
-   `a` INT(11) NOT NULL,
-   `b` INT(11) NOT NULL,
-   `c` INT(11) NOT NULL,
-   PRIMARY KEY (`id`)
-)ENGINE=InnoDB DEFAULT CHARSET=utf8;
+select @@transaction_isolation;
+show variables like 'transaction_isolation';
 
-INSERT INTO t1(`a`,`b`,`c`) VALUES(1,10,100);
-INSERT INTO t1(`a`,`b`,`c`) VALUES(2,20,100);
-INSERT INTO t1(`a`,`b`,`c`) VALUES(3,30,100);
-INSERT INTO t1(`a`,`b`,`c`) VALUES(4,40,100);
-INSERT INTO t1(`a`,`b`,`c`) VALUES(5,50,200);
-INSERT INTO t1(`a`,`b`,`c`) VALUES(6,60,200);
-INSERT INTO t1(`a`,`b`,`c`) VALUES(7,70,100);
-INSERT INTO t1(`a`,`b`,`c`) VALUES(8,80,300);
+select * from performance_schema.data_locks;
 
-SELECT * FROM t1;
+DROP TABLE user;
+CREATE TABLE `user` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `name` varchar(10) NOT NULL,
+  `age` int(11) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-SET AUTOCOMMIT=0 禁止自动提交
-SET AUTOCOMMIT=1 开启自动提交
-show variables like '%autocommit%';
-select @@global.tx_isolation;
+INSERT INTO user(name,age) VALUES("aaa",10);
+INSERT INTO user(name,age) VALUES("bbb",20);
+INSERT INTO user(name,age) VALUES("ccc",30);
+INSERT INTO user(name,age) VALUES("ddd",40);
 
-set global transaction isolation level repeatable read;
-select * from information_schema.INNODB_TRX\G
+DROP TABLE user2;
+CREATE TABLE `user2` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `name` varchar(10) NOT NULL,
+  `age` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `i_age` (`age`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-0.1验证可重复读：
-事务1
+INSERT INTO user2(name,age) VALUES("aaa",10);
+INSERT INTO user2(name,age) VALUES("bbb",20);
+INSERT INTO user2(name,age) VALUES("ccc",30);
+INSERT INTO user2(name,age) VALUES("ddd",40);
+
+DROP TABLE user3;
+CREATE TABLE `user3` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `no` int(11) NOT NULL,
+  `name` varchar(10) NOT NULL,
+  `age` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `u_no`(`no`),
+  KEY `i_age` (`age`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+INSERT INTO user3(no,name,age) VALUES(100,"aaa",10);
+INSERT INTO user3(no,name,age) VALUES(200,"bbb",20);
+INSERT INTO user3(no,name,age) VALUES(300,"ccc",30);
+INSERT INTO user3(no,name,age) VALUES(400,"ddd",40);
+INSERT INTO user3(no,name,age) VALUES(500,"eee",50);
+
+SELECT * FROM user;
+UPDATE user SET age=11;
+DELETE FROM user WHERE id=1;
+
 BEGIN;
-SELECT * FROM t1 WHERE a=1;   查看原始数据
-SELECT * FROM t1 WHERE a=1;   事务2已修改数据但未提交 --数据没变
-SELECT * FROM t1 WHERE a=1;   事务2已提交 --数据没变
-SELECT * FROM t1 WHERE a=1 for update; 事务2已提交 --数据变化
-SELECT * FROM t1 WHERE a=1 lock in share mode; 事务2已提交 --数据变化
 COMMIT;
-
-事务2
-BEGIN;
-SELECT * FROM t1 WHERE a=1;
-UPDATE t1 SET b=b+1 WHERE a=1;
-SELECT * FROM t1 WHERE a=1;
-COMMIT;
-
-0.2验证可重复读：
-事务1
-BEGIN;
-SELECT * FROM t1 WHERE a=1;   事务2已提交 --数据变化
-SELECT * FROM t1 WHERE a=1 for update; 事务2已提交 --数据变化
-SELECT * FROM t1 WHERE a=1 lock in share mode; 事务2已提交 --数据变化
-COMMIT;
-
-事务2
-BEGIN;
-SELECT * FROM t1 WHERE a=1;
-UPDATE t1 SET b=b+1 WHERE a=1;
-SELECT * FROM t1 WHERE a=1;
-COMMIT;
-
-0.3验证可重复读：
-SELECT @@tx_isolation;
-事务1
-BEGIN;
-SELECT * FROM t1 WHERE a=1;                       事务2已提交 --数据变化
-SELECT * FROM t1 WHERE a=1 for update;            事务2已提交 --数据变化
-SELECT * FROM t1 WHERE a=1 lock in share mode;    事务2已提交 --数据变化
-COMMIT;
-
-事务2
-BEGIN;
-SELECT * FROM t1 WHERE a=1;
-UPDATE t1 SET b=b+1 WHERE a=1;
-SELECT * FROM t1 WHERE a=1;
-COMMIT;
-
-事务3
-BEGIN;
-SELECT * FROM t1 WHERE a=1;                       事务2已提交 --数据变化
-SELECT * FROM t1 WHERE a=1 for update;            事务2已提交 --数据变化
-SELECT * FROM t1 WHERE a=1 lock in share mode;    事务2已提交 --数据变化
-COMMIT;
-
-true代表id可见
-if id < up_limit_id {
-  return true
-}
-if id >= low_limit_id {
-  return false
-}
-if id in trx_list {
-  return false
-}
-return true
-
-1.1验证脏写： 四种隔离级别都没有脏写
-事务1
-BEGIN;
-SELECT * FROM t1 WHERE a=8;          查看原始数据
-SELECT * FROM t1 WHERE a=8;          事务2已插入数据但未提交 --看不到事务2的更新(读未提交级别下能看到事务2的更新)
-UPDATE t1 SET b=66 WHERE a=8;        事务2已插入数据但未提交 --阻塞直到事务2提交
-SELECT * FROM t1 WHERE a=8;          事务2已提交 --b结果是66
-ROLLBACK;                            事务2已提交 --b结果是44
-
-事务2
-BEGIN;
-SELECT * FROM t1 WHERE a=8;
-UPDATE t1 SET b=44 WHERE a=8;
-SELECT * FROM t1 WHERE a=8;
-COMMIT;
-
-1.2验证脏读(读未提交级别)： 脏读就是读到了别的事务回滚前的脏数据，只有读未提交级别下才会出现脏读
-set session transaction isolation level read uncommitted;
-SELECT @@tx_isolation;
-UPDATE t1 SET b=10 WHERE a=7;
-UPDATE t1 SET b=10 WHERE a=8;
-事务1
-BEGIN;
-SELECT * FROM t1 WHERE a=8;          查看原始数据
-SELECT * FROM t1 WHERE a=8;          事务2已插入数据但未提交 --能看到事务2的更新b=20
-SELECT * FROM t1 WHERE a=7;
-if b==20 {
-  UPDATE t1 SET b=b+1 WHERE a=7;     实际走这里,走完后事务2回滚
-} else {
-  UPDATE t1 SET b=b-1 WHERE a=7;     应该走这里,走完后事务2回滚
-}
-SELECT * FROM t1 WHERE a=8;          事务2已回滚
-SELECT * FROM t1 WHERE a=7;          事务2已回滚 --a=7中b=11
-COMMIT;
-
-事务2
-BEGIN;
-SELECT * FROM t1 WHERE a=8;
-UPDATE t1 SET b=20 WHERE a=8;
-SELECT * FROM t1 WHERE a=8;
 ROLLBACK;
 
-1.3.1验证锁(读未提交/读已提交)：
-set session transaction isolation level read uncommitted;
-set session transaction isolation level read committed;
-SELECT @@tx_isolation;
-
-事务1
-BEGIN;
-
-SELECT * FROM t1 WHERE a=9;
-UPDATE t1 SET b=b+1 WHERE a=9;       事务2已插入数据但未提交 --未阻塞
-SELECT * FROM t1 WHERE a=9;
-
-SELECT * FROM t1 WHERE a=7;
-UPDATE t1 SET b=b+1 WHERE a=7;       事务2已插入数据但未提交 --未阻塞
-SELECT * FROM t1 WHERE a=7;
-
-SELECT * FROM t1 WHERE a<8;
-UPDATE t1 SET b=b+1 WHERE a<8;       事务2已插入数据但未提交 --未阻塞
-SELECT * FROM t1 WHERE a<8;
-
-SELECT * FROM t1 WHERE a>8;
-UPDATE t1 SET b=b+1 WHERE a>8;       事务2已插入数据但未提交 --未阻塞
-SELECT * FROM t1 WHERE a>8;
-
-SELECT * FROM t1 WHERE a<9;
-UPDATE t1 SET b=b+1 WHERE a<9;       事务2已插入数据但未提交 --阻塞直到事务2提交
-SELECT * FROM t1 WHERE a<9;
-
-SELECT * FROM t1 WHERE a>7;
-UPDATE t1 SET b=b+1 WHERE a>7;       事务2已插入数据但未提交 --阻塞直到事务2提交
-SELECT * FROM t1 WHERE a>7;
-
-SELECT * FROM t1 WHERE a=8;
-UPDATE t1 SET b=b+1 WHERE a=8;       事务2已插入数据但未提交 --阻塞直到事务2提交
-SELECT * FROM t1 WHERE a=8;
-
-COMMIT;
-
-事务2
-BEGIN;
-SELECT * FROM t1 WHERE a=8;
-UPDATE t1 SET b=b+1 WHERE a=8;
-SELECT * FROM t1 WHERE a=8;
-COMMIT;
-
-1.3.2验证锁(可重复读/串行化未使用索引)：
-set session transaction isolation level repeatable read;
-set session transaction isolation level serializable;
-SELECT @@tx_isolation;
-
-事务1
-BEGIN;
-
-SELECT * FROM t1 WHERE a=9;          串行化select也阻塞
-UPDATE t1 SET b=b+1 WHERE a=9;       事务2已插入数据但未提交 --阻塞
-SELECT * FROM t1 WHERE a=9;
-
-SELECT * FROM t1 WHERE a=7;
-UPDATE t1 SET b=b+1 WHERE a=7;       事务2已插入数据但未提交 --阻塞
-SELECT * FROM t1 WHERE a=7;
-
-SELECT * FROM t1 WHERE a<8;
-UPDATE t1 SET b=b+1 WHERE a<8;       事务2已插入数据但未提交 --阻塞
-SELECT * FROM t1 WHERE a<8;
-
-SELECT * FROM t1 WHERE a>8;
-UPDATE t1 SET b=b+1 WHERE a>8;       事务2已插入数据但未提交 --阻塞
-SELECT * FROM t1 WHERE a>8;
-
-SELECT * FROM t1 WHERE a<9;
-UPDATE t1 SET b=b+1 WHERE a<9;       事务2已插入数据但未提交 --阻塞
-SELECT * FROM t1 WHERE a<9;
-
-SELECT * FROM t1 WHERE a>7;
-UPDATE t1 SET b=b+1 WHERE a>7;       事务2已插入数据但未提交 --阻塞
-SELECT * FROM t1 WHERE a>7;
-
-SELECT * FROM t1 WHERE a=8;
-UPDATE t1 SET b=b+1 WHERE a=8;       事务2已插入数据但未提交 --阻塞
-SELECT * FROM t1 WHERE a=8;
-
-COMMIT;
-
-事务2
-BEGIN;
-SELECT * FROM t1 WHERE a=8;
-UPDATE t1 SET b=b+1 WHERE a=8;
-SELECT * FROM t1 WHERE a=8;
-COMMIT;
-
-1.3.3验证锁(可重复读/串行化使用主键索引)：
-set session transaction isolation level repeatable read;
-set session transaction isolation level serializable;
-SELECT @@tx_isolation;
-
-事务1
-BEGIN;
-
-SELECT * FROM t1 WHERE id=9;
-UPDATE t1 SET b=b+1 WHERE id=9;       事务2已插入数据但未提交 --未阻塞
-SELECT * FROM t1 WHERE id=9;
-
-SELECT * FROM t1 WHERE id=7;
-UPDATE t1 SET b=b+1 WHERE id=7;       事务2已插入数据但未提交 --未阻塞
-SELECT * FROM t1 WHERE id=7;
-
-SELECT * FROM t1 WHERE id<8;
-UPDATE t1 SET b=b+1 WHERE id<8;       事务2已插入数据但未提交 --阻塞
-SELECT * FROM t1 WHERE id<8;
-
-SELECT * FROM t1 WHERE id>8;
-UPDATE t1 SET b=b+1 WHERE id>8;       事务2已插入数据但未提交 --未阻塞
-SELECT * FROM t1 WHERE id>8;
-
-SELECT * FROM t1 WHERE id<9;
-UPDATE t1 SET b=b+1 WHERE id<9;       事务2已插入数据但未提交 --阻塞
-SELECT * FROM t1 WHERE id<9;
-
-SELECT * FROM t1 WHERE id>7;
-UPDATE t1 SET b=b+1 WHERE id>7;       事务2已插入数据但未提交 --阻塞
-SELECT * FROM t1 WHERE id>7;
-
-SELECT * FROM t1 WHERE id=8;
-UPDATE t1 SET b=b+1 WHERE id=8;       事务2已插入数据但未提交 --阻塞
-SELECT * FROM t1 WHERE id=8;
-
-COMMIT;
-
-事务2
-BEGIN;
-SELECT * FROM t1 WHERE id=8;
-UPDATE t1 SET b=b+1 WHERE id=8;
-SELECT * FROM t1 WHERE id=8;
-COMMIT;
-
-1.4.1验证幻读(可重复读级别下)：
-set session transaction isolation level read uncommitted;
-set session transaction isolation level read committed;
-set session transaction isolation level repeatable read;
-SELECT @@tx_isolation;
-
-事务1
-BEGIN;
-SELECT * FROM t1 WHERE c=100;      查看原始数据
-SELECT * FROM t1 WHERE c=100;      事务2已插入数据但未提交 --看不到新数据
-SELECT * FROM t1 WHERE c=100;      事务2已提交 --看不到新数据
-UPDATE t1 SET b=b+1 WHERE c=100;   事务2已提交 --更新行数多一行
-SELECT * FROM t1 WHERE c=100;      事务2已提交 --能看到新数据
-COMMIT;
-
-事务2
-BEGIN;
-SELECT * FROM t1 WHERE c=100;
-INSERT INTO t1(`a`,`b`,`c`) VALUES(9,90,100);
-SELECT * FROM t1 WHERE c=100;
-COMMIT;
-
-1.4.2验证幻读(可重复读级别下)：
-set session transaction isolation level read uncommitted;
-set session transaction isolation level read committed;
-set session transaction isolation level repeatable read;
-SELECT @@tx_isolation;
-
-事务1
-BEGIN;
-SELECT * FROM t1 WHERE c=100;        查看原始数据
-SELECT * FROM t1 WHERE c=100;        事务2已插入数据但未提交 --看不到新数据
-UPDATE t1 SET b=b+1 WHERE c=100;     事务2已插入数据但未提交 --阻塞直到事务2提交
-SELECT * FROM t1 WHERE c=100;        事务2已提交 --能看到新数据
-COMMIT;
-
-事务2
-BEGIN;
-SELECT * FROM t1 WHERE c=100;
-INSERT INTO t1(`a`,`b`,`c`) VALUES(10,100,100);
-SELECT * FROM t1 WHERE c=100;
-COMMIT;
-
-1.4.3验证幻读(可重复读级别下--delete)： delete不存在幻读
-set session transaction isolation level read uncommitted;
-set session transaction isolation level read committed;
-set session transaction isolation level repeatable read;
-SELECT @@tx_isolation;
-
-事务1
-BEGIN;
-SELECT * FROM t1 WHERE c=100;        查看原始数据
-SELECT * FROM t1 WHERE c=100;        事务2已插入数据但未提交 --删除行依然能看到
-SELECT * FROM t1 WHERE c=100;        事务2已提交 --删除行依然能看到
-UPDATE t1 SET b=b+1 WHERE c=100;     事务2已提交 --影响行数少1
-SELECT * FROM t1 WHERE c=100;        事务2已提交 --删除行依然能看到,被删除的行b未加1
-COMMIT;
-
-事务2
-BEGIN;
-SELECT * FROM t1 WHERE c=100;
-DELETE FROM t1 WHERE a=10;
-SELECT * FROM t1 WHERE c=100;
-COMMIT;
-
-1.4.4阻止幻读(可重复读级别下):
-set session transaction isolation level repeatable read;
-SELECT @@tx_isolation;
-
-事务1
-BEGIN;
-SELECT * FROM t1 WHERE c=100;                查看原始数据
-SELECT * FROM t1 WHERE c=100 FOR UPDATE;     操作完后在事务2中插入一行(非主键表级锁，其它事务可以读不能写) 排他锁
-UPDATE t1 SET b=b+1 WHERE c=100;
-SELECT * FROM t1 WHERE c=100;
-COMMIT;
-
-事务2
-BEGIN;
-SELECT * FROM t1 WHERE c=100;
-INSERT INTO t1(`a`,`b`,`c`) VALUES(9,90,100); 阻塞直到事务1提交
-SELECT * FROM t1 WHERE c=100;
-COMMIT;
-
-1.4.5阻止幻读(可重复读级别下):
-set session transaction isolation level repeatable read;
-SELECT @@tx_isolation;
-
-事务1
-BEGIN;
-SELECT * FROM t1 WHERE c=100;                        查看原始数据
-SELECT * FROM t1 WHERE c=100 LOCK IN SHARE MODE;     操作完后在事务2中插入一行(非主键表级锁，其它事务可以读不能写) 共享锁
-UPDATE t1 SET b=b+1 WHERE c=100;
-SELECT * FROM t1 WHERE c=100;
-COMMIT;
-
-事务2
-BEGIN;
-SELECT * FROM t1 WHERE c=100;
-INSERT INTO t1(`a`,`b`,`c`) VALUES(9,90,100); 阻塞直到事务1提交
-SELECT * FROM t1 WHERE c=100;
-COMMIT;
-
-1.5.1Gap Lock(可重复读级别下)： 非索引 表锁
-drop table t2;
-CREATE TABLE IF NOT EXISTS `t2`(
-   `id` BIGINT(20) NOT NULL AUTO_INCREMENT,
-   `a` INT(11) NOT NULL,
-   `b` INT(11) NOT NULL,
-   PRIMARY KEY (`id`)
-)ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-set session transaction isolation level repeatable read;
-SELECT @@tx_isolation;
-
-INSERT INTO t2(`id`,`a`,`b`) VALUES(1,10,1);
-INSERT INTO t2(`id`,`a`,`b`) VALUES(8,20,1);
-INSERT INTO t2(`id`,`a`,`b`) VALUES(3,30,1);
-INSERT INTO t2(`id`,`a`,`b`) VALUES(7,40,1);
-INSERT INTO t2(`id`,`a`,`b`) VALUES(6,50,1);
-INSERT INTO t2(`id`,`a`,`b`) VALUES(4,59,1);
-INSERT INTO t2(`id`,`a`,`b`) VALUES(10,60,1);
-INSERT INTO t2(`id`,`a`,`b`) VALUES(20,61,1);
-INSERT INTO t2(`id`,`a`,`b`) VALUES(15,70,1);
-INSERT INTO t2(`id`,`a`,`b`) VALUES(13,80,1);
-INSERT INTO t2(`id`,`a`,`b`) VALUES(11,90,1);
-
-事务1
-BEGIN;
-UPDATE t2 SET b=b+1 WHERE a=60;
-ROLLBACK;
-
-事务2
-BEGIN;
-
-UPDATE t2 SET b=b+1 WHERE a=10;
-UPDATE t2 SET b=b+1 WHERE a=20;
-UPDATE t2 SET b=b+1 WHERE a=30;
-UPDATE t2 SET b=b+1 WHERE a=40;
-UPDATE t2 SET b=b+1 WHERE a=50;
-UPDATE t2 SET b=b+1 WHERE a=60;
-UPDATE t2 SET b=b+1 WHERE a=70;
-UPDATE t2 SET b=b+1 WHERE a=80;
-UPDATE t2 SET b=b+1 WHERE a=90;
-
-INSERT INTO t2(`a`,`b`) VALUES(50,1);
-INSERT INTO t2(`a`,`b`) VALUES(59,1);
-INSERT INTO t2(`a`,`b`) VALUES(60,1);
-INSERT INTO t2(`a`,`b`) VALUES(61,1);
-INSERT INTO t2(`a`,`b`) VALUES(69,1);
-INSERT INTO t2(`a`,`b`) VALUES(70,1);
-INSERT INTO t2(`a`,`b`) VALUES(80,1);
-
-DELETE FROM t2 WHERE a=20;
-DELETE FROM t2 WHERE a=30;
-DELETE FROM t2 WHERE a=40;
-DELETE FROM t2 WHERE a=50;
-DELETE FROM t2 WHERE a=59;
-DELETE FROM t2 WHERE a=60;
-DELETE FROM t2 WHERE a=61;
-DELETE FROM t2 WHERE a=70;
-DELETE FROM t2 WHERE a=80;
-
-ROLLBACK;
-
-1.5.2Gap Lock(可重复读级别下)：普通索引   范围查询间隙锁才能解决幻读
-drop table t2;
-CREATE TABLE IF NOT EXISTS `t2`(
-   `id` BIGINT(20) NOT NULL AUTO_INCREMENT,
-   `a` INT(11) NOT NULL,
-   `b` INT(11) NOT NULL,
-   PRIMARY KEY (`id`),
-   KEY `index_b` (`b`)
-)ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-set session transaction isolation level repeatable read;
-SELECT @@tx_isolation;
-
-INSERT INTO t2(`id`,`a`,`b`) VALUES(1,10,44);
-INSERT INTO t2(`id`,`a`,`b`) VALUES(8,10,23);
-INSERT INTO t2(`id`,`a`,`b`) VALUES(14,10,31);
-INSERT INTO t2(`id`,`a`,`b`) VALUES(18,10,31);
-INSERT INTO t2(`id`,`a`,`b`) VALUES(23,10,31);
-INSERT INTO t2(`id`,`a`,`b`) VALUES(28,10,6);
-INSERT INTO t2(`id`,`a`,`b`) VALUES(35,10,56);
-INSERT INTO t2(`id`,`a`,`b`) VALUES(39,10,12);
-INSERT INTO t2(`id`,`a`,`b`) VALUES(40,10,17);
-INSERT INTO t2(`id`,`a`,`b`) VALUES(41,10,40);
-INSERT INTO t2(`id`,`a`,`b`) VALUES(43,10,37);
-INSERT INTO t2(`id`,`a`,`b`) VALUES(51,10,77);
-
-事务1
-BEGIN;
-UPDATE t2 SET a=a+1 WHERE b=31;
-ROLLBACK;
-
-事务2
-BEGIN;
-
-UPDATE t2 SET a=a+1 WHERE b=6;
-UPDATE t2 SET a=a+1 WHERE b=12;
-UPDATE t2 SET a=a+1 WHERE b=17;
-UPDATE t2 SET a=a+1 WHERE b=22;
-UPDATE t2 SET a=a+1 WHERE b=23;
-UPDATE t2 SET a=a+1 WHERE b=24;
-UPDATE t2 SET a=a+1 WHERE b=30;
-UPDATE t2 SET a=a+1 WHERE b=31;  x
-UPDATE t2 SET a=a+1 WHERE b=32;
-UPDATE t2 SET a=a+1 WHERE b=36;
-UPDATE t2 SET a=a+1 WHERE b=37;
-UPDATE t2 SET a=a+1 WHERE b=38;
-UPDATE t2 SET a=a+1 WHERE b=40;
-UPDATE t2 SET a=a+1 WHERE b=44;
-UPDATE t2 SET a=a+1 WHERE b=56;
-UPDATE t2 SET a=a+1 WHERE b=77;
-
-UPDATE t2 SET b=31 WHERE id=51;  x
-
-INSERT INTO t2(`id`,`a`,`b`) VALUES(2,10,31);      x
-INSERT INTO t2(`id`,`a`,`b`) VALUES(7,10,31);      x
-INSERT INTO t2(`id`,`a`,`b`) VALUES(9,10,31);      x
-INSERT INTO t2(`id`,`a`,`b`) VALUES(13,10,31);     x
-INSERT INTO t2(`id`,`a`,`b`) VALUES(15,10,31);     x
-INSERT INTO t2(`id`,`a`,`b`) VALUES(17,10,31);     x
-INSERT INTO t2(`id`,`a`,`b`) VALUES(19,10,31);     x
-INSERT INTO t2(`id`,`a`,`b`) VALUES(22,10,31);     x
-INSERT INTO t2(`id`,`a`,`b`) VALUES(24,10,31);     x
-INSERT INTO t2(`id`,`a`,`b`) VALUES(27,10,31);     x
-INSERT INTO t2(`id`,`a`,`b`) VALUES(29,10,31);     x
-INSERT INTO t2(`id`,`a`,`b`) VALUES(34,10,31);     x
-INSERT INTO t2(`id`,`a`,`b`) VALUES(36,10,31);     x
-INSERT INTO t2(`id`,`a`,`b`) VALUES(100,10,31);    x
-
-INSERT INTO t2(`id`,`a`,`b`) VALUES(2,10,100);
-INSERT INTO t2(`id`,`a`,`b`) VALUES(7,10,101);
-INSERT INTO t2(`id`,`a`,`b`) VALUES(9,10,102);
-INSERT INTO t2(`id`,`a`,`b`) VALUES(13,10,103);
-INSERT INTO t2(`id`,`a`,`b`) VALUES(15,10,104);
-INSERT INTO t2(`id`,`a`,`b`) VALUES(17,10,105);
-INSERT INTO t2(`id`,`a`,`b`) VALUES(19,10,106);
-INSERT INTO t2(`id`,`a`,`b`) VALUES(22,10,107);
-INSERT INTO t2(`id`,`a`,`b`) VALUES(24,10,108);
-INSERT INTO t2(`id`,`a`,`b`) VALUES(27,10,109);
-INSERT INTO t2(`id`,`a`,`b`) VALUES(29,10,110);
-INSERT INTO t2(`id`,`a`,`b`) VALUES(34,10,111);
-INSERT INTO t2(`id`,`a`,`b`) VALUES(36,10,112);
-INSERT INTO t2(`id`,`a`,`b`) VALUES(100,10,113);
-
-gap锁[23,37]
-INSERT INTO t2(`a`,`b`) VALUES(10,5);
-INSERT INTO t2(`a`,`b`) VALUES(10,6);
-INSERT INTO t2(`a`,`b`) VALUES(10,7);
-INSERT INTO t2(`a`,`b`) VALUES(10,11);
-INSERT INTO t2(`a`,`b`) VALUES(10,12);
-INSERT INTO t2(`a`,`b`) VALUES(10,13);
-INSERT INTO t2(`a`,`b`) VALUES(10,16);
-INSERT INTO t2(`a`,`b`) VALUES(10,17);
-INSERT INTO t2(`a`,`b`) VALUES(10,18);
-INSERT INTO t2(`a`,`b`) VALUES(10,22);
-INSERT INTO t2(`a`,`b`) VALUES(10,23);  x
-INSERT INTO t2(`a`,`b`) VALUES(10,24);  x
-INSERT INTO t2(`a`,`b`) VALUES(10,30);  x
-INSERT INTO t2(`a`,`b`) VALUES(10,31);  x
-INSERT INTO t2(`a`,`b`) VALUES(10,32);  x
-INSERT INTO t2(`a`,`b`) VALUES(10,36);  x
-INSERT INTO t2(`id`,`a`,`b`) VALUES(42,10,37);  x
-INSERT INTO t2(`a`,`b`) VALUES(10,37);
-INSERT INTO t2(`a`,`b`) VALUES(10,38);
-INSERT INTO t2(`a`,`b`) VALUES(10,39);
-INSERT INTO t2(`a`,`b`) VALUES(10,40);
-INSERT INTO t2(`a`,`b`) VALUES(10,41);
-INSERT INTO t2(`a`,`b`) VALUES(10,43);
-INSERT INTO t2(`a`,`b`) VALUES(10,44);
-INSERT INTO t2(`a`,`b`) VALUES(10,45);
-INSERT INTO t2(`a`,`b`) VALUES(10,56);
-INSERT INTO t2(`a`,`b`) VALUES(10,56);
-
-和UPDATE一样
-DELETE FROM t2 WHERE b=6;
-DELETE FROM t2 WHERE b=12;
-DELETE FROM t2 WHERE b=17;
-DELETE FROM t2 WHERE b=22;
-DELETE FROM t2 WHERE b=23;
-DELETE FROM t2 WHERE b=24;
-DELETE FROM t2 WHERE b=30;
-DELETE FROM t2 WHERE b=31;  x
-DELETE FROM t2 WHERE b=32;
-DELETE FROM t2 WHERE b=36;
-DELETE FROM t2 WHERE b=37;
-DELETE FROM t2 WHERE b=38;
-DELETE FROM t2 WHERE b=40;
-DELETE FROM t2 WHERE b=44;
-DELETE FROM t2 WHERE b=56;
-DELETE FROM t2 WHERE b=77;
-
-ROLLBACK;
-
-1.5.3Gap Lock(可重复读级别下)：唯一索引
-drop table t2;
-CREATE TABLE IF NOT EXISTS `t2`(
-   `id` BIGINT(20) NOT NULL AUTO_INCREMENT,
-   `a` INT(11) NOT NULL,
-   `b` INT(11) NOT NULL,
-   PRIMARY KEY (`id`),
-   UNIQUE KEY `uni_b`(`b`)
-)ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-INSERT INTO t2(`id`,`a`,`b`) VALUES(1,10,15);
-INSERT INTO t2(`id`,`a`,`b`) VALUES(8,20,42);
-INSERT INTO t2(`id`,`a`,`b`) VALUES(3,30,45);
-INSERT INTO t2(`id`,`a`,`b`) VALUES(7,40,18);
-INSERT INTO t2(`id`,`a`,`b`) VALUES(6,50,8);
-INSERT INTO t2(`id`,`a`,`b`) VALUES(10,60,16);
-INSERT INTO t2(`id`,`a`,`b`) VALUES(15,70,31);
-INSERT INTO t2(`id`,`a`,`b`) VALUES(13,80,11);
-INSERT INTO t2(`id`,`a`,`b`) VALUES(11,90,118);
-
-事务1
-BEGIN;
-UPDATE t2 SET a=a+1 WHERE b=31;
-ROLLBACK;
-
-事务2
-BEGIN;
-
-UPDATE t2 SET a=a+1 WHERE b=15;
-UPDATE t2 SET a=a+1 WHERE b=42;
-UPDATE t2 SET a=a+1 WHERE b=45;
-UPDATE t2 SET a=a+1 WHERE b=18;
-UPDATE t2 SET a=a+1 WHERE b=8;
-UPDATE t2 SET a=a+1 WHERE b=16;
-UPDATE t2 SET a=a+1 WHERE b=31;  x
-UPDATE t2 SET a=a+1 WHERE b=11;
-UPDATE t2 SET a=a+1 WHERE b=118;
-
-INSERT INTO t2(`a`,`b`) VALUES(10,9);
-INSERT INTO t2(`a`,`b`) VALUES(10,12);
-INSERT INTO t2(`a`,`b`) VALUES(10,17);
-INSERT INTO t2(`a`,`b`) VALUES(10,30);
-INSERT INTO t2(`a`,`b`) VALUES(10,32);
-INSERT INTO t2(`a`,`b`) VALUES(10,41);
-INSERT INTO t2(`a`,`b`) VALUES(10,43);
-INSERT INTO t2(`a`,`b`) VALUES(10,46);
-INSERT INTO t2(`a`,`b`) VALUES(10,117);
-INSERT INTO t2(`a`,`b`) VALUES(10,119);
-
-
-DELETE FROM t2 WHERE b=16;
-DELETE FROM t2 WHERE b=18;
-DELETE FROM t2 WHERE b=30;
-DELETE FROM t2 WHERE b=31;  x
-DELETE FROM t2 WHERE b=32;
-DELETE FROM t2 WHERE b=42;
-DELETE FROM t2 WHERE b=45;
-
-ROLLBACK;
-
-
-1.5.4Gap Lock(可重复读级别下)：唯一索引
-drop table t2;
-CREATE TABLE IF NOT EXISTS `t2`(
-   `id` BIGINT(20) NOT NULL AUTO_INCREMENT,
-   `a` INT(11) NOT NULL,
-   `b` INT(11) NOT NULL,
-   PRIMARY KEY (`id`),
-   KEY `key_a`(`a`)
-)ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-INSERT INTO t2(`id`,`a`,`b`) VALUES(5,5,5);
-INSERT INTO t2(`id`,`a`,`b`) VALUES(10,10,10);
-INSERT INTO t2(`id`,`a`,`b`) VALUES(15,15,15);
-INSERT INTO t2(`id`,`a`,`b`) VALUES(20,20,20);
-INSERT INTO t2(`id`,`a`,`b`) VALUES(25,25,25);
-
-事务1
-BEGIN;
-select * from t2 where id = 11 for update;
-ROLLBACK;
-
-事务2
-BEGIN;
-[11,14]
-insert into t2 value(9,9,9);
-insert into t2 value(10,10,10);
-insert into t2 value(11,11,11);
-insert into t2 value(12,12,12);
-insert into t2 value(13,13,13);
-insert into t2 value(14,14,14);
-insert into t2 value(15,15,15);
-insert into t2 value(16,16,16);
-ROLLBACK;
-
-
-1.5.5Gap Lock(可重复读级别下)：
-事务1
-BEGIN;
-select * from t2 where id = 9 for update;
-insert into t2 value(7,7,7);
-ROLLBACK;
-
-事务2
-BEGIN;
-select * from t2 where id = 6 for update;  间隙锁不互斥
-insert into t2 value(7,7,7);               死锁
-ROLLBACK;
-
-
-1.5.6Gap Lock(可重复读级别下)：
-事务1
-BEGIN;
-update t2 set b=b+1 where id = 7;
-ROLLBACK;
-
-事务2
-BEGIN;
-insert into t2 value(8,8,8);     阻塞
-update t2 set b=b+1 where id = 4;
-update t2 set b=b+1 where id = 5;
-update t2 set b=b+1 where id = 6;
-update t2 set b=b+1 where id = 9;
-update t2 set b=b+1 where id = 10;
-update t2 set b=b+1 where id = 11;
-ROLLBACK;
-
-
-1.5.7Gap Lock(可重复读级别下)：
-事务1
-BEGIN;
-select id from t2 where a = 5 lock in share mode;
-ROLLBACK;
-
-事务2
-BEGIN;
-update t2 set b=b+1 where id = 5;
-insert into t2 values (7,7,7);     阻塞
-ROLLBACK;
-
-
-1.5.8Gap Lock(可重复读级别下)：
-事务1
-BEGIN;
-select * from t2 where id >= 10 and id < 11 for update;
-ROLLBACK;
-
-事务2
-BEGIN;
-insert into t2 values(8,8,8);
-insert into t2 values(13,13,13);     阻塞
-update t2 set b=b+1 where id = 15;   阻塞
-ROLLBACK;
++----+-----+------+-----+
+| id | no  | name | age |
++----+-----+------+-----+
+|  1 | 100 | aaa  |  10 |
+|  2 | 200 | bbb  |  20 |
+|  3 | 300 | ccc  |  30 |
+|  4 | 400 | ddd  |  40 |
+|  5 | 500 | eee  |  50 |
++----+-----+------+-----+
+
+唯一索引等值查询,当查询的记录存在: no=300
+select * from user3 where no=300 for update;
+
+update user3 set name='wang' where no=300; x
+update user3 set name='wang' where no=200;
+update user3 set name='wang' where no=400;
+INSERT INTO user3(no,name,age) VALUES(299,"fff",100);
+INSERT INTO user3(no,name,age) VALUES(301,"fff",100);
+
+唯一索引等值查询,当查询的记录不存在: (300,400)
+select * from user3 where no=350 for update;
+
+update user3 set name='wang' where no=300;
+update user3 set name='wang' where no=400;
+INSERT INTO user3(no,name,age) VALUES(301,"fff",100);x
+INSERT INTO user3(no,name,age) VALUES(349,"fff",100);x
+INSERT INTO user3(no,name,age) VALUES(351,"fff",100);x
+INSERT INTO user3(no,name,age) VALUES(399,"fff",100);x
+
+唯一索引范围查询: (300,+)
+select * from user3 where no>350 for update;
+
+update user3 set name='wang' where no=300;
+update user3 set name='wang' where no=400;x
+INSERT INTO user3(no,name,age) VALUES(301,"fff",100);x
+INSERT INTO user3(no,name,age) VALUES(349,"fff",100);x
+INSERT INTO user3(no,name,age) VALUES(351,"fff",100);x
+INSERT INTO user3(no,name,age) VALUES(399,"fff",100);x
+INSERT INTO user3(no,name,age) VALUES(1000,"fff",100);x
+
+非唯一索引等值查询,当查询的记录存在: (20,40)
+select * from user3 where age=30 for update;
+
+update user3 set name='wang' where age=20;
+update user3 set name='wang' where age=30;x
+update user3 set name='wang' where age=40;
+INSERT INTO user3(no,name,age) VALUES(1000,"fff",21);x
+INSERT INTO user3(no,name,age) VALUES(1000,"fff",29);x
+INSERT INTO user3(no,name,age) VALUES(1000,"fff",31);x
+INSERT INTO user3(no,name,age) VALUES(1000,"fff",39);x
+INSERT INTO user3(no,name,age) VALUES(1000,"fff",41);
+
+非唯一索引等值查询,当查询的记录不存在: (30,40)
+select * from user3 where age=35 for update;
+
+update user3 set name='wang' where age=30;
+update user3 set name='wang' where age=40;
+INSERT INTO user3(no,name,age) VALUES(1000,"fff",31);x
+INSERT INTO user3(no,name,age) VALUES(1000,"fff",39);x
+
+非唯一索引范围查询: (30,+)
+select * from user3 where age>35 for update;
+
+update user3 set name='wang' where age=30;
+update user3 set name='wang' where age=40;x
+INSERT INTO user3(no,name,age) VALUES(1000,"fff",31);x
+INSERT INTO user3(no,name,age) VALUES(1000,"fff",100);x
