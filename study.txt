@@ -1351,26 +1351,6 @@ Upgrade: h2c
 
 
 8.Kubernetes
-Pod
-Deployment
-Service
-Ingress
-DaemonSet
-StatefulSet
-ReplicaSet
-Job CronJob
-Label Namespace ConfigMap Secret
-Volume PersistentVolume PersistentVolumeClaim StorageClass CSI
-ServiceAccount
-RBAC
-CNI
-DNS
-Operator
-CRI容器运行时
-安全Kata Containers gVisor
-监控
-日志
-etcd
 kube-apiserver: 对外提供restful接口,唯一连接etcd服务,将对etcd的操作封装成接口供其它服务调用;有认证/鉴权/准入/限流的作用,
 
 kube-scheduler: 调度器
@@ -1406,8 +1386,27 @@ User space模式/iptables模式/IPVS模式
 coredns
 flannel
 
+Pod
+Deployment
+Service
+Ingress
+DaemonSet
+StatefulSet
+ReplicaSet
+Job CronJob
+Label Namespace ConfigMap Secret
+Volume PersistentVolume PersistentVolumeClaim StorageClass CSI
+ServiceAccount
+RBAC
+CNI
+DNS
+Operator
+安全: Kata Containers
+监控: gVisor
+日志: kubectl logs
+
 Docker:
-cgroup: cgroupfs/systemd cgroup/cgroup v2
+cgroup: cgroupfs/systemd/cgroup v2
 control group控制组,控制进程组对某种资源的使用,这些资源包括但不限于内存/CPU/I/O和网络
 cgroup提供了将进程组织成控制组的能力,然后通过使用资源控制子系统cgroup_subsys来对控制组进行资源使用的控制,cgroup支持的资源控制子系统有以下几种
 cpu子系统(限制CPU的使用),memory子系统(限制内存使用),cpuset子系统(可以为进程组分配单独的CPU或者内存节点),cpuacct子系统(统计CPU group的使用情况),blkio子系统(限制I/O,一般用于磁盘),devices子系统(限制进程使用的设备),freezer子系统(可以挂起和恢复进程组),net_cls子系统(可以标记进程组的网络数据包,使用tc模块traffic control对数据包进行控制)
@@ -1425,7 +1424,7 @@ docker engine: dockerd
 containerd: 容器运行时,管理完整的容器生命周期,容器镜像的传输和存储/容器的执行和管理/存储/网络,调用runC运行容器
 docker-shim
 runc
-CRI (Container Runtime Interface)
+CRI: Container Runtime Interface,容器运行时
 CRI-O
 pause
 

@@ -2559,6 +2559,7 @@ mysqldump -u root -p123456 --add-drop-table db1 | mysql -u root -p123456 newdb
 
   sudo vim /etc/containerd/config.toml
   disabled_plugins = []
+  version = 2
   [plugins]
     [plugins."io.containerd.grpc.v1.cri"]
       sandbox_image = "registry.cn-hangzhou.aliyuncs.com/google_containers/pause:3.8"
