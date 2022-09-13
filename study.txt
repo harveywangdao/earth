@@ -1386,27 +1386,50 @@ User space模式/iptables模式/IPVS模式
 coredns
 flannel
 
-Pod
+Node
+Pod/PodTemplate
 Deployment
-Service
-Ingress
+Service/Endpoints
+Ingress/IngressClass/NetworkPolicy
 DaemonSet
 StatefulSet
-ReplicaSet
+ReplicaSet/ReplicationController
 Job CronJob
 Label Namespace ConfigMap Secret
 Volume PersistentVolume PersistentVolumeClaim StorageClass CSI
-ServiceAccount
-RBAC
-CNI
-DNS
+RBAC/ClusterRoleBinding/ClusterRole/RoleBinding/Role/ServiceAccount/Binding
 Operator
+CustomResourceDefinition
+affinity
+ResourceQuota/PriorityClass
+HorizontalPodAutoscaler
+LimitRange
+CSIDriver/CSINode/CSIStorageCapacity/VolumeAttachment
+LocalSubjectAccessReview/SelfSubjectAccessReview/SelfSubjectRulesReview/SubjectAccessReview
+TokenReview
+ControllerRevision
+APIService
+EndpointSlice
+MutatingWebhookConfiguration/ValidatingWebhookConfiguration
+ComponentStatus
+Lease
+CertificateSigningRequest
+Event
+kubectl rollout/scale/autoscale
+kubectl top
+kubectl cordon/uncordon/drain/taint
+kubectl port-forward/proxy/expose
+kubectl cp
+kubectl edit
+kubectl kustomize
+kubectl plugin
 安全: Kata Containers
 监控: gVisor
 日志: kubectl logs
-taint
+CNI
 
 Docker:
+Dockerfile:
 cgroup: cgroupfs/systemd/cgroup v2
 control group控制组,控制进程组对某种资源的使用,这些资源包括但不限于内存/CPU/I/O和网络
 cgroup提供了将进程组织成控制组的能力,然后通过使用资源控制子系统cgroup_subsys来对控制组进行资源使用的控制,cgroup支持的资源控制子系统有以下几种
@@ -1428,6 +1451,7 @@ runc
 CRI: Container Runtime Interface,容器运行时
 CRI-O
 pause
+volume
 
 
 9.微服务/服务网格
