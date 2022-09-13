@@ -1404,6 +1404,7 @@ Operator
 安全: Kata Containers
 监控: gVisor
 日志: kubectl logs
+taint
 
 Docker:
 cgroup: cgroupfs/systemd/cgroup v2

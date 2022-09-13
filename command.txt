@@ -2591,7 +2591,7 @@ mysqldump -u root -p123456 --add-drop-table db1 | mysql -u root -p123456 newdb
   sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
   sudo chown $(id -u):$(id -g) $HOME/.kube/config
 
-  kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
+  kubectl apply -f https://raw.githubusercontent.com/flannel-io/flannel/master/Documentation/kube-flannel.yml
 
   sudo kubeadm join 192.168.1.11:6443 --token t5dmmc.z4ko35k3lt710xxs \
     --discovery-token-ca-cert-hash sha256:f512b981b1d1526cfdb65b6d46e366cc6063c6006749843ad965d5174839f79a
@@ -5482,7 +5482,7 @@ InfluxDB:
   sudo ifconfig lxcbr0 down
   sudo brctl delbr lxcbr0
 
-  kubectl delete -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
+  kubectl delete -f https://raw.githubusercontent.com/flannel-io/flannel/master/Documentation/kube-flannel.yml
 
   mkdir -p /home/thomas/server/calico
   cd /home/thomas/server/calico
