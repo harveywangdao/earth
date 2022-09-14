@@ -5343,6 +5343,14 @@ InfluxDB:
 
 
 69.Kubernetes网络 && Linux网络
+  Etcd:
+  sudo su
+  cd /home/thomas/server/etcd-v3.3.13-linux-amd64
+  export ETCDCTL_API=3
+  ./etcdctl --cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/peer.crt --key=/etc/kubernetes/pki/etcd/peer.key get / --prefix --keys-only | grep -Ev "^$" | grep "flannel"
+  ./etcdctl --cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/peer.crt --key=/etc/kubernetes/pki/etcd/peer.key get /registry/configmaps/kube-flannel/kube-flannel-cfg -w=json | jq .
+  ./etcdctl --cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/peer.crt --key=/etc/kubernetes/pki/etcd/peer.key member list
+
   Open vSwitch: 虚拟交换机,支持OpenFlow协议,支持gre/vxlan/IPsec等隧道技术,ovs-vswitchd,ovsdb-server,kernel datapath,OpenFlow控制器
   iptables: 
   GRE: 
@@ -5372,28 +5380,9 @@ InfluxDB:
   Jaeger,Fluentd,Containerd,CoreDNS,Envoy,Prometheus,OpenTracing,CNI,vitess,rook,NATS,Linkerd,Notary,Harbor,Helm,Etcd,OpenPolicyAgent,CRI-O,TiKV,rkt
 
   Flannel:
-  UDP,Vxlan,host-gw
   L3 Overlay模式设计,etcd用于存储整个集群的网络配置,flanneld,flannel0网桥,docker0,UDP,subnet
   kubectl run nginx --image=nginx --replicas=2
-  kubectl exec -it nginx-6db489d4b7-6m6xl -c nginx -- bash
-  apt-get update
-  apt-get install net-tools iputils-ping iproute2
-
-  kubectl get configmaps -n kube-flannel -o wide
   kubectl get configmaps -n kube-flannel -o yaml kube-flannel-cfg
-
-  sudo su
-  cd /home/thomas/server/etcd-v3.3.13-linux-amd64
-  export ETCDCTL_API=3
-  ./etcdctl --cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/peer.crt --key=/etc/kubernetes/pki/etcd/peer.key get / --prefix --keys-only | grep -Ev "^$" | grep "flannel"
-
-  ./etcdctl --cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/peer.crt --key=/etc/kubernetes/pki/etcd/peer.key get /registry/configmaps/kube-flannel/kube-flannel-cfg -w=json | jq .
-
-  ./etcdctl --cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/peer.crt --key=/etc/kubernetes/pki/etcd/peer.key get /registry/namespaces/default -w=json | jq .
-  ./etcdctl --cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/peer.crt --key=/etc/kubernetes/pki/etcd/peer.key member list
-  ./etcdctl --cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/peer.crt --key=/etc/kubernetes/pki/etcd/peer.key get /coreos.com/network/subnets --prefix
-  ./etcdctl --cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/peer.crt --key=/etc/kubernetes/pki/etcd/peer.key get / --prefix --keys-only=true | grep net
-  ./etcdctl --cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/peer.crt --key=/etc/kubernetes/pki/etcd/peer.key get /registry/services/endpoints/default/kubernetes -w=json | jq .
 
   UDP:
   Type: udp
