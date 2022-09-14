@@ -5375,29 +5375,19 @@ InfluxDB:
   UDP,Vxlan,host-gw
   L3 Overlay模式设计,etcd用于存储整个集群的网络配置,flanneld,flannel0网桥,docker0,UDP,subnet
   kubectl run nginx --image=nginx --replicas=2
-
-  #kubectl exec -it nginx-6db489d4b7-6m6xl -- bash             #选择第一个容器
-  #docker exec -it 95e38378da31 /bin/bash
-
-  kubectl exec -it nginx-6db489d4b7-kzgwt -c nginx -- bash
   kubectl exec -it nginx-6db489d4b7-6m6xl -c nginx -- bash
   apt-get update
   apt-get install net-tools iputils-ping iproute2
 
-  kubectl get pods --all-namespaces -o wide
-  kubectl describe pod kube-flannel-ds-amd64-5mqv7 --namespace=kube-system
-  kubectl get cm --all-namespaces -o wide
-  kubectl get cm -n kube-system -o yaml kube-flannel-cfg
-  kubectl logs -f -n kube-system kube-flannel-ds-amd64-5mqv7
-  kubectl exec -it -n kube-system kube-flannel-ds-amd64-5mqv7 -- bash
+  kubectl get configmaps -n kube-flannel -o wide
+  kubectl get configmaps -n kube-flannel -o yaml kube-flannel-cfg
 
-  kubectl exec -it -n kube-system etcd-node02 -c etcd -- sh
   sudo su
   cd /home/thomas/server/etcd-v3.3.13-linux-amd64
   export ETCDCTL_API=3
   ./etcdctl --cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/peer.crt --key=/etc/kubernetes/pki/etcd/peer.key get / --prefix --keys-only | grep -Ev "^$" | grep "flannel"
 
-  ./etcdctl --cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/peer.crt --key=/etc/kubernetes/pki/etcd/peer.key get /registry/configmaps/kube-system/kube-flannel-cfg -w=json | jq .
+  ./etcdctl --cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/peer.crt --key=/etc/kubernetes/pki/etcd/peer.key get /registry/configmaps/kube-flannel/kube-flannel-cfg -w=json | jq .
 
   ./etcdctl --cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/peer.crt --key=/etc/kubernetes/pki/etcd/peer.key get /registry/namespaces/default -w=json | jq .
   ./etcdctl --cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/peer.crt --key=/etc/kubernetes/pki/etcd/peer.key member list
@@ -5406,59 +5396,55 @@ InfluxDB:
   ./etcdctl --cacert=/etc/kubernetes/pki/etcd/ca.crt --cert=/etc/kubernetes/pki/etcd/peer.crt --key=/etc/kubernetes/pki/etcd/peer.key get /registry/services/endpoints/default/kubernetes -w=json | jq .
 
   UDP:
+  Type: udp
+  Port: 8285
+  用于调试或不支持vxlan的内核环境下
   两次用户态内核态切换,flannel0是TUN设备
-  容器A -- cni0 -- flannel0 -- flanneld:8285 -- eth0 
+  容器A -- cni0 -- flannel0 -- flanneld:8285 -- eth0
   eth0 -- flanneld:8285 -- flannel0 -- cni0 -- 容器B
 
   VxLan:
-  一次用户态内核态切换,udp 8472,
+  Type: vxlan
+  VNI: 1
+  Port: 8472
+  GBP: false
+  DirectRouting: false #直接路由,当host在同一个subnet下,windows不支持
+  一次用户态内核态切换,udp 8472
   sudo route -n
   sudo arp -n
   sudo bridge fdb show dev flannel.1
   sudo netstat -anp | grep 8472
   ip -d link show flannel.1
   ip neigh show dev flannel.1
-
-  容器A -- cni0 -- flannel.1 -- eth0 
-  eth0 -- flannel.1 -- cni0 -- 容器B
-
-  host-gw:
-  只能局域网内部同一个网段,flanneld负责主机上路由表的动态更新,路由表更新压力大
-  容器A -- cni0 -- eth0 
-  eth0 -- cni0 -- 容器B
-
-  sudo brctl show
-  sudo ip route show
-  sudo route -n
-
-  Vxlan:
-  容器A -- cni0 -- flannel.1 -- ens33 
+  容器A -- cni0 -- flannel.1 -- ens33
   ens33 -- flannel.1 -- cni0 -- 容器B
-
   sudo tcpdump -i veth198a61d0 -p icmp -nn
   sudo tcpdump -i cni0 -p icmp -nn
   sudo tcpdump -i flannel.1 -p icmp -nn
   sudo tcpdump -i ens33 -p udp -nn
 
-  Directrouting:
-  "Directrouting": true
-
-  容器A -- cni0 -- ens33 
+  host-gw:
+  Type: host-gw
+  性能最好,但是不能用于多云环境下
+  只能局域网内部同一个网段,flanneld负责主机上路由表的动态更新,路由表更新压力大
+  sudo brctl show
+  sudo ip route show
+  sudo route -n
+  容器A -- cni0 -- ens33
   ens33 -- cni0 -- 容器B
+  sudo tcpdump -i veth8da8c1c0 -p icmp -nn
+  sudo tcpdump -i cni0 -p icmp -nn
+  sudo tcpdump -i ens33 -p icmp -nn
 
+  DirectRouting:
+  DirectRouting: true
+  容器A -- cni0 -- ens33
+  ens33 -- cni0 -- 容器B
   sudo tcpdump -i veth198a61d0 -p icmp -nn
   sudo tcpdump -i cni0 -p icmp -nn
   #sudo tcpdump -i flannel.1 -p icmp -nn
   sudo tcpdump -i ens33 -p icmp -nn
 
-  host-gw:
-  容器A -- cni0 -- ens33 
-  ens33 -- cni0 -- 容器B
-
-  sudo tcpdump -i veth8da8c1c0 -p icmp -nn
-  sudo tcpdump -i cni0 -p icmp -nn
-  sudo tcpdump -i ens33 -p icmp -nn
-  
   Calico:
   纯三层,数据包都是通过路由的形式找到对应的主机和容器的,通过BGP 协议来将所有路由同步到所有的机器或数据中心,从而完成整个网络的互联。
   veth pair,其中一端在主机上,另一端在容器的网络命名空间里
