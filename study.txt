@@ -1389,7 +1389,7 @@ flannel
 Node
 Pod/PodTemplate
 Deployment
-Service/Endpoints
+Service/Endpoints: ExternalName/ClusterIP(None)/NodePort/LoadBalancer
 Ingress/IngressClass/NetworkPolicy
 DaemonSet
 StatefulSet
