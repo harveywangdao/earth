@@ -2594,11 +2594,12 @@ mysqldump -u root -p123456 --add-drop-table db1 | mysql -u root -p123456 newdb
   kubectl -n kube-system top pods
 
   sudo kubeadm reset --force
-  sudo rm -rf /etc/kubernetes /var/lib/kubelet /var/lib/etcd /etc/cni
-  rm -rf $HOME/.kube
+  sudo rm -rf /etc/kubernetes /var/lib/kubelet /var/lib/etcd /etc/cni $HOME/.kube
   sudo ipvsadm --clear
   sudo iptables -F && sudo iptables -t nat -F && sudo iptables -t mangle -F && sudo iptables -X
-  rm -rf $HOME/.helm
+  sudo systemctl restart containerd
+
+  journalctl -u kubelet.service -e
 
   #sudo swapon -a
   #sudo vim /etc/fstab
