@@ -741,24 +741,7 @@ EXISTS
 定时任务
 
 
-3.NoSQL
-MongoDB
-LevelDB
-TiDB
-
-ElasticSearch:
-Shard/Replica 倒排索引 master/data/ingest/coodrinating only
-Logstash/Kibana/filebeat/Flume
-
-Etcd/ZooKeeper/Nacos/Consul
-Ceph
-Nginx
-Keepalived/Haproxy/LVS
-Promethous/Grafana
-MinIO
-
-
-4.Redis
+3.Redis
 string SDS 长度不能超过512M int编码 raw编码 embstr编码
 hash hashtable ziplist(列表保存元素个数小于512个&每个元素长度小于64字节)
 list linkedlist ziplist(列表保存元素个数小于512个&每个元素长度小于64字节)
@@ -843,6 +826,23 @@ sentinel failover-timeout mymaster 30000
 ./redis-sentinel /home/thomas/server/redis/conf/sentinel-9000.conf
 ./redis-cli -p 9000
 sentinel master mymaster
+
+
+4.NoSQL
+MongoDB
+LevelDB
+TiDB
+
+ElasticSearch:
+Shard/Replica 倒排索引 master/data/ingest/coodrinating only
+Logstash/Kibana/filebeat/Flume
+
+Etcd/ZooKeeper/Nacos/Consul
+Ceph
+Nginx
+Keepalived/Haproxy/LVS
+Promethous/Grafana
+MinIO
 
 
 5.MQ 异步/解耦/削峰
