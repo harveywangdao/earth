@@ -830,7 +830,7 @@ sentinel master mymaster
 
 4.NoSQL
 MongoDB
-LevelDB
+LevelDB rocksdb
 TiDB
 
 ElasticSearch:
@@ -839,7 +839,7 @@ Logstash/Kibana/filebeat/Flume
 
 Etcd/ZooKeeper/Nacos/Consul
 Ceph
-Nginx
+Nginx kong traefik
 Keepalived/Haproxy/LVS
 Promethous/Grafana
 MinIO
@@ -1454,6 +1454,8 @@ CRI-O
 pause
 volume
 
+Mesos marathon dcos
+
 
 9.微服务/服务网格
 服务注册发现
@@ -1567,6 +1569,7 @@ open/read/write
 
 IO多路复用:
 poll select epoll
+libuv/libevent
 
 网络协议栈:
 netfilter
@@ -1641,7 +1644,7 @@ top htop strace perf
 缓存LRU/LFU
 字符串
 radix tree
-
+加密算法 openssl
 
 13.其它
 utf-8:
@@ -1652,14 +1655,22 @@ utf-8是变长的编码方式,使用1~4个字节表示一个符号,utf-8编码�
 1110xxxx 10xxxxxx 10xxxxxx
 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
 
+protobuf
+
 设计模式:
 简单工厂: 提供一个方法返回指定的对象,如NewXXX("product1"),函数的返回类型是抽象产品,根据传入的产品名返回具体产品(具体的结构体),缺点是当需要增加一个产品时要在NewXXX中增加一个case,产品数量过多显得臃肿
 工厂方法: 多态性工厂模式,定义一个创建对象的接口,但由实现这个接口的工厂类来决定实例化哪个产品类,工厂方法把类的实例化推迟到子类中进行,当增加一个产品时只需增加一个相应的工厂类的子类
 抽象工厂: 每个工厂有相同的产品族
 
-音视频/流媒体
+CI/CD Drone
+前端 react vue flutter electron
+音视频/流媒体 ffmpeg
 推荐系统
-人工智能
-大数据
-云计算
+人工智能 人脸识别 opencv
+自动驾驶
+物联网/智能家居
+3D deepmind
+大数据 hadoop/storm/hbase/hive/flink/spark
+云计算 openstack
 web安全
+区块链 ipfs
