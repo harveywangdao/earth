@@ -1063,7 +1063,7 @@ reset认证: reset报文,将真实客户端IP加入白名单
 接收窗口(rwnd)
 
 最大传输单元(MTU) 1500字节
-MSS （最大报文段长度）536
+MSS (最大报文段长度)536
 
 NAT:
 ip raw:
@@ -1096,7 +1096,7 @@ UDP查询中能保证性能的最大长度是512字节,要让所有根域名服�
 二级域名
 三级域名
 A 地址记录(Ipv4)
-AAAA 地址记录（Ipv6）
+AAAA 地址记录(Ipv6)
 CNAME 别名记录
 MX 邮件服务器记录
 NS 名字服务器记录
@@ -1129,13 +1129,13 @@ TRACE: 原样返回任意客户端请求的任何内容,主要用于测试或诊
 100 Continue客户端应当继续发送请求
 200 请求成功
 204 No Content成功处理但在返回的响应报文中不含实体的主体部分
-301 MovedPermanently 资源（网页等）被永久转移到其它URL
+301 MovedPermanently 资源(网页等)被永久转移到其它URL
 302 Found 临时移动,与301类似,但资源只是临时被移动,客户端应继续使用原有URI
 304 Not Modified未修改,自从上次请求后请求的网页未修改过服务器返回此响应时不会返回网页内容
 400 Bad Request
 401 Unauthorized
 403 Forbidden
-404 请求的资源（网页等）不存在
+404 请求的资源(网页等)不存在
 500 InternalServerError
 501 NotImplemented
 502 BadGateway
@@ -1720,9 +1720,45 @@ utf-8是变长的编码方式,使用1~4个字节表示一个符号,utf-8编码�
 protobuf
 
 设计模式:
-简单工厂: 提供一个方法返回指定的对象,如NewXXX("product1"),函数的返回类型是抽象产品,根据传入的产品名返回具体产品(具体的结构体),缺点是当需要增加一个产品时要在NewXXX中增加一个case,产品数量过多显得臃肿
+设计模式的六大原则:
+开闭原则
+里氏代换原则
+依赖倒转原则
+接口隔离原则
+迪米特法则(最少知道原则)
+合成复用原则
+
+创建型模式:
+工厂模式(Factory Pattern),简单工厂,提供一个方法返回指定的对象,如NewXXX("product1"),函数的返回类型是抽象产品,根据传入的产品名返回具体产品(具体的结构体),缺点是当需要增加一个产品时要在NewXXX中增加一个case,产品数量过多显得臃肿
 工厂方法: 多态性工厂模式,定义一个创建对象的接口,但由实现这个接口的工厂类来决定实例化哪个产品类,工厂方法把类的实例化推迟到子类中进行,当增加一个产品时只需增加一个相应的工厂类的子类
-抽象工厂: 每个工厂有相同的产品族
+抽象工厂模式(Abstract Factory Pattern),每个工厂有相同的产品族
+单例模式(Singleton Pattern),饿汉:在该类初始化的时候就创建实例对象,懒汉:首次使用单例实例的时候创建
+建造者模式(Builder Pattern)
+原型模式(Prototype Pattern)
+
+结构型模式:
+适配器模式(Adapter Pattern)
+桥接模式(Bridge Pattern)
+过滤器模式(Filter、Criteria Pattern)
+组合模式(Composite Pattern)
+装饰器模式(Decorator Pattern)
+外观模式(Facade Pattern)
+享元模式(Flyweight Pattern)
+代理模式(Proxy Pattern)
+
+行为型模式:
+责任链模式(Chain of Responsibility Pattern)
+命令模式(Command Pattern)
+解释器模式(Interpreter Pattern)
+迭代器模式(Iterator Pattern)
+中介者模式(Mediator Pattern)
+备忘录模式(Memento Pattern)
+观察者模式(Observer Pattern)
+状态模式(State Pattern)
+空对象模式(Null Object Pattern)
+策略模式(Strategy Pattern)
+模板模式(Template Pattern)
+访问者模式(Visitor Pattern)
 
 CI/CD Drone
 前端 react vue flutter electron
