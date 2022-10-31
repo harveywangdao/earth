@@ -34,6 +34,24 @@ func do2() {
 	}
 }
 
+var funcs = template.FuncMap{"toInt64": toInt64}
+
+func toInt64(s string) int64 {
+	return 13
+}
+
+func do3() {
+	sweaters := Inventory{"13", 16}
+	tmpl, err := template.New("test").Funcs(funcs).Parse(`"{{toInt64 .Material}}"`)
+	if err != nil {
+		panic(err)
+	}
+	err = tmpl.Execute(os.Stdout, sweaters)
+	if err != nil {
+		panic(err)
+	}
+}
+
 func main() {
-	do2()
+	do3()
 }
