@@ -2080,17 +2080,11 @@ mysqldump -u root -p123456 --add-drop-table db1 | mysql -u root -p123456 newdb
   sudo make install
   protoc -I=$SRC_DIR --cpp_out=$DST_DIR /path/to/file.proto
 
-  sudo ldconfig 
-  #sudo vim /etc/ld.so.conf
-
-  go get -u github.com/golang/protobuf/protoc-gen-go
-  go get -u github.com/golang/protobuf/proto
-  protoc --go_out=. *.proto
-  protoc --go_out=plugins=grpc,import_path=mypackage:. *.proto
-  protoc --go_out=plugins=grpc:. *.proto
-
-  #go get -u google.golang.org/grpc
-  go get -u github.com/grpc/grpc-go
+  google.golang.org/protobuf/cmd/protoc-gen-go
+  google.golang.org/grpc/cmd/protoc-gen-go-grpc
+  
+  protoc --go_out=. helloworld.proto
+  protoc --go_out=. --go-grpc_out=. helloworld.proto
 
 32.node.js
   curl -sL https://deb.nodesource.com/setup_10.x | sudo -E bash -

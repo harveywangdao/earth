@@ -1860,7 +1860,35 @@ utf-8是变长的编码方式,使用1~4个字节表示一个符号,utf-8编码�
 1110xxxx 10xxxxxx 10xxxxxx
 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
 
-protobuf
+protobuf:
+整数
+字符串
+数组
+字节数据
+map
+Varint编码:
+Zigzag编码:
+
+syntax = "proto3";
+package helloworld;
+required
+optional
+enum
+repeated
+default
+message HelloRequest {
+  string name = 1;
+}
+service Greeter {
+  rpc SayHello (HelloRequest) returns (HelloReply) {}
+}
+
+double/float
+int32/int64/uint32/uint64/sint32/sint64
+fixed32/fixed64/sfixed32/sfixed64
+bool
+string
+bytes
 
 设计模式:
 设计模式的六大原则:
