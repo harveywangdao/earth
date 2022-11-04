@@ -1882,13 +1882,22 @@ message HelloRequest {
 service Greeter {
   rpc SayHello (HelloRequest) returns (HelloReply) {}
 }
-
 double/float
 int32/int64/uint32/uint64/sint32/sint64
 fixed32/fixed64/sfixed32/sfixed64
 bool
 string
 bytes
+
+tag: 1bit标志位(0表示已读取完不需要读取下个字节,1表示还需要读取下个字节)+4bit标识号(字段后面的数字)+3位wire_type(0:Varint;2:length-delimited)
+当整数是0/bool是false则不传输
+zigzag编码:
+负奇数来说，公式：|-3|*2-1=5
+正数来说，公式：数值*2
+字符串/字节切片: tag+length+value
+数组:packed=true:tag+size+value1+value2;packed=false:tag+value1+tag+value2
+在proto2版本中packed功能默认没有启用;在proto3版本中packed功能默认是启用的用户不需要做设置(用户如果想禁止使用的话可以使用packed=false)
+fixed64,sfixed64,double时变量值采用的是64-bit编码方式即固定占用8个字节传输
 
 设计模式:
 设计模式的六大原则:
