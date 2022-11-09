@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"io"
 	"io/ioutil"
 	"log"
@@ -65,10 +66,24 @@ func do3(w http.ResponseWriter, r *http.Request) {
 	r.MultipartForm.RemoveAll()
 }
 
+func do4(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/octet-stream")
+	w.Header().Set("Content-Disposition", "attachment")
+	//w.Header().Set("Content-Disposition", "attachment;filename=1.docx")
+	w.WriteHeader(http.StatusOK)
+
+	data := []byte("125dfg")
+	_, err := io.Copy(w, bytes.NewReader(data))
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
 func main() {
 	log.SetFlags(log.Lshortfile | log.LstdFlags)
 	http.HandleFunc("/do1", do1)
 	http.HandleFunc("/do2", do2)
 	http.HandleFunc("/do3", do3)
+	http.HandleFunc("/do4", do4)
 	http.ListenAndServe(":5616", nil)
 }
