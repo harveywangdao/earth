@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/url"
 )
 
 //r.FormFile(key)     // r.MultipartForm
@@ -68,8 +69,11 @@ func do3(w http.ResponseWriter, r *http.Request) {
 
 func do4(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/octet-stream")
-	w.Header().Set("Content-Disposition", "attachment")
+	//w.Header().Set("Content-Disposition", "attachment")
 	//w.Header().Set("Content-Disposition", "attachment;filename=1.docx")
+	//w.Header().Set("Content-Disposition", "attachment;filename=我是.docx")
+	//w.Header().Set("Content-Disposition", "attachment;filename="+url.QueryEscape("我是.docx"))
+	w.Header().Set("Content-Disposition", "attachment;filename="+url.PathEscape("我是.docx"))
 	w.WriteHeader(http.StatusOK)
 
 	data := []byte("125dfg")
