@@ -1871,29 +1871,25 @@ Zigzag编码:
 
 syntax = "proto3";
 package helloworld;
-required
-optional
+required/optional
 enum
 repeated
 default
+double/float
+int32/int64/uint32/uint64/sint32/sint64
+fixed32/fixed64/sfixed32/sfixed64
+string/bytes
+bool
 message HelloRequest {
   string name = 1;
 }
 service Greeter {
   rpc SayHello (HelloRequest) returns (HelloReply) {}
 }
-double/float
-int32/int64/uint32/uint64/sint32/sint64
-fixed32/fixed64/sfixed32/sfixed64
-bool
-string
-bytes
-
-tag: 1bit标志位(0表示已读取完不需要读取下个字节,1表示还需要读取下个字节)+4bit标识号(字段后面的数字)+3位wire_type(0:Varint;2:length-delimited)
+tag:1bit标志位(0表示已读取完不需要读取下个字节,1表示还需要读取下个字节)+4bit标识号(字段后面的数字)+3位wire_type(0:Varint;2:length-delimited)
 当整数是0/bool是false则不传输
 zigzag编码:
-负奇数来说，公式：|-3|*2-1=5
-正数来说，公式：数值*2
+负奇数:|-3|*2-1=5;正数:数值*2
 字符串/字节切片: tag+length+value
 数组:packed=true:tag+size+value1+value2;packed=false:tag+value1+tag+value2
 在proto2版本中packed功能默认没有启用;在proto3版本中packed功能默认是启用的用户不需要做设置(用户如果想禁止使用的话可以使用packed=false)
