@@ -441,14 +441,17 @@ go tool compile -m main.go
 |: 或OR
 ^: 异或XOR,作为一元运算符时表示位反或位补,等价m^n,m所有位都是1
 &^: 位清空AND NOT,运算符左边数据与右边数据相异的位保留,相同位清零,0&^0=0  0&^1=0  1&^0=1  1&^1=0;如果右侧是0,则左侧数保持不变;如果右侧是1,则左侧数一定清零
->>: 左移
-<<: 右移
+>>: 正数左移补0,负数左移补0(符号位1被冲掉)
+<<: 正数右移补0,负数右移补1(-1右移还是-1)
 原码: 符号位加真值的绝对值
 反码: 无符号数和正数的反码是其本身,负数的反码是将原码除符号位外的其他位按位取反,即0变1,1变0
 补码: 无符号数和正数的补码是其本身,负数的补码是反码二进制加1
 为了让符号位参与基本预算,产生了反码
 为了解决反码运算后产生-0的问题产生了补码
 计算机实际用补码参与运算,获得的结果需要转换成原码
+强制类型转换:
+int8/uint8 -> int64/uint64 直接转成对应大小的数(从二进制角度看:如果int8是负数,缺少的高位全补1;如果int8是正数/uint8,缺少的高位全补0)
+int64/uint64 -> int8/uint8 直接截取二进制数据的后8位
 
 pprof:
 net/http/pprof runtime/pprof
@@ -1861,39 +1864,37 @@ utf-8是变长的编码方式,使用1~4个字节表示一个符号,utf-8编码�
 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
 
 protobuf:
-整数
-字符串
-数组
-字节数据
-map
-Varint编码:
-Zigzag编码:
-
 syntax = "proto3";
 package helloworld;
 required/optional
-enum
-repeated
 default
-double/float
-int32/int64/uint32/uint64/sint32/sint64
-fixed32/fixed64/sfixed32/sfixed64
-string/bytes
-bool
+
+repeated: marshalList,packed=true:tag+size+value1+value2;packed=false:tag+value1+tag+value2;[]string类型使用unpacked
+map: marshalMap,tag+size1+key1+value1+tag+size2+key2+value2
+bool: 转成1/0,AppendVarint
+enum: AppendVarint
+int32/uint32/int64/uint64: AppendVarint
+sint32/sint64: EncodeZigZag,AppendVarint
+sfixed32/fixed32/float: AppendFixed32
+sfixed64/fixed64/double: AppendFixed64
+string/bytes: AppendString/AppendBytes,tag+length+value
+message
+group
+
 message HelloRequest {
   string name = 1;
 }
 service Greeter {
   rpc SayHello (HelloRequest) returns (HelloReply) {}
 }
-tag:1bit标志位(0表示已读取完不需要读取下个字节,1表示还需要读取下个字节)+4bit标识号(字段后面的数字)+3位wire_type(0:Varint;2:length-delimited)
-当整数是0/bool是false则不传输
+Varint编码:
+tag:1bit标志位(0表示已读取完不需要读取下个字节,1表示还需要读取下个字节)+4bit标识号(字段后面的数字)+3位wire_type(VarintType:0;Fixed32Type:5;Fixed64Type:1;BytesType:2;StartGroupType:3;EndGroupType:4)
 zigzag编码:
-负奇数:|-3|*2-1=5;正数:数值*2
-字符串/字节切片: tag+length+value
-数组:packed=true:tag+size+value1+value2;packed=false:tag+value1+tag+value2
+Input:  {…, -3, -2, -1,  0, +1, +2, +3, …}
+Output: {…,  5,  3,  1,  0,  2,  4,  6, …}
+负数:|x|*2-1;正数:x*2
+当整数是0/bool是false则不传输
 在proto2版本中packed功能默认没有启用;在proto3版本中packed功能默认是启用的用户不需要做设置(用户如果想禁止使用的话可以使用packed=false)
-fixed64,sfixed64,double时变量值采用的是64-bit编码方式即固定占用8个字节传输
 
 设计模式:
 设计模式的六大原则:

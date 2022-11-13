@@ -20,6 +20,12 @@ func do2() {
 	b.WriteString("123")
 }
 
+func do3() {
+	s := "\x00\x00\x00\x00"
+	fmt.Println(s)
+	fmt.Println(len(s))
+}
+
 func main() {
-	do1()
+	do3()
 }
