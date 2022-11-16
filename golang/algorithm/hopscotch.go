@@ -12,21 +12,21 @@ type Elem struct {
 	Value interface{}
 }
 
-type HashItem struct {
+type HashEntry struct {
 	Dist uint64
 	Elem *Elem
 }
 
 type HopScotchHashTable struct {
-	arr     []*HashItem
+	arr     []*HashEntry
 	maxDist int
 	sz      int
 }
 
 func NewHopScotchHashTable(size, maxDist int) *HopScotchHashTable {
-	arr := make([]*HashItem, size)
+	arr := make([]*HashEntry, size)
 	for i := 0; i < len(arr); i++ {
-		arr[i] = &HashItem{}
+		arr[i] = &HashEntry{}
 	}
 
 	if maxDist > 64 {
@@ -41,7 +41,11 @@ func NewHopScotchHashTable(size, maxDist int) *HopScotchHashTable {
 
 func (h *HopScotchHashTable) Print() {
 	for i := 0; i < len(h.arr); i++ {
-		log.Println(*h.arr[i])
+		if h.arr[i].Elem != nil {
+			log.Println(h.arr[i].Dist, *h.arr[i].Elem)
+		} else {
+			log.Println(h.arr[i].Dist, "nil")
+		}
 	}
 }
 
@@ -75,22 +79,26 @@ func (h *HopScotchHashTable) Delete(key int) {
 }
 
 func (h *HopScotchHashTable) Set(key int, value interface{}) {
+	h.set(key, value)
+}
+
+func (h *HopScotchHashTable) set(key int, value interface{}) {
 	for {
 		pos := h.hasher(key)
-		temp := pos
+		startPos := pos
 		for pos < len(h.arr) && h.arr[pos].Elem != nil {
 			pos++
 		}
 
-		// TODO
+		// TODO 数组尾部怎么处理
 		if pos >= len(h.arr) {
 			h.rehash()
 			continue
 		}
 
-		if pos <= temp+h.maxDist-1 {
+		if pos <= startPos+h.maxDist-1 {
 			h.arr[pos].Elem = &Elem{Key: key, Value: value}
-			h.arr[temp].Dist = h.arr[temp].Dist + (1 << (h.maxDist - 1 + temp - pos)) // 1 << (h.maxDist - 1 + 领主位置 - 领子位置)
+			h.arr[startPos].Dist = h.arr[startPos].Dist + (1 << (h.maxDist - 1 + startPos - pos)) // 1 << (h.maxDist - 1 + 领主位置 - 领子位置)
 			h.sz++
 			log.Println("insert1:", key, value)
 			return
@@ -114,9 +122,9 @@ func (h *HopScotchHashTable) Set(key int, value interface{}) {
 						// pos新位置,相当于pos向上移动
 						pos = pos - i + h.maxDist - 1 - j
 
-						if pos <= temp+3 {
+						if pos <= startPos+h.maxDist-1 {
 							h.arr[pos].Elem = &Elem{Key: key, Value: value}
-							h.arr[temp].Dist = h.arr[temp].Dist + (1 << (temp + h.maxDist - 1 - pos))
+							h.arr[startPos].Dist = h.arr[startPos].Dist + (1 << (h.maxDist - 1 + startPos - pos))
 							h.sz++
 							log.Println("insert2:", key, value)
 							return
@@ -145,18 +153,20 @@ func (h *HopScotchHashTable) Set(key int, value interface{}) {
 
 func (h *HopScotchHashTable) rehash() {
 	oldArr := h.arr
-	newArr := make([]*HashItem, 2*len(oldArr))
+	newArr := make([]*HashEntry, 2*len(oldArr))
 	for i := 0; i < len(newArr); i++ {
-		newArr[i] = &HashItem{}
+		newArr[i] = &HashEntry{}
 	}
 	h.sz = 0
 	h.arr = newArr
+
+	log.Printf("rehash start, cap: %d", len(h.arr))
 	for i := 0; i < len(oldArr); i++ {
 		if elem := oldArr[i].Elem; elem != nil {
-			h.Set(elem.Key, elem.Value)
+			h.set(elem.Key, elem.Value)
 		}
 	}
-	log.Println("rehash")
+	log.Printf("rehash end, cap: %d", len(h.arr))
 }
 
 func (h *HopScotchHashTable) hasher(key int) int {
@@ -170,7 +180,7 @@ func (h *HopScotchHashTable) hasher(key int) int {
 	}
 	total := len(h.arr)
 	hashCode := f.Sum64() % uint64(total)
-	log.Println(int(hashCode))
+	log.Printf("key: %d, hashcode: %d", key, int(hashCode))
 	return int(hashCode)
 }
 
@@ -188,14 +198,23 @@ func do1() {
 
 func do2() {
 	h := NewHopScotchHashTable(8, 4)
-	h.Set(1, 23)
-	h.Set(2, 23)
-	h.Set(10, 23)
-	//h.Set(3, 23)
-	//h.Set(4, 23)
-	//h.Set(9, 23)
-	h.Print()
-	//log.Println(h.findPos(3))
+
+	for i := 0; i < 100; i++ {
+		h.Set(i, i+1000)
+	}
+
+	for i := 0; i < 100; i++ {
+		v, ok := h.Get(i)
+		if !ok {
+			log.Fatalf("key: %d", i)
+		}
+
+		if value, ok2 := v.(int); !ok2 || value != i+1000 {
+			log.Fatalf("key: %d", i)
+		}
+	}
+
+	//h.Print()
 }
 
 func main() {
