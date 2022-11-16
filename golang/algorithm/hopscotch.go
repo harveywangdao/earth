@@ -94,6 +94,13 @@ func (h *HopScotchHashTable) Set(key int, value interface{}) {
 	if h.sz >= len(h.arr) {
 		h.rehash()
 	}
+
+	pos := h.findPos(key)
+	if pos != -1 {
+		h.arr[pos%len(h.arr)].Elem.Value = value
+		return
+	}
+
 	h.set(key, value)
 }
 
@@ -129,13 +136,13 @@ func (h *HopScotchHashTable) set2(startPos, pos, key int, value interface{}) boo
 					pos = pos - i + h.maxDist - 1 - j
 					realPos = pos % n
 
-					log.Printf("key: %d, value: %d, startPos: %d, realPos: %d, pos: %d, cap: %d", key, value, startPos, realPos, pos, len(h.arr))
+					//log.Printf("key: %d, value: %d, startPos: %d, realPos: %d, pos: %d, cap: %d", key, value, startPos, realPos, pos, len(h.arr))
 
 					if pos <= startPos+h.maxDist-1 {
 						h.arr[realPos].Elem = &Elem{Key: key, Value: value}
 						h.arr[startPos].Dist = h.arr[startPos].Dist + (1 << (h.maxDist - 1 + startPos - pos))
 						h.sz++
-						log.Println("insert4:", key, value)
+						//log.Println("insert4:", key, value)
 						return true
 					} else {
 						isNotDist = true
@@ -241,7 +248,7 @@ func (h *HopScotchHashTable) rehash() {
 	h.sz = 0
 	h.arr = newArr
 
-	//log.Printf("rehash start, cap: %d", len(h.arr))
+	log.Printf("rehash start, cap: %d", len(h.arr))
 	for i := 0; i < len(oldArr); i++ {
 		if elem := oldArr[i].Elem; elem != nil {
 			h.set(elem.Key, elem.Value)
@@ -270,6 +277,7 @@ func (h *HopScotchHashTable) hasher2(key int) int {
 	return int(hashCode)
 }
 
+// 冲突测试
 func do1() {
 	h := NewHopScotchHashTable(8, 4)
 	h.Set(1, 23)
@@ -282,27 +290,8 @@ func do1() {
 	log.Println(h.findPos(3))
 }
 
+// 交换测试
 func do2() {
-	h := NewHopScotchHashTable(8, 4)
-
-	n := 10000
-	for i := 0; i < n; i++ {
-		h.Set(i, i+1000)
-	}
-
-	for i := 0; i < n; i++ {
-		v, ok := h.Get(i)
-		if !ok {
-			log.Fatalf("key: %d", i)
-		}
-
-		if value, ok2 := v.(int); !ok2 || value != i+1000 {
-			log.Fatalf("key: %d", i)
-		}
-	}
-}
-
-func do3() {
 	h := NewHopScotchHashTable(16, 4)
 
 	var keys []int
@@ -342,19 +331,71 @@ func do3() {
 	h.Print()
 }
 
+// 相同key
+func do3() {
+	h := NewHopScotchHashTable(8, 4)
+	h.Set(4, 1)
+	h.Set(4, 2)
+	h.Print()
+	log.Println(h.Get(4))
+}
+
+// 删除key
 func do4() {
+	h := NewHopScotchHashTable(16, 4)
+
+	h.Set(1, 1000)
+	h.Set(2, 1000)
+	h.Set(1+16, 1000)
+	h.Set(1+2*16, 1000)
+	h.Set(1+3*16, 1000)
+	h.Print()
+
+	log.Println()
+	h.Delete(33)
+	h.Print()
+
+	return
+}
+
+// 递增key
+func do5() {
+	h := NewHopScotchHashTable(8, 4)
+
+	n := 10000
+	for i := 0; i < n; i++ {
+		h.Set(i, i+1000)
+	}
+
+	for i := 0; i < n; i++ {
+		v, ok := h.Get(i)
+		if !ok {
+			log.Fatalf("key: %d", i)
+		}
+
+		if value, ok2 := v.(int); !ok2 || value != i+1000 {
+			log.Fatalf("key: %d", i)
+		}
+	}
+}
+
+// 随机key
+func do6() {
 	h := NewHopScotchHashTable(64, 8)
 
 	r := rand.New(rand.NewSource(time.Now().Unix()))
 
 	var keys []int
 	n := 100000
+	start := time.Now()
 	for i := 0; i < n; i++ {
 		k := r.Int()
 		h.Set(k, k+1000)
 		keys = append(keys, k)
 	}
+	log.Println("set cost:", time.Now().Sub(start))
 
+	start = time.Now()
 	for i := 0; i < len(keys); i++ {
 		v, ok := h.Get(keys[i])
 		if !ok {
@@ -365,9 +406,10 @@ func do4() {
 			log.Fatalf("key %d value: %d error", keys[i], value)
 		}
 	}
+	log.Println("get cost:", time.Now().Sub(start))
 }
 
 func main() {
 	log.SetFlags(log.Lshortfile | log.LstdFlags)
-	do3()
+	do4()
 }
