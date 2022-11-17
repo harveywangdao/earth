@@ -5,8 +5,6 @@ import (
 	"encoding/binary"
 	"hash/fnv"
 	"log"
-	"math/rand"
-	"time"
 )
 
 type Entry struct {
@@ -82,7 +80,7 @@ func (r *RobinHoodHashTable) rehash(newCap int) {
 	newTable := make([]*Entry, newCap)
 	r.size = 0
 	r.table = newTable
-	log.Printf("rehash start, cap: %d", newCap)
+	//log.Printf("rehash start, cap: %d", newCap)
 	for _, e := range oldTable {
 		if e != nil {
 			r.set(e.Key, e.Value)
@@ -160,6 +158,17 @@ func (r *RobinHoodHashTable) Delete(key int) {
 	}
 }
 
+func (r *RobinHoodHashTable) Range(f func(key int, value interface{}) bool) {
+	for i := 0; i < len(r.table); i++ {
+		if r.table[i] != nil {
+			ok := f(r.table[i].Key, r.table[i].Value)
+			if !ok {
+				return
+			}
+		}
+	}
+}
+
 func (r *RobinHoodHashTable) hasher(key int) int {
 	return key % len(r.table)
 }
@@ -177,113 +186,4 @@ func (r *RobinHoodHashTable) hasher2(key int) int {
 	hashCode := f.Sum64() % uint64(total)
 	//log.Printf("key: %d, hashcode: %d", key, int(hashCode))
 	return int(hashCode)
-}
-
-// 冲突测试
-func do1() {
-	h := NewRobinHoodHashTable(16, 0.5)
-	h.Set(1, 1000)
-	h.Set(1+16, 1000)
-	h.Set(1+2*16, 1000)
-	h.Set(1+3*16, 1000)
-	h.Set(1+4*16, 1000)
-	h.Set(1+5*16, 1000)
-	h.Set(1+6*16, 1000)
-	h.Print()
-}
-
-// 交换测试
-func do2() {
-	h := NewRobinHoodHashTable(16, 0.5)
-	h.Set(1, 1000)
-	h.Set(2, 1000)
-	h.Set(1+16, 1000)
-	h.Set(1+2*16, 1000)
-	h.Set(1+3*16, 1000)
-	h.Set(1+4*16, 1000)
-	h.Set(2+16, 1000)
-	h.Print()
-}
-
-// 相同key
-func do3() {
-	h := NewRobinHoodHashTable(16, 0.5)
-	h.Set(1, 1000)
-	h.Set(1, 2000)
-	h.Print()
-}
-
-// 删除key
-func do4() {
-	h := NewRobinHoodHashTable(16, 0.5)
-
-	h.Set(1, 1000)
-	h.Set(2, 1000)
-	h.Set(1+16, 1000)
-	h.Set(1+2*16, 1000)
-	h.Set(1+3*16, 1000)
-	h.Set(1+4*16, 1000)
-	h.Set(2+16, 1000)
-	h.Print()
-
-	log.Println()
-	h.Delete(33)
-	h.Print()
-
-	return
-}
-
-// 递增key
-func do5() {
-	h := NewRobinHoodHashTable(8, 0.5)
-
-	n := 10000
-	for i := 0; i < n; i++ {
-		h.Set(i, i+1000)
-	}
-
-	for i := 0; i < n; i++ {
-		v, ok := h.Get(i)
-		if !ok {
-			log.Fatalf("key: %d", i)
-		}
-
-		if value, ok2 := v.(int); !ok2 || value != i+1000 {
-			log.Fatalf("key: %d", i)
-		}
-	}
-}
-
-// 随机key
-func do6() {
-	h := NewRobinHoodHashTable(8, 0.5)
-	r := rand.New(rand.NewSource(time.Now().Unix()))
-
-	var keys []int
-	n := 100000
-	start := time.Now()
-	for i := 0; i < n; i++ {
-		k := r.Int()
-		h.Set(k, k+1000)
-		keys = append(keys, k)
-	}
-	log.Println("set cost:", time.Now().Sub(start))
-
-	start = time.Now()
-	for i := 0; i < len(keys); i++ {
-		v, ok := h.Get(keys[i])
-		if !ok {
-			log.Fatalf("key %d not existed", keys[i])
-		}
-
-		if value, ok2 := v.(int); !ok2 || value != keys[i]+1000 {
-			log.Fatalf("key %d value: %d error", keys[i], value)
-		}
-	}
-	log.Println("get cost:", time.Now().Sub(start))
-}
-
-func main() {
-	log.SetFlags(log.Lshortfile | log.LstdFlags)
-	do4()
 }
