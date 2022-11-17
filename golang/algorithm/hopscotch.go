@@ -64,7 +64,6 @@ func (h *HopScotchHashTable) findPos(key int) int {
 	for i := 0; i < h.maxDist; i++ {
 		if (h.arr[pos].Dist>>i)%2 == 1 {
 			if h.arr[(pos+h.maxDist-1-i)%len(h.arr)].Elem.Key == key {
-				//if h.arr[pos+h.maxDist-1-i].Elem.Key == key {
 				return pos + h.maxDist - 1 - i
 			}
 		}
@@ -78,7 +77,6 @@ func (h *HopScotchHashTable) Get(key int) (interface{}, bool) {
 		return nil, false
 	}
 	return h.arr[pos%len(h.arr)].Elem.Value, true
-	//return h.arr[pos].Elem.Value, true
 }
 
 func (h *HopScotchHashTable) Delete(key int) {
@@ -91,103 +89,30 @@ func (h *HopScotchHashTable) Delete(key int) {
 }
 
 func (h *HopScotchHashTable) Set(key int, value interface{}) {
-	if h.sz >= len(h.arr) {
-		h.rehash()
-	}
-
 	pos := h.findPos(key)
 	if pos != -1 {
 		h.arr[pos%len(h.arr)].Elem.Value = value
 		return
 	}
-
 	h.set(key, value)
-}
-
-func (h *HopScotchHashTable) set2(startPos, pos, key int, value interface{}) bool {
-	realPos := pos
-	n := len(h.arr)
-	pos = pos + n
-
-	if pos <= startPos+h.maxDist-1 {
-		h.arr[realPos].Elem = &Elem{Key: key, Value: value}
-		h.arr[startPos].Dist = h.arr[startPos].Dist + (1 << (h.maxDist - 1 + startPos - pos)) // 1 << (h.maxDist - 1 + 领主位置 - 领子位置)
-		h.sz++
-		//log.Println("insert3:", key, value)
-		return true
-	}
-
-	for {
-		isNotDist := false
-
-		for i := h.maxDist - 1; i > 0; i-- {
-			for j := h.maxDist - 1; j > h.maxDist-1-i; j-- {
-				if (h.arr[(pos-i)%n].Dist>>j)%2 == 1 {
-					item := h.arr[(pos-i+h.maxDist-1-j)%n]
-					h.arr[realPos].Elem = item.Elem
-					item.Elem = nil
-					// 领主位置: pos-i
-					// 旧位置: pos-i+h.maxDist-1-j
-					// 新位置: pos
-					// 从领域摘除,再重新设置新位置
-					h.arr[(pos-i)%n].Dist = h.arr[(pos-i)%n].Dist - (1 << j) + (1 << (h.maxDist - 1 - i))
-
-					// pos新位置,相当于pos向上移动
-					pos = pos - i + h.maxDist - 1 - j
-					realPos = pos % n
-
-					//log.Printf("key: %d, value: %d, startPos: %d, realPos: %d, pos: %d, cap: %d", key, value, startPos, realPos, pos, len(h.arr))
-
-					if pos <= startPos+h.maxDist-1 {
-						h.arr[realPos].Elem = &Elem{Key: key, Value: value}
-						h.arr[startPos].Dist = h.arr[startPos].Dist + (1 << (h.maxDist - 1 + startPos - pos))
-						h.sz++
-						//log.Println("insert4:", key, value)
-						return true
-					} else {
-						isNotDist = true
-						break
-					}
-				}
-			}
-
-			if isNotDist {
-				break
-			}
-		}
-
-		if !isNotDist {
-			break
-		}
-	}
-
-	return false
 }
 
 func (h *HopScotchHashTable) set(key int, value interface{}) {
 	for {
-		pos := h.hasher(key)
-		startPos := pos
-		flag := false
-		for h.arr[pos].Elem != nil {
-			pos++
-
-			if pos >= len(h.arr) {
-				pos = 0
-				flag = true
-			}
+		if h.sz >= len(h.arr) {
+			h.rehash()
 		}
 
-		if flag {
-			if h.set2(startPos, pos, key, value) {
-				return
-			}
-			h.rehash()
-			continue
+		pos := h.hasher(key)
+		startPos := pos
+		n := len(h.arr)
+
+		for h.arr[pos%n].Elem != nil {
+			pos++
 		}
 
 		if pos <= startPos+h.maxDist-1 {
-			h.arr[pos].Elem = &Elem{Key: key, Value: value}
+			h.arr[pos%n].Elem = &Elem{Key: key, Value: value}
 			h.arr[startPos].Dist = h.arr[startPos].Dist + (1 << (h.maxDist - 1 + startPos - pos)) // 1 << (h.maxDist - 1 + 领主位置 - 领子位置)
 			h.sz++
 			//log.Println("insert1:", key, value)
@@ -199,21 +124,21 @@ func (h *HopScotchHashTable) set(key int, value interface{}) {
 
 			for i := h.maxDist - 1; i > 0; i-- {
 				for j := h.maxDist - 1; j > h.maxDist-1-i; j-- {
-					if (h.arr[pos-i].Dist>>j)%2 == 1 {
-						item := h.arr[pos-i+h.maxDist-1-j]
-						h.arr[pos].Elem = item.Elem
+					if (h.arr[(pos-i)%n].Dist>>j)%2 == 1 {
+						item := h.arr[(pos-i+h.maxDist-1-j)%n]
+						h.arr[pos%n].Elem = item.Elem
 						item.Elem = nil
 						// 领主位置: pos-i
 						// 旧位置: pos-i+h.maxDist-1-j
 						// 新位置: pos
 						// 从领域摘除,再重新设置新位置
-						h.arr[pos-i].Dist = h.arr[pos-i].Dist - (1 << j) + (1 << (h.maxDist - 1 - i))
+						h.arr[(pos-i)%n].Dist = h.arr[(pos-i)%n].Dist - (1 << j) + (1 << (h.maxDist - 1 - i))
 
 						// pos新位置,相当于pos向上移动
 						pos = pos - i + h.maxDist - 1 - j
 
 						if pos <= startPos+h.maxDist-1 {
-							h.arr[pos].Elem = &Elem{Key: key, Value: value}
+							h.arr[pos%n].Elem = &Elem{Key: key, Value: value}
 							h.arr[startPos].Dist = h.arr[startPos].Dist + (1 << (h.maxDist - 1 + startPos - pos))
 							h.sz++
 							//log.Println("insert2:", key, value)
@@ -402,6 +327,8 @@ func do6() {
 			log.Fatalf("key %d not existed", keys[i])
 		}
 
+		//log.Println(keys[i], v)
+
 		if value, ok2 := v.(int); !ok2 || value != keys[i]+1000 {
 			log.Fatalf("key %d value: %d error", keys[i], value)
 		}
@@ -411,5 +338,5 @@ func do6() {
 
 func main() {
 	log.SetFlags(log.Lshortfile | log.LstdFlags)
-	do4()
+	do1()
 }
