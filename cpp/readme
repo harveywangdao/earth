@@ -12,6 +12,17 @@
 12.mysql、redis、rapidjson、proxygen、beast、proxysql、folly、muduo
 13.web
 
+c++98
+c++03
+c++11 -std=c++11
+c++14
+c++17
+c++20
+
+C90 -std=c90
+C99 -std=c99
+C11 -std=c11
+C18 -std=c18
 
 boost::any
 
