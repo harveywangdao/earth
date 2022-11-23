@@ -172,6 +172,7 @@ P:
 处理器,提供线程需要的上下文环境,调度等待队列,P本地运行队列最大256
 P状态:_Pidle/_Prunning/_Psyscall/_Pgcstop/_Pdead
 wakep: 获取一个闲置的P绑定M去执行
+runqsteal: 如果当前P上没有可执行的G就去其它P上偷一半过来,runqgrab
 
 schedule:
 全局运行队列sched.runq中有待执行的G时,通过schedtick保证有一定几率会从全局运行队列中查找G(globrunqget),从P本地运行队列中查找待执行的G(runqget),如果前两种方法都没有找到G,会通过findrunnable进行阻塞地查找G,网络轮询器中查找,通过runqsteal尝试从其它随机的P中窃取待运行的G,该函数还可能窃取处理器的计时器,gcstopm
