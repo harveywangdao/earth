@@ -24,10 +24,7 @@ C99 -std=c99
 C11 -std=c11
 C18 -std=c18
 
-int f() const
-constexpr
-struct
-class
+struct/class
 abstract
 virtual
 explicit
