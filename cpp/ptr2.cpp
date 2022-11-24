@@ -69,21 +69,23 @@ void func2(){
     cout << "AAAA" << endl;
 }
 
-int main(int argc, char const *argv[])
+void do3()
 {
-  func1();
-  func2();
-
-  int *pp;
-
   if (nullptr == 0)
   {
-    cout << "FFFF" << endl;
-  } else {
-    cout << "EEEE" << endl;
+    cout << "nullptr == 0" << endl;
   }
+  else 
+  {
+    cout << "nullptr != 0" << endl;
+  }
+}
 
-  cout << "app stop" << endl;
-
+// g++ --std=c++11 -o demo ptr2.cpp
+int main(int argc, char const *argv[])
+{
+  //func1();
+  //func2();
+  do3();
   return 0;
 }

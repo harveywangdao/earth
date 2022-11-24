@@ -24,6 +24,29 @@ C99 -std=c99
 C11 -std=c11
 C18 -std=c18
 
+int f() const
+constexpr
+struct
+class
+abstract
+virtual
+explicit
+implicit
+析构函数
+纯虚函数
+static
+reinterpret_cast
+noexcept
+f() = delete
+static_cast
+thread_local
+std::array
+std::atomic_bool
+[[noreturn]]
+[[nodiscard]]
+[[maybe_unused]]
+decltype
+
 boost::any
 
 std::function
@@ -56,14 +79,5 @@ std::call_once
 std::shared_future
 std::future
 std::promise
-
 std::async
-
-explicit
-implicit
-noexcept
-constexpr
-auto
-decltype
-
 std::condition_variable

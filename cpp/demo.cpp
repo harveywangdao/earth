@@ -2,40 +2,6 @@
 
 using namespace std;
 
-/*
-const 修饰指针 修饰指针指向的数据 修饰函数返回值
-int f() const
-constexpr
-& 引用
-struct
-class XX {
-  public:
-  private:
-}
-abstract
-virtual
-explicit
-构造函数
-析构函数
-纯虚函数
-static 全局变量
-static 局部变量
-static 函数
-static class成员
-多态
-nullptr 空指针
-reinterpret_cast
-noexcept
-f() = delete
-static_cast
-thread_local
-std::array
-std::atomic_bool
-[[noreturn]]
-[[nodiscard]]
-[[maybe_unused]]
-*/
-
 void do1()
 {
   bool ok;
