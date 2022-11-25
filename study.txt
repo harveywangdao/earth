@@ -625,8 +625,147 @@ iface/eface _type/_func itab symtab traceback
 编译器/汇编/链接器/ast/dwarf/elf
 反射reflect
 cgo
-C++
 Rust
+
+C++:
+c++98 c++03 c++11 c++14 c++17 c++20
+g++ -std=c++11 -o app main.cpp
+C90 C99 C11 C18
+gcc -std=c11 -o app main.c
+
+struct/class:
+默认成员权限,class是私有的,struct是公有的
+默认继承权限,class是private,struct是public
+class可以定义模板参数template<class T>,而没有template<struct T>
+
+template:
+函数模板
+template <typename T = int>默认int
+T const& Max(T const& a, T const& b)
+类模板
+template <class T>
+class Stack {
+private:
+  vector<T> elems;
+}
+
+元编程:
+
+引用&:
+相当于一个变量的别名,对引用赋值就是对这个变量赋值;一旦引用被初始化为一个对象就不能被指向到另一个对象;引用必须在创建时被初始化,引用在语法层面只能在申明的时候初始化,无法重新赋值,因为后面对引用的所有操作都相当于操作指向的那个变量
+引用作为函数返回值要注意返回的值要在函数返回后依然存在,如不能返回函数体内的局部变量(非static)
+
+virtual:
+纯虚函数: 只申明不实现,留给子类实现
+class A {
+public:
+  virtual void add(int a, int b) = 0;
+}
+虚基类:
+继承间接共同基类时只保留一份成员,当基类通过多条派生路径被一个派生类继承时,该派生类只继承该基类一次
+class Base
+class A : virtual public Base
+class B : virtual public Base
+class C : public A, public B
+抽象类:
+抽象类就是含有至少一个纯虚函数;抽象类不能有实例对象;子类没有覆写所有的纯虚函数则子类还是抽象类;不能实例化
+
+const:
+class A {
+private:
+  int num;
+public:
+  int getNum() const 
+  {
+    //num = 12;
+    return num;
+  }
+}
+const修饰类成员函数,其目的是防止类成员函数修改被调用对象的成员值
+constexpr:在编译阶段就能计算出结果;使用gcc时constexpr指针所指变量必须是全局变量或者static变量,constexpr保护指针变量,不保护指针指向的内存;放在if上如果else走不到就不会编译else的内容
+
+using:
+using namespace std;
+类似typedef,using myint = int;
+typedef不能用于模板,using可以定义模板别名
+
+析构函数:
+对象在销毁时会自动调用析构函数,完成类的一些资源清理工作
+~MyClass() {} //无参数无返回值
+如果不显式定义析构函数,编译器会生成一个析构函数,都会在对象的声明周期结束时自动调用,并且会调用成员变量(自定义类型)的析构函数来释放资源
+
+lambda:
+[] () mutable throw() -> return-type {}
+捕获列表:捕获列表能够捕捉上下文中的变量以供Lambda函数使用;[var]表示值传递方式捕获变量var,[=]表示值传递方式捕获所有父作用域的变量;[&var]表示引用传递捕捉变量var,[&]表示引用传递方式捕捉所有父作用域的变量;[this]表示值传递方式捕捉当前的this指针
+编译器会把一个Lambda表达式生成一个匿名类的匿名对象,并在类中重载函数调用运算符,实现了一个operator()方法
+
+异常
+智能指针
+右值引用
+explicit
+implicit
+static
+reinterpret_cast
+noexcept
+f() = delete
+thread_local
+[[noreturn]]
+[[nodiscard]]
+[[maybe_unused]]
+decltype
+boost::any
+static_assert
+static_cast
+std::copy_n
+std::for_each
+std::array
+std::atomic_bool
+std::pair
+std::begin
+std::end
+std::cbegin
+std::cend
+std::integral_constant
+std::is_final
+std::make_shared
+std::unique_ptr
+std::tuple
+std::chrono
+std::basic_string
+std::less
+std::greater
+std::make_unique
+std::move
+std::function
+std::ref
+std::cref
+std::for_each
+std::mem_fn
+std::once_flag
+std::lock_guard
+std::unique_lock
+std::scoped_lock
+std::mutex
+std::timed_mutex
+std::lock
+std::recursive_mutex
+std::recursive_timed_mutex
+std::shared_mutex
+std::shared_timed_mutex
+std::shared_lock
+std::adopt_lock
+std::defer_lock
+std::once_flag
+std::call_once
+std::shared_future
+std::future
+std::promise
+std::async
+std::condition_variable
+const_cast/static_cast/dynamic_cast/reinterpret_cast
+STL/string/vector/list/map/set/array/deque/stack/queue/priority_queue/heap/multiset/multimap
+boost/thread/chrono/mutex/atomic
+rapidjson/proxygen/beast/proxysql/folly/muduo
 
 
 2.MySQL
