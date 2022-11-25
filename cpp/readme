@@ -35,16 +35,48 @@ static
 reinterpret_cast
 noexcept
 f() = delete
-static_cast
 thread_local
-std::array
-std::atomic_bool
 [[noreturn]]
 [[nodiscard]]
 [[maybe_unused]]
 decltype
+lambda
 
 boost::any
+
+static_assert
+static_cast
+
+std::copy_n
+std::for_each
+
+std::array
+std::atomic_bool
+
+std::pair
+
+std::begin
+std::end
+
+std::cbegin
+std::cend
+
+std::integral_constant
+std::is_final
+
+std::make_shared
+std::unique_ptr
+
+std::tuple
+std::chrono
+
+std::basic_string
+
+std::less
+std::greater
+
+std::make_unique
+std::move
 
 std::function
 std::ref
@@ -53,6 +85,7 @@ std::for_each
 std::mem_fn
 std::once_flag
 
+std::lock_guard
 std::unique_lock
 std::scoped_lock
 
