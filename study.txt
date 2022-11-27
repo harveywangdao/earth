@@ -693,29 +693,49 @@ typedef不能用于模板,using可以定义模板别名
 对象在销毁时会自动调用析构函数,完成类的一些资源清理工作
 ~MyClass() {} //无参数无返回值
 如果不显式定义析构函数,编译器会生成一个析构函数,都会在对象的声明周期结束时自动调用,并且会调用成员变量(自定义类型)的析构函数来释放资源
+基类指针操作派生类对象,基类析构函数不是虚函数的话,析构时不会调用派生类的析构函数
 
 lambda:
 [] () mutable throw() -> return-type {}
 捕获列表:捕获列表能够捕捉上下文中的变量以供Lambda函数使用;[var]表示值传递方式捕获变量var,[=]表示值传递方式捕获所有父作用域的变量;[&var]表示引用传递捕捉变量var,[&]表示引用传递方式捕捉所有父作用域的变量;[this]表示值传递方式捕捉当前的this指针
 编译器会把一个Lambda表达式生成一个匿名类的匿名对象,并在类中重载函数调用运算符,实现了一个operator()方法
 
-异常
-智能指针
-右值引用
+异常:
+
+智能指针:
+shared_ptr
+unique_ptr
+weak_ptr
+
+std::move
+将对象的状态或者所有权从一个对象转移到另一个对象,只是转移,没有内存的搬迁或者内存拷贝
+
+左值lvalue,非临时的,可以被取地址,可以出现在等号的左边或右边,可以被修改
+右值rvalue,临时的,不能取地址,只能出现在等号的右边,不能被修改
+
+左值引用,引用一个对象
+右值引用,必须绑定到右值的引用,通过&&获得右值引用
+
+将亡值
+
+std::forward
+
+const_cast/static_cast/dynamic_cast/reinterpret_cast
+static_assert
+
+auto && decltype:
+auto不能作为函数参数;auto不能作用于类的非静态成员变量;auto关键字不能定义数组;auto不能作用于模板参数A<auto>
+
 explicit
 implicit
 static
-reinterpret_cast
 noexcept
 f() = delete
 thread_local
 [[noreturn]]
 [[nodiscard]]
 [[maybe_unused]]
-decltype
 boost::any
-static_assert
-static_cast
 std::copy_n
 std::for_each
 std::array
@@ -735,7 +755,6 @@ std::basic_string
 std::less
 std::greater
 std::make_unique
-std::move
 std::function
 std::ref
 std::cref
@@ -762,9 +781,8 @@ std::future
 std::promise
 std::async
 std::condition_variable
-const_cast/static_cast/dynamic_cast/reinterpret_cast
-STL/string/vector/list/map/set/array/deque/stack/queue/priority_queue/heap/multiset/multimap
-boost/thread/chrono/mutex/atomic
+STL: string/vector/list/map/set/array/deque/stack/queue/priority_queue/heap/multiset/multimap
+boost: thread/chrono/mutex/atomic
 rapidjson/proxygen/beast/proxysql/folly/muduo
 
 
