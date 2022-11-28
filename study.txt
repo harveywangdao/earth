@@ -721,7 +721,7 @@ std::move
 std::forward
 
 const_cast/static_cast/dynamic_cast/reinterpret_cast
-static_assert
+static_assert: 编译期间的断言,不生成目标代码,C++11引入,static_assert(bool,"msg")/static_assert(bool)C++17
 
 auto && decltype:
 auto不能作为函数参数;auto不能作用于类的非静态成员变量;auto关键字不能定义数组;auto不能作用于模板参数A<auto>
