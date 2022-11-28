@@ -726,6 +726,12 @@ static_assert
 auto && decltype:
 auto不能作为函数参数;auto不能作用于类的非静态成员变量;auto关键字不能定义数组;auto不能作用于模板参数A<auto>
 
+typeid:
+std::type_info
+std::type_index
+
+
+override
 explicit
 implicit
 static
@@ -736,6 +742,11 @@ thread_local
 [[nodiscard]]
 [[maybe_unused]]
 boost::any
+std::initializer_list
+std::hash
+std::equal_to
+std::allocator
+std::reference_wrapper
 std::copy_n
 std::for_each
 std::array
@@ -748,7 +759,6 @@ std::cend
 std::integral_constant
 std::is_final
 std::make_shared
-std::unique_ptr
 std::tuple
 std::chrono
 std::basic_string
@@ -781,7 +791,7 @@ std::future
 std::promise
 std::async
 std::condition_variable
-STL: string/vector/list/map/set/array/deque/stack/queue/priority_queue/heap/multiset/multimap
+STL: string/vector/list/map/set/array/deque/stack/queue/priority_queue/heap/multiset/multimap/unordered_map
 boost: thread/chrono/mutex/atomic
 rapidjson/proxygen/beast/proxysql/folly/muduo
 
