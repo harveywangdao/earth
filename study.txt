@@ -737,6 +737,7 @@ implicit
 static
 noexcept
 f() = delete
+f() = default
 thread_local
 [[noreturn]]
 [[nodiscard]]
