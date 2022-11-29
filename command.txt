@@ -2175,6 +2175,12 @@ mysqldump -u root -p123456 --add-drop-table db1 | mysql -u root -p123456 newdb
   sudo python /tmp/devresize.py /dev/vdb
   sudo mount -a
 
+  sudo fdisk -l
+  lsblk
+  vgdisplay
+  lvextend -l +100%FREE /dev/mapper/ubuntu--vg-ubuntu--lv
+  resize2fs /dev/mapper/ubuntu--vg-ubuntu--lv
+
 35.MinGW Clang
   gcc main.c -o appc.exe
   g++ main.cpp -o appcpp.exe
