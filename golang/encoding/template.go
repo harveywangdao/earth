@@ -2,6 +2,7 @@ package main
 
 import (
 	"os"
+	"strconv"
 	"text/template"
 )
 
@@ -37,7 +38,11 @@ func do2() {
 var funcs = template.FuncMap{"toInt64": toInt64}
 
 func toInt64(s string) int64 {
-	return 13
+	n, err := strconv.ParseInt(s, 10, 64)
+	if err != nil {
+		panic(err)
+	}
+	return n
 }
 
 func do3() {
@@ -54,9 +59,9 @@ func do3() {
 
 func do4() {
 	args := map[string]interface{}{
-		"TitleType": 2,
+		"TitleType": "2",
 	}
-	tmpl, err := template.New("test").Parse("{{if eq .TitleType 2}}@you in the comments{{else if eq .TitleType 3}}mention you in the documentation{{end}}")
+	tmpl, err := template.New("test").Funcs(funcs).Parse("{{if eq (.TitleType | toInt64) 2}}@ คุณในความคิดเห็น{{else if eq (.TitleType | toInt64) 3}}กล่าวถึงคุณในเอกสาร{{end}}")
 	if err != nil {
 		panic(err)
 	}

@@ -684,6 +684,14 @@ public:
 const修饰类成员函数,其目的是防止类成员函数修改被调用对象的成员值
 constexpr:在编译阶段就能计算出结果;使用gcc时constexpr指针所指变量必须是全局变量或者static变量,constexpr保护指针变量,不保护指针指向的内存;放在if上如果else走不到就不会编译else的内容
 
+final:
+禁止重载,std::is_final
+修饰类时,禁止继承这个类,struct A final {};
+修饰类的成员函数时,这个函数在基类中必须是virtual的
+override:
+override明确地表示一个函数是对基类中一个虚函数的重载,它会检查基类虚函数和派生类中重载函数的签名不匹配问题,override表示函数应当重写基类中的虚函数(用于派生类的虚函数中)
+函数必须是virtual的
+
 using:
 using namespace std;
 类似typedef,using myint = int;
@@ -701,6 +709,23 @@ lambda:
 编译器会把一个Lambda表达式生成一个匿名类的匿名对象,并在类中重载函数调用运算符,实现了一个operator()方法
 
 异常:
+try {throw 42;} catch (const std::exception& e) {}
+func() try {
+  throw 23;
+}
+catch (const std::exception& e) {
+  std::cout << e.what() << 'endl';
+}
+std::overflow_error
+std::runtime_error
+std::exception
+
+noexcept:
+void f() noexcept; // does not throw
+void f() noexcept(false); // may throw
+void f() throw(int, double); // deprecated in C++11, removed in C++17
+void f() throw(); // deprecated in C++17, removed in C++20, 换成noexcept(true)
+std::nothrow
 
 智能指针:
 shared_ptr
@@ -734,11 +759,16 @@ alignas只能是2的次方
 如果结构体本身的对齐是n字节,那么alignas只能比n大,否则无效
 sizeof(struct A)>=alignof(struct A),alignas设置的如果比sizeof(struct A)还要大,那么sizeof(struct A)就增大
 
+volatile:
+当使用volatile声明的变量的值的时候,系统总是重新从它所在的内存读取数据,即使它前面的指令刚刚从该处读取过数据,而且读取的数据立刻被寄存
+mutable:
+被mutable修饰的变量将永远处于可变的状态
+如果类中的某个成员申明成mutable类型,那么即使类是const的也可以修改这个成员
+
 override
 explicit
 implicit
 static
-noexcept
 f() = delete
 f() = default
 thread_local
@@ -746,6 +776,9 @@ thread_local
 [[nodiscard]]
 [[maybe_unused]]
 boost::any
+std::memory_order
+std::abort
+std::bitset
 std::initializer_list
 std::hash
 std::equal_to
