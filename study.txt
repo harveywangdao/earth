@@ -723,9 +723,8 @@ std::forward
 const_cast/static_cast/dynamic_cast/reinterpret_cast
 static_assert: 编译期间的断言,不生成目标代码,C++11引入,static_assert(bool,"msg")/static_assert(bool)C++17
 
-auto && decltype:
-auto不能作为函数参数;auto不能作用于类的非静态成员变量;auto关键字不能定义数组;auto不能作用于模板参数A<auto>
-
+auto/decltype:
+引入decltype是因为auto并不适用于所有的自动类型推导场景,如auto不能作为函数参数;auto不能作用于类的非静态成员变量;auto关键字不能定义数组;auto不能作用于模板参数A<auto>;auto要求变量必须初始化decltype不要求
 typeid:
 std::type_info
 std::type_index

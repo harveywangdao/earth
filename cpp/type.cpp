@@ -109,12 +109,19 @@ void do6()
   int &c = a;
   decltype(c) d = b;
   decltype((a)) e = a;   // 加上括号表示引用
+  decltype(auto) f = (a);// 加上括号表示引用
   cout << "typeid(a): " << typeid(a).name() << endl;
   cout << "typeid(b): " << typeid(b).name() << endl;
   cout << "typeid(c): " << typeid(c).name() << endl;
   cout << "typeid(d): " << typeid(d).name() << endl;
   cout << "typeid(e): " << typeid(e).name() << endl;
+  cout << "typeid(f): " << typeid(f).name() << endl;
 
+  cout << a << endl;
+  e++;
+  cout << a << endl;
+  f++;
+  cout << a << endl;
 }
 
 template<typename T, typename U>
@@ -132,8 +139,31 @@ void do7()
   cout << "typeid(c): " << typeid(c).name() << endl;
 }
 
+template<auto n>
+auto fff() -> std::pair<decltype(n), decltype(n)>
+{
+  return {n, n};
+}
+
+void do8()
+{
+  auto a = 1 + 2;
+  auto b = add(1, 1.2);
+  static_assert(std::is_same_v<decltype(a), int>);
+  static_assert(std::is_same_v<decltype(b), double>);
+
+  auto [v, w] = fff<13>();
+  cout << "v: " << v << endl;
+  cout << "w: " << w << endl;
+
+  auto d = {1, 2}; // std::initializer_list<int>
+  //auto e{1, 2};
+  auto m{5};
+  //decltype(auto) z = { 1, 2 }
+}
+
 int main(int argc, char const *argv[])
 {
-  do7();
+  do8();
   return 0;
 }
