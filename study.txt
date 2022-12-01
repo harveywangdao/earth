@@ -729,6 +729,10 @@ typeid:
 std::type_info
 std::type_index
 
+alignas/alignof:
+alignas只能是2的次方
+如果结构体本身的对齐是n字节,那么alignas只能比n大,否则无效
+sizeof(struct A)>=alignof(struct A),alignas设置的如果比sizeof(struct A)还要大,那么sizeof(struct A)就增大
 
 override
 explicit
