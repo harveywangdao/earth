@@ -108,14 +108,32 @@ void do6()
   decltype(a) b;
   int &c = a;
   decltype(c) d = b;
+  decltype((a)) e = a;   // 加上括号表示引用
   cout << "typeid(a): " << typeid(a).name() << endl;
   cout << "typeid(b): " << typeid(b).name() << endl;
   cout << "typeid(c): " << typeid(c).name() << endl;
   cout << "typeid(d): " << typeid(d).name() << endl;
+  cout << "typeid(e): " << typeid(e).name() << endl;
+
+}
+
+template<typename T, typename U>
+//auto add(T t, U u) -> decltype(t + u)
+auto add(T t, U u)
+{
+  return t + u;
+}
+
+void do7()
+{
+  int a = 10, b = 20;
+  auto c = add<int,int>(a, b);
+  cout << "c: " << c << endl;
+  cout << "typeid(c): " << typeid(c).name() << endl;
 }
 
 int main(int argc, char const *argv[])
 {
-  do6();
+  do7();
   return 0;
 }

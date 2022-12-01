@@ -52,6 +52,20 @@ func do3() {
 	}
 }
 
+func do4() {
+	args := map[string]interface{}{
+		"TitleType": 2,
+	}
+	tmpl, err := template.New("test").Parse("{{if eq .TitleType 2}}@you in the comments{{else if eq .TitleType 3}}mention you in the documentation{{end}}")
+	if err != nil {
+		panic(err)
+	}
+	err = tmpl.Execute(os.Stdout, args)
+	if err != nil {
+		panic(err)
+	}
+}
+
 func main() {
-	do3()
+	do4()
 }
