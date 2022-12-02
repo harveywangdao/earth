@@ -107,8 +107,18 @@ void do4()
   cout << "a: " << a << ", b: " << b << endl;
 }
 
+void do5()
+{
+  const int a = 20;
+  //int &b = a; // binding reference of type int& to const int discards qualifiers
+  const int &b = a;
+  //b++;
+  cout << "a = " << a << endl;
+  cout << "b = " << b << endl;
+}
+
 int main(int argc, char const *argv[])
 {
-  do4();
+  do5();
   return 0;
 }

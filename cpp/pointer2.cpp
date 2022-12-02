@@ -81,11 +81,26 @@ void do3()
   }
 }
 
-// g++ --std=c++11 -o demo ptr2.cpp
+void do4()
+{
+  const int a = 10;
+  const int *p1 = &a;
+  // int *p2 = &a; // invalid conversion from const int* to int*
+  int *p3 = (int*)&a;
+
+  cout << "&a: " << &a << endl;
+  cout << "p1: " << p1 << endl;
+  cout << "p3: " << p3 << endl;
+
+  cout << "a: " << a << endl;
+  cout << "*p3: " << *p3 << endl;
+  (*p3)++; // 结果未定义
+  cout << "a: " << a << endl;
+  cout << "*p3: " << *p3 << endl;
+}
+
 int main(int argc, char const *argv[])
 {
-  //func1();
-  //func2();
-  do3();
+  do4();
   return 0;
 }

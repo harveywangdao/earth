@@ -654,6 +654,10 @@ private:
 引用&:
 相当于一个变量的别名,对引用赋值就是对这个变量赋值;一旦引用被初始化为一个对象就不能被指向到另一个对象;引用必须在创建时被初始化,引用在语法层面只能在申明的时候初始化,无法重新赋值,因为后面对引用的所有操作都相当于操作指向的那个变量
 引用作为函数返回值要注意返回的值要在函数返回后依然存在,如不能返回函数体内的局部变量(非static)
+对const常量取引用,引用也不许是const类型
+
+指针:
+对const常量取指针,指针应该是const int*类型的,也可以强制转换成int*类型,能够编译通过,但是对指针的操作是未定义的且不影响常量的值
 
 virtual:
 纯虚函数: 只申明不实现,留给子类实现
@@ -724,6 +728,7 @@ lambda:
 [] () mutable throw() -> return-type {}
 捕获列表:捕获列表能够捕捉上下文中的变量以供Lambda函数使用;[var]表示值传递方式捕获变量var,[=]表示值传递方式捕获所有父作用域的变量;[&var]表示引用传递捕捉变量var,[&]表示引用传递方式捕捉所有父作用域的变量;[this]表示值传递方式捕捉当前的this指针
 编译器会把一个Lambda表达式生成一个匿名类的匿名对象,并在类中重载函数调用运算符,实现了一个operator()方法
+函数式编程
 
 异常:
 try {throw 42;} catch (const std::exception& e) {}
@@ -762,8 +767,16 @@ std::move
 
 std::forward
 
-const_cast/static_cast/dynamic_cast/reinterpret_cast
-static_assert: 编译期间的断言,不生成目标代码,C++11引入,static_assert(bool,"msg")/static_assert(bool)C++17
+const_cast:
+去除复合类型中const和volatile属性;有些常量在编译的时候已经硬编码到代码里(常量折叠),所以打印的是硬编码的值不是内存里的值,自定义的数据类型(class/struct)无法在编译阶段常量折叠;
+static_cast:
+数据类型转换,可使用于需要明确隐式转换的地方,存在安全性
+dynamic_cast:
+主要用于有继承关系的多态类(基类必须有虚函数)的指针或引用之间的转换,将派生类指针转换为基类指针(上行转换)这个操作与static_cast的效果是一样的,将基类指针转换为派生类指针(下行转换)dynamic_cast具有类型检查的功能,比static_cast更安全
+reinterpret_cast:
+任意类型的转换,不关心继承体系,存在安全性,后的尖括号中的类型必须是一个指针/引用/算术类型/函数指针或者成员指针,它可以把一个指针转换成一个整数,也可以把一个整数转换成一个指针
+static_assert:
+编译期间的断言,不生成目标代码,C++11引入,static_assert(bool,"msg")/static_assert(bool)C++17
 
 auto/decltype:
 引入decltype是因为auto并不适用于所有的自动类型推导场景,如auto不能作为函数参数;auto不能作用于类的非静态成员变量;auto关键字不能定义数组;auto不能作用于模板参数A<auto>;auto要求变量必须初始化decltype不要求
