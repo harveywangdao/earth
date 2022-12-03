@@ -115,15 +115,23 @@ void do4()
   //int * constexpr p8 = &n9; // constexpr不能放这个位置
 }
 
+constexpr unsigned factorial(unsigned n)
+{
+  return n < 2 ? 1 : n * factorial(n-1);
+}
+
+consteval unsigned combination(unsigned m, unsigned n) {
+  return factorial(n) / factorial(m) / factorial(n - m);
+}
+
 void do5()
 {
-  int n1 = 10;
-  const int *p1 = &n1;
-  //*p1 = 11;
-  int *p2 = &n1;
-  *p2 = 11;
+  // consteval
+  static_assert(factorial(6) == 720);
+  static_assert(combination(4,8) == 70);
 
-  cout << "n1: " << n1 << endl;
+  constexpr unsigned x{factorial(4)};
+  std::cout << x << '\n';
 }
 
 int main(int argc, char const *argv[])

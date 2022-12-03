@@ -13,7 +13,7 @@ void printMap(map<int, string> m)
   cout << endl;
 }
 
-void func1()
+void do1()
 {
   map<int, string> m1;
   pair<map<int, string>::iterator, bool> ret;
@@ -49,12 +49,10 @@ void func1()
   printMap(m1);
 
   cout << "m1.size() " << m1.size() << endl;
-
 }
 
 int main(int argc, char const *argv[])
 {
-  func1();
-
+  do1();
   return 0;
 }

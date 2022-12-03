@@ -675,6 +675,7 @@ class C : public A, public B
 抽象类就是含有至少一个纯虚函数;抽象类不能有实例对象;子类没有覆写所有的纯虚函数则子类还是抽象类;不能实例化
 
 const:
+const修饰类成员函数,其目的是防止类成员函数修改被调用对象的成员值,如下
 class A {
 private:
   int num;
@@ -685,8 +686,43 @@ public:
     return num;
   }
 }
-const修饰类成员函数,其目的是防止类成员函数修改被调用对象的成员值
-constexpr:在编译阶段就能计算出结果;使用gcc时constexpr指针所指变量必须是全局变量或者static变量,constexpr保护指针变量,不保护指针指向的内存;放在if上如果else走不到就不会编译else的内容
+
+constexpr:
+在编译阶段就能计算出结果;使用gcc时constexpr指针所指变量必须是全局变量或者static变量,constexpr保护指针变量,不保护指针指向的内存;放在if上如果else走不到就不会编译else的内容;即可用于函数声明也可用于变量声明;当一个变量的声明中包含了constexpr时,这个变量将自动成为以const声明的常量
+consteval:
+只能参与函数的声明
+constinit:
+只能参与变量的声明
+
+concept:
+requires:
+
+co_await:
+co_return:
+co_yield:
+
+export:
+import:
+module:
+
+pragma:
+
+[[noreturn]]
+[[nodiscard]]
+[[maybe_unused]]
+[[carries_dependency]]
+[[deprecated]]
+[[deprecated("reason")]]
+[[fallthrough]]
+[[nodiscard]]
+[[nodiscard("reason")]]
+[[likely]]
+[[unlikely]]
+[[no_unique_address]
+[[assume]]
+
+__cpp_attributes
+__cpp_namespace_attributes
 
 final:
 禁止重载,std::is_final
@@ -800,9 +836,6 @@ explicit
 implicit
 static
 thread_local
-[[noreturn]]
-[[nodiscard]]
-[[maybe_unused]]
 boost::any
 std::memory_order
 std::abort
