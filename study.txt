@@ -628,6 +628,9 @@ cgo
 Rust
 
 C++:
+https://gcc.gnu.org/
+https://github.com/gcc-mirror/gcc
+
 c++98 c++03 c++11 c++14 c++17 c++20 c++23
 g++ -std=c++11 -o app main.cpp
 C90 C99 C11 C18
@@ -690,39 +693,9 @@ public:
 constexpr:
 在编译阶段就能计算出结果;使用gcc时constexpr指针所指变量必须是全局变量或者static变量,constexpr保护指针变量,不保护指针指向的内存;放在if上如果else走不到就不会编译else的内容;即可用于函数声明也可用于变量声明;当一个变量的声明中包含了constexpr时,这个变量将自动成为以const声明的常量
 consteval:
-只能参与函数的声明
+只能参与函数的声明,编译时运行的函数,编译时参数是确定的返回值也是常量;constexpr可能退化成运行时计算,但consteval不会,consteval比constexpr更严格
 constinit:
-只能参与变量的声明
-
-concept:
-requires:
-
-co_await:
-co_return:
-co_yield:
-
-export:
-import:
-module:
-
-pragma:
-
-[[noreturn]]
-[[nodiscard]]
-[[maybe_unused]]
-[[carries_dependency]]
-[[deprecated]]
-[[deprecated("reason")]]
-[[fallthrough]]
-[[nodiscard]]
-[[nodiscard("reason")]]
-[[likely]]
-[[unlikely]]
-[[no_unique_address]
-[[assume]]
-
-__cpp_attributes
-__cpp_namespace_attributes
+只能参与变量的声明,显式地指定变量的初始化方式为静态初始化,主要作用是强调静态变量能在编译期就确定值,只能修饰static/全局变量,实际上并不是常量,可以改变值
 
 final:
 禁止重载,std::is_final
@@ -792,15 +765,11 @@ weak_ptr
 
 std::move
 将对象的状态或者所有权从一个对象转移到另一个对象,只是转移,没有内存的搬迁或者内存拷贝
-
 左值lvalue,非临时的,可以被取地址,可以出现在等号的左边或右边,可以被修改
 右值rvalue,临时的,不能取地址,只能出现在等号的右边,不能被修改
-
 左值引用,引用一个对象
 右值引用,必须绑定到右值的引用,通过&&获得右值引用
-
 将亡值
-
 std::forward
 
 const_cast:
@@ -811,6 +780,7 @@ dynamic_cast:
 主要用于有继承关系的多态类(基类必须有虚函数)的指针或引用之间的转换,将派生类指针转换为基类指针(上行转换)这个操作与static_cast的效果是一样的,将基类指针转换为派生类指针(下行转换)dynamic_cast具有类型检查的功能,比static_cast更安全
 reinterpret_cast:
 任意类型的转换,不关心继承体系,存在安全性,后的尖括号中的类型必须是一个指针/引用/算术类型/函数指针或者成员指针,它可以把一个指针转换成一个整数,也可以把一个整数转换成一个指针
+
 static_assert:
 编译期间的断言,不生成目标代码,C++11引入,static_assert(bool,"msg")/static_assert(bool)C++17
 
@@ -826,20 +796,50 @@ alignas只能是2的次方
 sizeof(struct A)>=alignof(struct A),alignas设置的如果比sizeof(struct A)还要大,那么sizeof(struct A)就增大
 
 volatile:
-当使用volatile声明的变量的值的时候,系统总是重新从它所在的内存读取数据,即使它前面的指令刚刚从该处读取过数据,而且读取的数据立刻被寄存
+当读取volatile变量的时候,系统总是重新从它所在的内存读取数据,即使它前面的指令刚刚从该处读取过数据,而且读取的数据立刻被寄存
 mutable:
 被mutable修饰的变量将永远处于可变的状态
 如果类中的某个成员申明成mutable类型,那么即使类是const的也可以修改这个成员
 
-override
+extern
 explicit
 implicit
 static
 thread_local
-boost::any
+concept
+requires
+co_await
+co_return
+co_yield
+export
+import
+module
+pragma
+[[noreturn]]
+[[nodiscard]]
+[[maybe_unused]]
+[[carries_dependency]]
+[[deprecated]]
+[[deprecated("reason")]]
+[[fallthrough]]
+[[nodiscard]]
+[[nodiscard("reason")]]
+[[likely]]
+[[unlikely]]
+[[no_unique_address]
+[[assume]]
+__cpp_attributes
+__cpp_namespace_attributes
+
+std::array
+std::pair
+std::time
+std::numeric_limits<int>::max()
+std::bitset
+std::size_t
+std::map
 std::memory_order
 std::abort
-std::bitset
 std::initializer_list
 std::hash
 std::equal_to
@@ -847,9 +847,8 @@ std::allocator
 std::reference_wrapper
 std::copy_n
 std::for_each
-std::array
 std::atomic_bool
-std::pair
+std::ranges
 std::begin
 std::end
 std::cbegin
@@ -889,8 +888,11 @@ std::future
 std::promise
 std::async
 std::condition_variable
+std::pow
+std::strlen
 STL: string/vector/list/map/set/array/deque/stack/queue/priority_queue/heap/multiset/multimap/unordered_map
 boost: thread/chrono/mutex/atomic
+boost::any
 rapidjson/proxygen/beast/proxysql/folly/muduo
 
 
