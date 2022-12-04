@@ -35,7 +35,7 @@ void fn1()
   cout << "child thread end" << endl;
 }
 
-void func1()
+void do1()
 {
   cout << "thread::hardware_concurrency() = " << thread::hardware_concurrency() << endl;
 
@@ -63,7 +63,7 @@ void fn2(int n)
   cout << "child thread end" << endl;
 }
 
-void func2()
+void do2()
 {  
   clock_t start = clock();
 
@@ -80,8 +80,6 @@ void func2()
 
 int main(int argc, char const *argv[])
 {
-  //func1();
-  func2();
-
+  do2();
   return 0;
 }
