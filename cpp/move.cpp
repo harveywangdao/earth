@@ -4,15 +4,49 @@ using namespace std;
 
 void do1()
 {
-  int a = 12;
-  int b = move(a);
+  int&& n1 = 10;
+  int&& n2 = std::move(n1);
+  //int&& n3 = n1;
 
-  b = 13;
+  int x = 20;
 
-  cout << "a: " << a << ", b: " << b << endl;
+  int&& y1 = x++;
+  //int&& y2 = ++x;
+
+  //int& y3 = x++;
+  int& y4 = ++x;
+
+  int y5 = x++;
+  int y6 = ++x;
+
+  int z = 40;
+  // x++是右值
+  // ++x是左值
+  ++z = z++;     // 左值 = 右值
+  std::cout << "z = " << z << std::endl;
+  // x++ = ++x;  // 右值 != 右值
+  ++z = ++z;     // 左值 = 左值
+  std::cout << "z = " << z << std::endl;
+  // x++ = ++x   // 右值 != 左值
+
+  std::cout << "x = " << x << std::endl;
+  std::cout << "y1 = " << y1 << std::endl;
+  std::cout << "y4 = " << y4 << std::endl;
+  std::cout << "y5 = " << y5 << std::endl;
+  std::cout << "y6 = " << y6 << std::endl;
+
 }
 
 void do2()
+{
+  int a = 10;
+  int b = move(a);
+  a++;
+  b++;
+  cout << "a: " << a << ", b: " << b << endl;
+}
+
+void do3()
 {
   int a = 10;
   int &b = a;
@@ -57,7 +91,7 @@ public:
     cout << "left ref" << endl;
   }
 
-  People(const People &&p)
+  People(People &&p)
   {
     size = p.size;
     data = p.data;
@@ -65,12 +99,12 @@ public:
     cout << "right ref" << endl;
   }
 
-  People& operator=(const People &p)
+  /*People& operator=(const People &p)
   {
     size = p.size;
     data = p.data;
     cout << "operator=" << endl;
-  }
+  }*/
 
   virtual ~People()
   {
@@ -83,14 +117,9 @@ public:
   }
 };
 
-void do3()
-{
-
-}
-
 // g++ -std=c++14 -o app rightref.cpp -w -fno-elide-constructors
 int main(int argc, char const *argv[])
 {
-  do3();
+  do1();
   return 0;
 }

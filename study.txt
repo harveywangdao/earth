@@ -845,14 +845,16 @@ shared_ptr
 unique_ptr
 weak_ptr
 
-std::move
+右值引用:
+std::move,将一个左值转换成右值
+std::forward,主要是用来解决在参数传递的过程当中右值被传递为左值失去了原来的无拷贝功能
+x++是右值,++x是左值
 将对象的状态或者所有权从一个对象转移到另一个对象,只是转移,没有内存的搬迁或者内存拷贝
 左值lvalue,非临时的,可以被取地址,可以出现在等号的左边或右边,可以被修改
 右值rvalue,临时的,不能取地址,只能出现在等号的右边,不能被修改
 左值引用,引用一个对象
 右值引用,必须绑定到右值的引用,通过&&获得右值引用
 将亡值
-std::forward
 
 const_cast:
 去除复合类型中const和volatile属性;有些常量在编译的时候已经硬编码到代码里(常量折叠),所以打印的是硬编码的值不是内存里的值,自定义的数据类型(class/struct)无法在编译阶段常量折叠;
@@ -900,17 +902,65 @@ xy::a = 100;
 using namespace xy
 using xy::a
 
+friend:
+在类中申明友元函数,这个函数不是这个类的成员函数,但是可以在友元函数里访问这个类的私有化成员;友元函数可以是一个独立的函数,也可以是某个类的成员函数
+友元类
+class A
+{
+  int data;
+  friend class X;
+  friend Y;
+};
+可以在X类中访问A的私有化成员
+
+asm:
+C++内部嵌入汇编
+asm ("movq $60, %rax\n\t"
+     "movq $2,  %rdi\n\t"
+     "syscall");
+
+pragma:
+#pragma once:
+只要在头文件的最开始加入这条就能够保证头文件只被编译一次,类似_Pragma("once")和
+#ifndef XXX
+#define XXX
+code
+#endif
+优点:可以避免宏名碰撞;缺点:某个头文件有多份拷贝本方法不能保证他们不被重复包含,pragma once针对的是物理文件;#pragma依赖于编译器一些老的编译器不提供
+#pragma pack:
+#pragma pack(show):显示当前字节对齐方式的字节数以warning显示
+#pragma pack(push):将当前的字节对齐方式入栈(internal compiler stack)也就是保存当前的字节对齐方式
+#pragma pack(pop):将(internal compiler stack)栈顶的记录出栈也就是恢复最新的一次字节对齐方式
+#pragma pack(push,identfier):当同push一起使用时赋予当前被压入栈中的record一个名称
+#pragma pack(pop,identfier):当同pop一起使用时从internal compiler stack中pop出所有的record直到identifier被pop出,如果identifier没有被找到则忽略pop操作
+#pragma pack(n):指定n个字节对齐,合法数值为2的非负整数次幂1/2/4/8/16缺省时为8
+#pragma pack():恢复默认字节对齐
+#pragma pack(push,n):当同push一起使用时,将当前的字节对齐方式入栈,同时设置当前的字节对齐数值为n
+#pragma pack(pop,n):当同pop一起使用时,将栈顶的字节对齐方式出栈,同时设置当前的字节对齐数值为n
+
+C++20:
+<=>
 concept
 requires
-co_await
-co_return
-co_yield
+
 export
 import
 module
-pragma
+
+co_await
+co_return
+co_yield
+
+C++23:
+atomic_cancel
+atomic_commit
+atomic_noexcept
+reflexpr
+synchronized
+transaction_safe
+transaction_safe_dynamic
+
 [[noreturn]]
-[[nodiscard]]
 [[maybe_unused]]
 [[carries_dependency]]
 [[deprecated]]
@@ -922,8 +972,6 @@ pragma
 [[unlikely]]
 [[no_unique_address]
 [[assume]]
-__cpp_attributes
-__cpp_namespace_attributes
 
 std::array
 std::pair
