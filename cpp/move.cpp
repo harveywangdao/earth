@@ -76,44 +76,92 @@ class People
 public:
   People():size(0)
   {
-    cout << "default" << ", size: " << size << ", this: " << this << endl;
+    cout << "People default" << ", size: " << size << ", this: " << this << endl;
   }
 
   //explicit People(int sz):size(sz)
   People(int sz):size(sz)
   {
-    cout << "with size" << ", size: " << size << ", this: " << this << endl;
+    cout << "People with size" << ", size: " << size << ", this: " << this << endl;
   }
 
   //explicit People(const People& p):size(p.size)
   People(const People& p):size(p.size)
   {
-    cout << "left ref" << ", size: " << size << ", this: " << this << endl;
+    cout << "People left ref" << ", size: " << size << ", this: " << this << endl;
   }
 
   //explicit People(People&& p):size(std::move(p.size))
   People(People&& p):size(std::move(p.size))
   {
-    cout << "right ref" << ", size: " << size << ", this: " << this << endl;
+    cout << "People right ref" << ", size: " << size << ", this: " << this << endl;
   }
 
   People& operator=(const People& p)
   {
     size = p.size;
-    cout << "operator= &" << ", size: " << size << ", this: " << this << endl;
+    cout << "People operator= &" << ", size: " << size << ", this: " << this << endl;
     return *this;
   }
 
   People& operator=(People&& p)
   {
     size = std::move(p.size);
-    cout << "operator= &&" << ", size: " << size << ", this: " << this << endl;
+    cout << "People operator= &&" << ", size: " << size << ", this: " << this << endl;
     return *this;
   }
 
   virtual ~People()
   {
     cout << "People destroy" << ", size: " << size << ", this: " << this << endl;
+  }
+};
+
+class Sky
+{
+  int *_data;
+
+public:
+  Sky():_data(nullptr)
+  {
+    cout << "Sky default" << ", size: " << size << ", this: " << this << endl;
+  }
+
+  //explicit Sky(int sz):size(sz)
+  Sky(int sz):size(sz)
+  {
+    cout << "Sky with size" << ", size: " << size << ", this: " << this << endl;
+  }
+
+  //explicit Sky(const Sky& p):size(p.size)
+  Sky(const Sky& p):size(p.size)
+  {
+    cout << "Sky left ref" << ", size: " << size << ", this: " << this << endl;
+  }
+
+  //explicit Sky(Sky&& p):size(std::move(p.size))
+  Sky(Sky&& p):size(std::move(p.size))
+  {
+    cout << "Sky right ref" << ", size: " << size << ", this: " << this << endl;
+  }
+
+  Sky& operator=(const Sky& p)
+  {
+    size = p.size;
+    cout << "Sky operator= &" << ", size: " << size << ", this: " << this << endl;
+    return *this;
+  }
+
+  Sky& operator=(Sky&& p)
+  {
+    size = std::move(p.size);
+    cout << "Sky operator= &&" << ", size: " << size << ", this: " << this << endl;
+    return *this;
+  }
+
+  virtual ~Sky()
+  {
+    cout << "Sky destroy" << ", size: " << size << ", this: " << this << endl;
   }
 };
 
