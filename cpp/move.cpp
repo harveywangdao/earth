@@ -1,4 +1,5 @@
 #include <iostream>
+#include <cstring>
 
 using namespace std;
 
@@ -117,54 +118,6 @@ public:
   }
 };
 
-class Sky
-{
-  int *_data;
-
-public:
-  Sky():_data(nullptr)
-  {
-    cout << "Sky default" << ", size: " << size << ", this: " << this << endl;
-  }
-
-  //explicit Sky(int sz):size(sz)
-  Sky(int sz):size(sz)
-  {
-    cout << "Sky with size" << ", size: " << size << ", this: " << this << endl;
-  }
-
-  //explicit Sky(const Sky& p):size(p.size)
-  Sky(const Sky& p):size(p.size)
-  {
-    cout << "Sky left ref" << ", size: " << size << ", this: " << this << endl;
-  }
-
-  //explicit Sky(Sky&& p):size(std::move(p.size))
-  Sky(Sky&& p):size(std::move(p.size))
-  {
-    cout << "Sky right ref" << ", size: " << size << ", this: " << this << endl;
-  }
-
-  Sky& operator=(const Sky& p)
-  {
-    size = p.size;
-    cout << "Sky operator= &" << ", size: " << size << ", this: " << this << endl;
-    return *this;
-  }
-
-  Sky& operator=(Sky&& p)
-  {
-    size = std::move(p.size);
-    cout << "Sky operator= &&" << ", size: " << size << ", this: " << this << endl;
-    return *this;
-  }
-
-  virtual ~Sky()
-  {
-    cout << "Sky destroy" << ", size: " << size << ", this: " << this << endl;
-  }
-};
-
 void do4()
 {
   People p1;
@@ -225,10 +178,255 @@ void do5()
   }*/
 }
 
+class Sky
+{
+  char *_data;
+
+public:
+  Sky():_data(nullptr)
+  {
+    cout << "Sky default" << ", data: " << (void *)_data << ", this: " << this << endl;
+  }
+
+  Sky(int sz)
+  {
+    _data = new char[sz];
+    cout << "Sky with size" << ", data: " << (void *)_data << ", this: " << this << endl;
+  }
+
+  Sky(const Sky& p)
+  {
+    _data = new char[std::strlen(p._data)+1];
+    std::strcpy(_data, p._data);
+    cout << "Sky left ref" << ", data: " << (void *)_data << ", this: " << this << endl;
+  }
+
+  Sky(Sky&& p)
+  {
+    _data = p._data;
+    p._data = nullptr;
+    cout << "Sky right ref" << ", data: " << (void *)_data << ", this: " << this << endl;
+  }
+
+  Sky& operator=(const Sky& p)
+  {
+    if (_data != nullptr)
+    {
+      delete[] _data;
+      _data = nullptr;
+    }
+
+    _data = new char[std::strlen(p._data)+1];
+    std::strcpy(_data, p._data);
+    cout << "Sky operator= &" << ", data: " << (void *)_data << ", this: " << this << endl;
+    return *this;
+  }
+
+  Sky& operator=(Sky&& p)
+  {
+    if (_data != nullptr)
+    {
+      delete[] _data;
+      _data = nullptr;
+    }
+
+    _data = p._data;
+    p._data = nullptr;
+    cout << "Sky operator= &&" << ", data: " << (void *)_data << ", this: " << this << endl;
+    return *this;
+  }
+
+  void dothing()
+  {
+    if (_data == nullptr)
+    {
+      std::cout << "Sky dothing, data is nullptr" << std::endl;
+    }
+    else
+    {
+      std::cout << "Sky dothing, data: " << (void *)_data << std::endl;
+    }
+  }
+
+  virtual ~Sky()
+  {
+    cout << "Sky destroy"  << ", this: " << this << endl;
+    if (_data != nullptr)
+    {
+      delete[] _data;
+      _data = nullptr;
+    }
+  }
+};
+
+void do6()
+{
+  Sky s1;
+  Sky s2(10);
+  Sky s3(s2);
+
+  s2.dothing();
+  Sky s4(std::move(s2));
+  s2.dothing();
+}
+
+void do7()
+{
+  Sky s5 = 20;
+  Sky s6 = s5;
+  Sky s7 = std::move(s5);
+}
+
+void do8()
+{
+  std::cout << "赋值 size:" << endl;
+  Sky s8;
+  s8 = 30;  //先Sky with size,再Sky operator= &&,再释放Sky with size
+
+  std::cout << endl;
+  std::cout << "Copy assignment operator:" << endl;
+  Sky s9(40);
+  s9 = s8;
+
+  std::cout << endl;
+  std::cout << "Move assignment operator:" << endl;
+  Sky s10(50);
+  s10 = std::move(s8);
+
+  std::cout << endl;
+}
+
+template<typename T>
+void func(T& param)
+{
+  std::cout << "传入的是左值" << std::endl;
+}
+template<typename T>
+void func(T&& param)
+{
+  std::cout << "传入的是右值" << std::endl;
+}
+template<typename T>
+void warp1(T&& param)
+{
+  func(param);  // param变成左值了
+}
+template<typename T>
+void warp2(T&& param)
+{
+  func(std::forward<T>(param)); // 左值还是左值,右值还是右值
+}
+void do9()
+{
+  int num = 2019;
+  warp1(num);
+  warp1(2019);
+
+  warp2(num);
+  warp2(2019);
+}
+
+template<typename T>
+void func1(T&& param) // && && -> &&
+{
+  cout << param << endl;
+}
+void do10()
+{
+  int&& val = 4;
+  func1(val);
+}
+
+template<typename T>
+void func2(T&& param) // & && -> &
+{
+  cout << param << endl;
+}
+void do11()
+{
+  int num = 2021;
+  int& val = num;
+  func2(val);
+}
+
+template<typename T>
+void func3(T& param) // && & -> &
+{
+  cout << param << endl;
+}
+void do12()
+{
+  int&& val = 2021;
+  func3(val);
+}
+
+template<typename T>
+void func4(T& param) // & & -> &
+{
+  cout << param << endl;
+}
+void do13()
+{
+  int num = 2021;
+  int& val = num;
+  func4(val);
+}
+
+template<typename T>
+void func5(T&& param) // 无论是左值还是右值都能接收
+{
+  cout << param << endl;
+}
+void do14()
+{
+  int num = 2019;
+  func5(num);
+  func5(2019);
+}
+
+template<typename T>
+void func6(T& param)
+{
+  cout << "传入的是左值" << endl;
+}
+template<typename T>
+void func6(T&& param)
+{
+  cout << "传入的是右值" << endl;
+}
+void do15()
+{
+  int num = 2019;
+  func6(num); // void func6(T& param)
+  func6(2019);// void func6(T&& param)
+}
+
+template<typename T>
+void func7(T& param)
+{
+  cout << param << endl;
+}
+void do16()
+{
+  int num = 2019;
+  func7(num);
+}
+void do17()
+{
+  // func7(2019); // 不能传右值
+}
+
 // g++ -std=c++17 -o app move.cpp -w -fno-elide-constructors
 // g++ -std=c++17 -o app move.cpp
 int main(int argc, char const *argv[])
 {
-  do5();
+  do9();
+  do10();
+  do11();
+  do12();
+  do13();
+  do14();
+  do15();
+  do16();
   return 0;
 }
