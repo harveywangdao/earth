@@ -1,5 +1,8 @@
 #include <iostream>
 #include <vector>
+#include <deque>
+#include <forward_list>
+#include <list>
 
 using namespace std;
 
@@ -105,8 +108,49 @@ void do2()
   v1.emplace_back(30);   //constructor with age,少一次构造
 }
 
+void do3()
+{
+  std::deque<int> d1 = {7, 5, 16, 8};
+  d1.push_front(13);
+  d1.push_back(25);
+  for (int n : d1)
+  {
+    std::cout << n << " ";
+  }
+  std::cout << std::endl;
+
+  std::cout << d1[3] << std::endl;
+}
+
+void do4()
+{
+  std::forward_list<int> f1{1,2,3,4};
+
+  f1.push_front(-1);
+  f1.insert_after(f1.begin(), 0);
+  //f1.insert_after(f1.end(), 5);
+
+  for (auto e : f1)
+  {
+    std::cout << e << " ";
+  }
+  std::cout << std::endl;
+}
+
+void do5()
+{
+  std::list<int> l = {1, 2, 3, 4};
+  l.push_front(0);
+  l.push_back(5);
+  for (auto e : l)
+  {
+    std::cout << e << " ";
+  }
+  std::cout << std::endl;
+}
+
 int main(int argc, char const *argv[])
 {
-  do2();
+  do5();
   return 0;
 }

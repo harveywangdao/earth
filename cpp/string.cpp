@@ -140,12 +140,63 @@ void do5()
 void do6()
 {
   std::string_view s1 = "abc";
-  std::string s2 = "123";
-  std::string_view s3 = s1+s2;
+  std::cout << "s1: " << s1 << std::endl;
+  std::cout << "s1[0]: " << s1[0] << std::endl;
+  const char *p = s1.data();
+  //char *p = s1.data();
+  //std::cout << "data: " << p << std::endl;
+  //p++;
+  //std::cout << "data: " << *p << std::endl;
+  //*p = 'd';
+
+  char *p1 = const_cast<char*>(p);
+  std::cout << "*p1: " << *p1 << std::endl;
+  *p1 = 'd';
+}
+
+void do7()
+{
+  std::string s("abc");
+  std::string_view s1(s);
+
+  std::cout << "s1: " << s1 << std::endl;
+  
+  const char *p = s1.data();
+  char *p1 = const_cast<char*>(p);
+  std::cout << "*p1: " << *p1 << std::endl;
+  *p1 = 'd';
+  std::cout << "s1: " << s1 << std::endl;
+}
+
+void do8()
+{
+  char str[] = "abc";
+  std::string_view s1(str);
+  std::cout << "s1: " << s1 << std::endl;
+
+  std::cout << "str: " << (void*)str << std::endl;
+  std::cout << "s1: " << (void*)s1.data() << std::endl;
+
+  char *p1 = const_cast<char*>(s1.data());
+  *p1 = 'd';
+  std::cout << "s1: " << s1 << std::endl;
+}
+
+void do9()
+{
+  std::string_view s1;
+  {
+    std::string s2("abc");
+    s1 = s2.data();
+    std::cout << "data: " << (void*)s2.data() << std::endl;
+    std::cout << "c_str: " << (void*)s2.c_str() << std::endl;
+    std::cout << "s1: " << s1 << std::endl;
+  }
+  std::cout << "s1: " << s1 << std::endl; //未知错误
 }
 
 int main(int argc, char const *argv[])
 {
-  do6();
+  do9();
   return 0;
 }
