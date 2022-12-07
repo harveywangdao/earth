@@ -1,10 +1,10 @@
-#include <string>
 #include <iostream>
+#include <string>
 #include <algorithm>
 
 using namespace std;
 
-void func1()
+void do1()
 {
   string s1 = "123456";
   string s2 = s1;
@@ -20,7 +20,7 @@ void func1()
   cout << "after:s2 " << s2 << endl;
 }
 
-void func2()
+void do2()
 {
   string s1 = "123456";
   string s2 = s1; 
@@ -34,7 +34,7 @@ void func2()
   cout << "after:s2 " << s2 << endl;
 }
 
-void func3()
+void do3()
 {
   string s1 = "123456";
   string s2(s1);
@@ -98,12 +98,12 @@ void func3()
 
 }
 
-void func4()
+void do4()
 {
   string s1 = "abc";
   s1 = "123" + s1;
   cout << s1 << endl;
-         
+  
   const char *prefix;
   prefix = "ABC";
   s1 = prefix + s1;
@@ -112,10 +112,6 @@ void func4()
 
 int main(int argc, char const *argv[])
 {
-  //func1();
-  //func2();
-  //func3();
-  func4();
-
+  do1();
   return 0;
 }

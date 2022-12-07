@@ -3,7 +3,7 @@
 
 using namespace std;
 
-void printVector(vector<int> v)
+void printVector(vector<int> &v)
 {
   for (int i = 0; i < v.size(); ++i)
   {
@@ -14,10 +14,14 @@ void printVector(vector<int> v)
     }
   }
 
+  if (v.size() == 0)
+  {
+    cout << "empty vector";
+  }
   cout << endl;
 }
 
-void func1()
+void do1()
 {
   vector<int> v1;
   vector<int> v2(10);
@@ -38,7 +42,12 @@ void func1()
 
   for (vector<int>::iterator iter = v1.begin(); iter != v1.end(); ++iter)
   {
-    cout << *iter << ",";
+    cout << *iter;
+    auto temp = iter;
+    if (++temp != v1.end())
+    {
+      cout << ",";
+    }
   }
   cout << endl;
 
@@ -56,9 +65,48 @@ void func1()
   cout << "v1.max_size() " << v1.max_size() << endl;
 }
 
+class People
+{
+  int age;
+public:
+  People():age(0)
+  {
+    std::cout << "default constructor" << ", age: " << age << std::endl;
+  }
+  People(int a):age(a)
+  {
+    std::cout << "constructor with age" << ", age: " << age << std::endl;
+  }
+  People(const People& p)
+  {
+    age = p.age;
+    std::cout << "copy constructor" << ", age: " << age << std::endl;
+  }
+  People(People&& p)
+  {
+    age = p.age;
+    std::cout << "move constructor" << ", age: " << age << std::endl;
+  }
+  ~People()
+  {
+    std::cout << "destroy" << ", age: " << age << std::endl;
+  }
+};
+
+void do2()
+{
+  std::vector<People> v1;
+  v1.reserve(16);
+  People p1(10);
+  v1.push_back(p1);   // constructor with age AND copy constructor
+  std::cout << std::endl;
+  v1.push_back(People(20)); // constructor with age AND move constructor
+  std::cout << std::endl;
+  v1.emplace_back(30);   //constructor with age,少一次构造
+}
+
 int main(int argc, char const *argv[])
 {
-  func1();
-
+  do2();
   return 0;
 }

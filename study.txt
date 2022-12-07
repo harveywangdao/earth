@@ -778,6 +778,7 @@ public:
 
 constexpr:
 在编译阶段就能计算出结果;使用gcc时constexpr指针所指变量必须是全局变量或者static变量,constexpr保护指针变量,不保护指针指向的内存;放在if上如果else走不到就不会编译else的内容;即可用于函数声明也可用于变量声明;当一个变量的声明中包含了constexpr时,这个变量将自动成为以const声明的常量
+c++11不允许constexpr修饰返回值为void的函数,c++14之后可以
 consteval:
 只能参与函数的声明,编译时运行的函数,编译时参数是确定的返回值也是常量;constexpr可能退化成运行时计算,但consteval不会,consteval比constexpr更严格
 constinit:
@@ -987,11 +988,17 @@ transaction_safe_dynamic
 [[no_unique_address]
 [[assume]]
 
+std::array:
+内置的数组有很多麻烦的地方,比如无法直接对象赋值,无法直接拷贝等等;支持迭代器访问/获取容量/不会退化成指针
+
 std::exchange
 std::swap
-std::array
+std::vector
+std::string
+
 std::pair
 std::time
+std::sort
 std::numeric_limits<int>::max()
 std::bitset
 std::size_t
@@ -1048,7 +1055,7 @@ std::async
 std::condition_variable
 std::pow
 std::strlen
-STL: string/vector/list/map/set/array/deque/stack/queue/priority_queue/heap/multiset/multimap/unordered_map
+STL: list/map/set/array/deque/stack/queue/priority_queue/heap/multiset/multimap/unordered_map
 boost: thread/chrono/mutex/atomic
 boost::any
 rapidjson/proxygen/beast/proxysql/folly/muduo
