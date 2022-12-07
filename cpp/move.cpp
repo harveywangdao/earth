@@ -189,10 +189,13 @@ public:
   }
 
   Sky(int sz)
+  //explicit Sky(int sz)
   {
     _data = new char[sz];
     cout << "Sky with size" << ", data: " << (void *)_data << ", this: " << this << endl;
   }
+  //explicit only declarations of constructors and conversion operators
+  //Sky& operator=(int sz) 输入和返回类型必须一样
 
   Sky(const Sky& p)
   {
@@ -210,6 +213,12 @@ public:
 
   Sky& operator=(const Sky& p)
   {
+    if (&p == this)
+    {
+      std::cout << "Sky operator= &, same Sky" << std::endl;
+      return *this;
+    }
+
     if (_data != nullptr)
     {
       delete[] _data;
@@ -224,6 +233,12 @@ public:
 
   Sky& operator=(Sky&& p)
   {
+    if (&p == this)
+    {
+      std::cout << "Sky operator= &&, same Sky" << std::endl;
+      return *this;
+    }
+
     if (_data != nullptr)
     {
       delete[] _data;
@@ -416,17 +431,20 @@ void do17()
   // func7(2019); // 不能传右值
 }
 
+void do18()
+{
+  Sky s1 = Sky(2);
+
+  s1 = s1;
+  s1 = std::move(s1);
+
+  s1 = 3;
+}
+
 // g++ -std=c++17 -o app move.cpp -w -fno-elide-constructors
 // g++ -std=c++17 -o app move.cpp
 int main(int argc, char const *argv[])
 {
-  do9();
-  do10();
-  do11();
-  do12();
-  do13();
-  do14();
-  do15();
-  do16();
+  do18();
   return 0;
 }

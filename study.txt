@@ -855,8 +855,6 @@ weak_ptr
 移动复制运算符
 std::move,将一个左值转换成右值,使用前提:1.定义的类使用了资源并定义了移动构造函数和移动赋值运算符;2.该变量即将不再使用
 std::forward,主要是用来解决在参数传递的过程当中右值被传递为左值失去了原来的无拷贝功能,完美转发
-std::exchange
-std::swap
 x++是右值,++x是左值
 将对象的状态或者所有权从一个对象转移到另一个对象,只是转移,没有内存的搬迁或者内存拷贝
 左值lvalue,非临时的,可以被取地址,可以出现在等号的左边或右边,可以被修改
@@ -989,6 +987,8 @@ transaction_safe_dynamic
 [[no_unique_address]
 [[assume]]
 
+std::exchange
+std::swap
 std::array
 std::pair
 std::time
