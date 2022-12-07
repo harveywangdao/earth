@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string>
+#include <string_view>
 #include <algorithm>
 
 using namespace std;
@@ -110,8 +111,41 @@ void do4()
   cout << s1 << endl;
 }
 
+void do5()
+{
+  std::string s1 = "abc";
+  std::string s2("abc");
+
+  std::cout << "size: " << s1.size() << std::endl;
+  std::cout << "length: " << s1.length() << std::endl;
+  std::cout << "empty: " << s1.empty() << std::endl;
+  std::cout << "capacity: " << s1.capacity() << std::endl;
+
+  std::string s3(4, '=');
+  std::cout << "s3: " << s3 << std::endl;
+
+  std::string s4(s1);
+  std::cout << "s4: " << s4 << std::endl;
+
+  std::string s5 = s1 + s3;
+  std::cout << "s5: " << s5 << std::endl;
+
+  s1[0] = '1';
+  std::cout << "s1: " << s1 << std::endl;
+
+  s1.push_back('2');
+  std::cout << "s1: " << s1 << std::endl;
+}
+
+void do6()
+{
+  std::string_view s1 = "abc";
+  std::string s2 = "123";
+  std::string_view s3 = s1+s2;
+}
+
 int main(int argc, char const *argv[])
 {
-  do1();
+  do6();
   return 0;
 }

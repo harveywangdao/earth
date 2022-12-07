@@ -989,19 +989,30 @@ transaction_safe_dynamic
 [[assume]]
 
 std::array:
+std::array<int,4>
 内置的数组有很多麻烦的地方,比如无法直接对象赋值,无法直接拷贝等等;支持迭代器访问/获取容量/不会退化成指针
+申明时指定数组容量,容量固定不能修改
+
+std::vector:
+std::vector<int>
+类似数组是一个连续内存的空间;申明时不用指定容量,可扩容,扩容时重新分配一个两倍的空间,然后将元素从旧空间拷贝过去,旧空间释放
+push_back普通追加,要创建一次对象,还要拷贝一次
+emplace_back高性能追加操作,只需要创建一次对象,不用拷贝
+
+std::string:
+动态字符串,可以修改的字符串
+capacity大于47以后capacity = oldcapacity + oldcapacity/2
 
 std::exchange
 std::swap
-std::vector
-std::string
+std::sort
+std::size_t
 
 std::pair
+std::tuple
 std::time
-std::sort
 std::numeric_limits<int>::max()
 std::bitset
-std::size_t
 std::map
 std::memory_order
 std::abort
@@ -1021,7 +1032,6 @@ std::cend
 std::integral_constant
 std::is_final
 std::make_shared
-std::tuple
 std::chrono
 std::basic_string
 std::less
