@@ -1,6 +1,5 @@
 #include <iostream>
 #include <utility>
-#include <array>
 #include <algorithm>
 
 void do1()
@@ -71,81 +70,8 @@ void do5()
   std::cout << "n = " << n << std::endl;
 }
 
-void do6()
-{
-  std::array<int,4> arr1 = {1,2,3,4};
-  std::array<int,4> arr2 = arr1;
-  std::array<int,4> arr3{1,2,3,4};
-  std::array<int,4> arr4{{1,2,3,4}};
-
-  for (int i = 0; i < arr4.size(); ++i)
-  {
-    std::cout << arr4[i] << std::endl;
-  }
-
-  std::cout << std::endl;
-
-  for(const auto& e: arr1)
-  {
-    std::cout << e << std::endl;
-  }
-
-  std::cout << std::endl;
-
-  std::cout << "front: " << arr2.front() << std::endl;
-  std::cout << "back: " << arr2.back() << std::endl;
-  std::cout << "data: " << arr2.data() << std::endl;
-  std::cout << "*data: " << *arr2.data() << std::endl;
-  std::cout << "begin: " << arr2.begin() << std::endl;
-  std::cout << "end: " << arr2.end() << std::endl;
-  //std::cout << "rbegin: " << arr2.rbegin() << std::endl;
-  //std::cout << "rend: " << arr2.rend() << std::endl;
-  std::cout << "empty: " << arr2.empty() << std::endl;
-  std::cout << "max_size: " << arr2.max_size() << std::endl;
-
-  std::cout << std::endl;
-  std::array<int,4>::iterator iter;
-  for (iter = arr1.begin(); iter != arr1.end(); ++iter)
-  {
-    std::cout << *iter << std::endl;
-  }
-
-  std::cout << std::endl;
-  std::array<int,4>::reverse_iterator riter;
-  for (riter = arr2.rbegin(); riter != arr2.rend(); ++riter)
-  {
-    std::cout << *riter << std::endl;
-  }
-
-  std::cout << std::endl;
-  std::array<int,4> arr5 = {2,5,3,1};
-  std::array<int,4> arr6;
-  std::sort(arr5.begin(), arr5.end());
-  for(const auto& e: arr5)
-  {
-    std::cout << e << std::endl;
-  }
-  std::cout << std::endl;
-  std::reverse(arr5.begin(), arr5.end());
-  for (auto iter = arr5.begin(); iter != arr5.end(); ++iter)
-  {
-    std::cout << *iter << std::endl;
-  }
-  std::reverse_copy(arr5.begin(), arr5.end(), arr6.begin()); // 不改变arr5
-  std::cout << "\narr5:" << std::endl;
-  for(const auto& e: arr5)
-  {
-    std::cout << e << std::endl;
-  }
-  std::cout << "\narr6:" << std::endl;
-  for(const auto& e: arr6)
-  {
-    std::cout << e << std::endl;
-  }
-}
-
 int main(int argc, char const *argv[])
 {
-  do6();
+  do5();
   return 0;
 }

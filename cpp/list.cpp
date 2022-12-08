@@ -1,5 +1,6 @@
 #include <iostream>
 #include <list>
+#include <forward_list>
 
 using namespace std;
 
@@ -13,7 +14,7 @@ void printList(list<int> lst)
   cout << endl;
 }
 
-void func1()
+void do1()
 {
   list<int> l1;
   list<int> l2(10);
@@ -49,12 +50,36 @@ void func1()
   l1.remove(5);
   cout << "after l1 remove" << endl;
   printList(l1);
+}
 
+void do2()
+{
+  std::list<int> l = {1, 2, 3, 4};
+  l.push_front(0);
+  l.push_back(5);
+  for (int n : l)
+    std::cout << n << " ";
+  std::cout << std::endl;
+  //l[2];
+}
+
+void do3()
+{
+  std::forward_list<int> f1{1,2,3,4};
+
+  f1.push_front(-1);
+  f1.insert_after(f1.begin(), 0);
+  //f1.insert_after(f1.end(), 5);
+
+  for (auto e : f1)
+  {
+    std::cout << e << " ";
+  }
+  std::cout << std::endl;
 }
 
 int main(int argc, char const *argv[])
 {
-  func1();
-
+  do3();
   return 0;
 }

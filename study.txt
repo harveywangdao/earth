@@ -1006,16 +1006,27 @@ std::string_view:
 对内存字符串进行展示操作,本身并不拥有内存本身,它只是一个View,观看内存的窗口;可以通过取指针的方式修改内存;字符串内存的生命周期或者说作用域一定要大于string_view,否则可能有未知的后果
 capacity大于47以后capacity = oldcapacity + oldcapacity/2
 list:
-双向链表,只支持双向顺序访问,在list中任何位置进行插入/删除操作速度都很快
+双向链表,只支持双向顺序访问,在list中任何位置进行插入/删除操作速度都很快,不支持随机访问
 forward_list:
 单向链表,只支持单向顺序访问,在链表任何位置进行插入/删除操作速度都很快
+std::set
+std::unordered_set 平衡二叉树
+std::multiset 可以存放多个相同的元素
+std::unordered_multiset
+std::map
+std::unordered_map
+std::multimap
+std::unordered_multimap
+std::stack
+std::queue
+std::priority_queue
 
 std::exchange
 std::swap
 std::sort
 std::size_t
-
 std::pair
+
 std::tuple
 std::time
 std::numeric_limits<int>::max()
@@ -1072,7 +1083,6 @@ std::async
 std::condition_variable
 std::pow
 std::strlen
-STL: list/map/set/array/deque/stack/queue/priority_queue/heap/multiset/multimap/unordered_map
 boost: thread/chrono/mutex/atomic
 boost::any
 rapidjson/proxygen/beast/proxysql/folly/muduo
