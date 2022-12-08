@@ -845,11 +845,6 @@ void f() throw(int, double); // deprecated in C++11, removed in C++17
 void f() throw(); // deprecated in C++17, removed in C++20, 换成noexcept(true)
 std::nothrow
 
-智能指针:
-shared_ptr
-unique_ptr
-weak_ptr
-
 右值引用:
 可以通过右值引用,充分使用临时变量,减少不必要的拷贝
 移动构造函数
@@ -1021,21 +1016,36 @@ std::stack
 std::queue
 std::priority_queue
 
+智能指针:
+std::unique_ptr:
+指针会在unique_ptr析构时释放,不用手动delete p,std::make_unique
+std::shared_ptr:
+最后一个拥有指针的对象析构的时候会释放内存,std::make_shared
+std::weak_ptr:
+指向一个shared_ptr指向的对象,且不会改变对象的引用计数,当所有的shared_ptr释放内存会释放,即使weak_ptr还存在
+
+线程:
+std::this_thread::sleep_for(std::chrono::seconds(1));
+std::mutex
+std::lock_guard
+
+std::time
+std::bitset
+std::hash
+
+std::function
+std::bind
 std::exchange
 std::swap
 std::sort
 std::size_t
 std::pair
-
 std::tuple
-std::time
+
 std::numeric_limits<int>::max()
-std::bitset
-std::map
 std::memory_order
 std::abort
 std::initializer_list
-std::hash
 std::equal_to
 std::allocator
 std::reference_wrapper
@@ -1055,16 +1065,13 @@ std::basic_string
 std::less
 std::greater
 std::make_unique
-std::function
 std::ref
 std::cref
 std::for_each
 std::mem_fn
 std::once_flag
-std::lock_guard
 std::unique_lock
 std::scoped_lock
-std::mutex
 std::timed_mutex
 std::lock
 std::recursive_mutex
