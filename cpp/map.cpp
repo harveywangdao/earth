@@ -265,6 +265,35 @@ void do13()
   std::tuple<int,std::string,double> t1(1,"aaa",1.2);
   std::tuple<int,std::string,double> t2 = std::make_tuple(2,"bbb",2.2);
   //std::cout << t1 << std::endl;
+
+  std::cout << std::get<0>(t1) << std::endl;
+  std::cout << std::get<1>(t1) << std::endl;
+  std::cout << std::get<2>(t1) << std::endl;
+  //std::cout << std::get<3>(t1) << std::endl;
+
+  std::cout << std::endl;
+  std::get<2>(t1) = 3.2;
+  std::cout << std::get<2>(t1) << std::endl;
+
+  std::cout << std::tuple_size<decltype(t1)>::value << std::endl;
+
+  int a;
+  std::string b;
+  double c;
+  std::tie(a,b,c) = t1;
+  std::cout << std::endl;
+  std::cout << a << std::endl;
+  std::cout << b << std::endl;
+  std::cout << c << std::endl;
+
+  auto t3 = std::tuple_cat(t1,t2);
+  std::cout << std::endl;
+  std::cout << std::get<0>(t3) << std::endl;
+  std::cout << std::get<1>(t3) << std::endl;
+  std::cout << std::get<2>(t3) << std::endl;
+  std::cout << std::get<3>(t3) << std::endl;
+  std::cout << std::get<4>(t3) << std::endl;
+  std::cout << std::get<5>(t3) << std::endl;
 }
 
 int main(int argc, char const *argv[])
