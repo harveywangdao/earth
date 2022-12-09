@@ -1032,6 +1032,13 @@ std::chrono::system_clock
 std::chrono::steady_clock
 std::chrono::high_resolution_clock
 
+std::chrono::nanoseconds
+std::chrono::microseconds
+std::chrono::milliseconds
+std::chrono::seconds
+std::chrono::minutes
+std::chrono::hours
+
 线程:
 std::thread
 std::this_thread::sleep_for(std::chrono::seconds(1));
@@ -1045,13 +1052,13 @@ std::recursive_mutex
 std::recursive_timed_mutex
 std::shared_mutex
 std::shared_timed_mutex
-std::lock_guard
 std::condition_variable
 std::call_once
 
+std::lock
+std::lock_guard
 std::unique_lock
 std::scoped_lock
-std::lock
 std::shared_lock
 std::adopt_lock
 std::defer_lock
