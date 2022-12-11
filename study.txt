@@ -1051,7 +1051,10 @@ std::async(&X::foo, &x, param1, param2);
 auto a = std::async(std::launch::deferred, &X::bar, x, param1); a.wait()/a.get();
 std::async(std::launch::async, X(), 43);
 
-std::future: f1.wait();f1.get()
+std::future:
+f1.wait();f1.get()
+std::shared_future:
+允许多个线程等待同一个共享状态
 std::promise:
 std::promise<int> p;
 std::future<int> f = p.get_future();
@@ -1070,10 +1073,6 @@ task2(2, 9);
 std::packaged_task<int()> task3(std::bind(func2, 2, 11));
 task3();
 
-std::system_error/std::bad_alloc
-std::decay:
-为我们移除类型中的一些特性,比如引用/常量/volatile,但是不包括指针特性
-
 std::mutex
 std::timed_mutex
 std::recursive_mutex
@@ -1082,33 +1081,37 @@ std::shared_mutex
 std::shared_timed_mutex
 std::condition_variable
 std::call_once
-
-std::lock
-std::lock_guard:
-std::lock_guard<std::mutex> lock(mu);构造函数即上锁,离开作用域自动析构解锁
-std::unique_lock:
-只能move不能cpoy,延迟锁,非阻塞锁,超时锁,离开作用域自动析构解锁
-std::scoped_lock:
-支持绑定多个锁,避免死锁,离开作用域自动析构解锁
-std::shared_lock:
-包装读锁,只能move不能cpoy,离开作用域自动析构解锁
-std::shared_lock<std::shared_mutex> slk(m);
-
-std::defer_lock: 不在构造函数加锁,后面手动加锁
-std::try_to_lock: 非阻塞
-std::adopt_lock: 调用之前已加锁,确保锁会释放
-
 std::once_flag
-std::shared_future
+
+std::lock:
+同时给多个锁上锁,不自动释放锁,为避免死锁而设计
+std::lock_guard:
+只能管理一个锁,构造函数即上锁,离开作用域自动析构解锁,可领养锁
+std::scoped_lock:
+支持绑定多个锁,避免死锁,构造函数即上锁,离开作用域自动析构解锁,可领养锁
+std::unique_lock:
+只能move不能cpoy,离开作用域自动析构解锁
+支持延迟锁/非阻塞锁/领养锁/带时间
+std::shared_lock:
+包装读锁,只能move不能cpoy,只能管理一个锁,离开作用域自动析构解锁
+支持延迟锁/非阻塞锁/领养锁/带时间
+
+std::defer_lock: 延迟锁,不在构造函数加锁,后面手动加锁
+std::try_to_lock: 非阻塞锁
+std::adopt_lock: 领养锁,调用之前已加锁,确保锁会释放
 
 std::atomic_store
 std::atomic_load
 std::atomic_exchange
 std::atomic_bool
 
+std::decay:
+为我们移除类型中的一些特性,比如引用/常量/volatile,但是不包括指针特性
+std::for_each:
+std::for_each(nums.begin(), nums.end(), [](int &n){ n++; });
+
 std::bitset
 std::hash
-
 std::function
 std::bind
 std::exchange
@@ -1117,27 +1120,12 @@ std::sort
 std::size_t
 std::pair
 std::tuple
-
-std::numeric_limits<int>::max()
+std::system_error
+std::bad_alloc
 std::memory_order
-std::abort
-std::initializer_list
-std::equal_to
-std::allocator
-std::reference_wrapper
-std::copy_n
-std::ranges
-std::begin
-std::end
-std::cbegin
-std::cend
-std::integral_constant
-std::is_final
 std::less
 std::greater
-std::for_each
-std::mem_fn
-std::pow
+std::equal_to
 rapidjson/proxygen/beast/proxysql/folly/muduo
 
 
