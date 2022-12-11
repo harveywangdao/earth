@@ -1042,9 +1042,37 @@ std::chrono::hours
 线程:
 std::thread
 std::this_thread::sleep_for(std::chrono::seconds(1));
-std::promise
-std::future
-std::async
+std::thread t(func, param1);
+t.join()/t.detach()
+
+std::async:
+auto a = std::async(std::launch::async, func, param1, param2); a.get();
+std::async(&X::foo, &x, param1, param2);
+auto a = std::async(std::launch::deferred, &X::bar, x, param1); a.wait()/a.get();
+std::async(std::launch::async, X(), 43);
+
+std::future: f1.wait();f1.get()
+std::promise:
+std::promise<int> p;
+std::future<int> f = p.get_future();
+void func(std::promise<int> p) { p.set_value(1); }
+std::thread t(func, std::move(p));
+int n = f.get()
+
+std::packaged_task:
+int func2(int x, int y) { return std::pow(x,y); }
+std::packaged_task<int(int,int)> task1(func2);
+std::future<int> result = task1.get_future();
+std::thread t(std::move(task1), 2, 10); t.join();
+result.get();
+std::packaged_task<int(int,int)> task2([](int a, int b) { return std::pow(a, b); });
+task2(2, 9);
+std::packaged_task<int()> task3(std::bind(func2, 2, 11));
+task3();
+
+std::system_error/std::bad_alloc
+std::decay:
+为我们移除类型中的一些特性,比如引用/常量/volatile,但是不包括指针特性
 
 std::mutex
 std::timed_mutex
@@ -1056,12 +1084,20 @@ std::condition_variable
 std::call_once
 
 std::lock
-std::lock_guard
-std::unique_lock
-std::scoped_lock
-std::shared_lock
-std::adopt_lock
-std::defer_lock
+std::lock_guard:
+std::lock_guard<std::mutex> lock(mu);构造函数即上锁,离开作用域自动析构解锁
+std::unique_lock:
+只能move不能cpoy,延迟锁,非阻塞锁,超时锁,离开作用域自动析构解锁
+std::scoped_lock:
+支持绑定多个锁,避免死锁,离开作用域自动析构解锁
+std::shared_lock:
+包装读锁,只能move不能cpoy,离开作用域自动析构解锁
+std::shared_lock<std::shared_mutex> slk(m);
+
+std::defer_lock: 不在构造函数加锁,后面手动加锁
+std::try_to_lock: 非阻塞
+std::adopt_lock: 调用之前已加锁,确保锁会释放
+
 std::once_flag
 std::shared_future
 
