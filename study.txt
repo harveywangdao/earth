@@ -834,9 +834,11 @@ func() try {
 catch (const std::exception& e) {
   std::cout << e.what() << 'endl';
 }
+std::exception
 std::overflow_error
 std::runtime_error
-std::exception
+std::system_error
+std::bad_alloc
 
 noexcept:
 void f() noexcept; // does not throw
@@ -1120,8 +1122,6 @@ std::sort
 std::size_t
 std::pair
 std::tuple
-std::system_error
-std::bad_alloc
 std::memory_order
 std::less
 std::greater
