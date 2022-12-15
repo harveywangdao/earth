@@ -2471,7 +2471,7 @@ CI/CD Drone
 浏览器内核
 音视频/流媒体 ffmpeg
 推荐系统
-人工智能 人脸识别 opencv
+人工智能 人脸识别 OpenCV OpenGL
 自动驾驶
 物联网/智能家居
 3D deepmind
