@@ -713,7 +713,6 @@ gcc -Q -O2 --help=optimizers
 常用函数:
 memmove能处理空间重叠,memcpy不能
 
-
 C++:
 c++98 c++03 c++11 c++14 c++17 c++20 c++23
 g++ -std=c++11 -o app main.cpp
@@ -1771,7 +1770,7 @@ NAT:
 unix:
 
 
-7.HTTP1.1 TLS/SSL websocket HTTP2
+7.HTTP1.1 TLS/SSL websocket HTTP2 QUIC
 GET(获取资源)/POST(创建修改资源)/PUT(幂等)/HEAD(验证uri是否有效不返回body)/DELETE(删除资源)
 CONNECT: HTTP1.1的方法,隧道代理使用CONNECT方法建立连接,开启一个客户端与所请求资源之间的双向沟通的通道,客户端要求代理服务器将TCP连接作为通往目的主机隧道,之后该服务器会代替客户端与目的主机建立连接,连接建立好之后代理服务器会面向客户端发送或接收TCP消息流
 OPTIONS: 用来询问服务器对应路由支持哪些方法,也可以传递*获取整个服务器支持的方法;检测某个接口是否支持跨域,复杂跨域请求之前先发送一个OPTIONS请求,浏览器根据返回的Access-Control-Allow-Origin,Access-Control-Allow-Headers,Access-Control-*来判断当前网页能否请求跨域资源
@@ -2008,8 +2007,10 @@ HTTP/1.1 101 Switching Protocols
 Connection: Upgrade
 Upgrade: h2c
 
+QUIC:
 
-8.Kubernetes
+
+8.Docker Kubernetes
 kube-apiserver: 对外提供restful接口,唯一连接etcd服务,将对etcd的操作封装成接口供其它服务调用;有认证/鉴权/准入/限流的作用,
 
 kube-scheduler: 调度器
@@ -2114,14 +2115,11 @@ volume
 
 Mesos marathon dcos
 
-
-9.微服务/服务网格
-服务注册发现
-链路追踪
+服务网格
 Istio/Serverless
 
 
-10.分布式
+9.分布式 微服务
 CAP
 高并发
 高可用
@@ -2153,8 +2151,12 @@ Raft/Paxos
 CDN
 SLB
 
+微服务:
+服务注册发现
+链路追踪
 
-11.操作系统
+
+10.操作系统
 Reactor线程模型
 汇编
 
@@ -2292,7 +2294,7 @@ free vmstat sar
 top htop strace perf 
 
 
-12.算法
+11.算法
 数组
 
 链表:
@@ -2374,7 +2376,7 @@ NP完全
 缓存LRU/LFU
 
 
-13.其它
+12.其它
 utf-8:
 Unicode只是一个符号集,它只规定了符号的二进制代码,却没有规定这个二进制代码应该如何存储,“严”的unicode是十六进制数U+4E25
 utf-8是变长的编码方式,使用1~4个字节表示一个符号,utf-8编码方式:
@@ -2457,8 +2459,16 @@ Output: {…,  5,  3,  1,  0,  2,  4,  6, …}
 模板模式(Template Pattern): 抽象类定义了执行它的方法的方式(模板),它的子类可以按需要重写方法实现,但调用将以抽象类中定义的方式进行,主要解决一些方法通用却在每一个子类都重新写了这一方法
 访问者模式(Visitor Pattern): 将数据结构与数据操作分离,稳定的数据结构和易变的操作耦合问题;被访问类A1/A2实现Accept接口(在Accept方法内调用访问者的Visit方法),类B包含被访问类数组(数组存储A1/A2),B也实现Accept接口(在方法内遍历数组,调用每个对象的Accept方法),访问者类C实现Visit接口(在Visit方法内去操作A1/A2),将C对象传给B对象的Accept方法
 
+编程语言/编译原理 Golang C/C++
+数据库 mysql redis mongodb postgresql MQ
+网络 IP TCP UDP HTTP
+容器 docker kubernetes
+分布式 微服务
+操作系统 linux
+算法 红黑树
 CI/CD Drone
 前端 react vue flutter electron
+浏览器内核
 音视频/流媒体 ffmpeg
 推荐系统
 人工智能 人脸识别 opencv
