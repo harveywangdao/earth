@@ -1814,9 +1814,9 @@ Request Headers:
 Host: a.com
 Trailer: key1标识在body的后面会有类似key1: value1的首部字段,Trailer可以使用在HTTP/1.1版本分块传输编码时
 Connection: close通知对端自己发送完数据会断开链接(HTTP1.0默认方式)、keep-alive通知对端自己发送完数据不会断开链接(HTTP1.1默认方式)
-Accept-Encoding: gzip, deflate, br
+Accept-Encoding: gzip, deflate, br 和Content-Encoding: gzip对应;如果client没有显式的设置Accept-Encoding则自动加上gzip,并且如果服务端返回的数据是压缩的client可以自动解压缩;如果client显式的设置Accept-Encoding并且服务端返回的数据是gzip的则client不会自动解压缩需要应用层自己解压缩;go http server默认不进行gzip
 Accept-Language: zh-CN,zh;q=0.9
-Accept: "/"
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*; 客户端希望接收的响应body数据类型
 Accept-Control-Request-Headers: xx
 Accept-Control-Request-Method: POST
 Cookie: a=1; b=2
