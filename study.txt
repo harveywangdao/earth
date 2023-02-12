@@ -2468,15 +2468,24 @@ Output: {…,  5,  3,  1,  0,  2,  4,  6, …}
 操作系统 linux
 算法 红黑树
 运维 CI/CD Drone shell makefile
-前端 react vue flutter electron QT
+前端 react vue flutter electron MFC QT Android IOS
 浏览器内核
 音视频/流媒体 ffmpeg
 推荐系统
-人工智能 人脸识别 OpenCV OpenGL
-自动驾驶
+人工智能 人脸识别 OpenCV OpenGL GLSL Vulkan
+自动驾驶 RTOS
+机器人 ROS SLAM
 物联网/智能家居
 3D deepmind
 大数据 hadoop/storm/hbase/hive/flink/spark
 云计算 openstack
 web安全
-区块链 ipfs
+区块链 Bitcoin ipfs web3
+AR/VR
+
+社交 微信 QQ 微博 抖音
+电商 淘宝 京东 拼多多 虾皮 SHEIN
+旅游 携程 客路
+银行/券商
+机器人 商汤 大疆 Anker 普渡 优必选 科沃斯 高仙机器人 未来机器人 
+自动驾驶 小马智行 文远知行 AutoX Momenta 元戎启行 轻舟智航 智行者 酷哇机器人
