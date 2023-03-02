@@ -24,6 +24,12 @@
 //pkg-config --libs dbus-glib-1
 
 /*
+sudo apt install dbus
+sudo apt install libdbus-1-dev
+cd /usr/include
+sudo ln dbus-1.0/dbus -s dbus
+sudo cp /usr/lib/x86_64-linux-gnu/dbus-1.0/include/dbus/dbus-arch-deps.h /usr/include/dbus-1.0/dbus
+
 gcc -o app dbus.c -ldbus-1
 dbus-daemon
 dbus-launch
