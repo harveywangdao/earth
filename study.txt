@@ -2242,10 +2242,14 @@ netfilter
 系统调用
 
 信号:
+SIGINT:ctrl+c,默认反应是进程终止,可以捕捉
+SIGQUIT:ctrl+\
+SIGTERM:kill 1234,可以捕捉
+SIGKILL:kill -9 1234,终止程序,不可捕捉
+SIGSTOP:暂停进程
+SIGCONT:继续运行
+
 软中断 kill -l
-kill 1234,默认SIGTERM,可以捕捉
-kill -9 1234,SIGKILL,终止程序,不可捕捉
-ctrl+c产生SIGINT默认反应是进程终止,可以捕捉
 对于需要处理的信号,进程可以指定处理函数,由该函数来处理;也可以忽略某个信号;也可以对该信号的处理保留系统的默认值,大部分的信号缺省操作是使得进程终止
 通过系统调用signal来指定进程对某个信号的处理行为
 SIGSTOP只是要求进程暂时停下手头的工作,休息一下,直到听到SIGCONT的召唤
