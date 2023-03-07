@@ -2246,8 +2246,8 @@ SIGINT:ctrl+c,默认反应是进程终止,可以捕捉
 SIGQUIT:ctrl+\
 SIGTERM:kill 1234,可以捕捉
 SIGKILL:kill -9 1234,终止程序,不可捕捉
-SIGSTOP:暂停进程,非终端来的停止信号
-SIGTSTP 暂停进程,终端来的停止信号
+SIGSTOP:暂停进程,非终端来的停止信号,不可捕获
+SIGTSTP:暂停进程,Ctrl+Z,终端来的停止信号
 SIGCONT:继续运行
 SIGHUP:终端退出时给子进程发的信号,默认终止进程,可捕捉
 
