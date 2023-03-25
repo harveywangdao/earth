@@ -1098,6 +1098,12 @@ mysqldump -u root -p123456 --add-drop-table db1 | mysql -u root -p123456 newdb
 
   docker rmi -f runoob/ubuntu:v4
 
+  sudo systemctl stop docker.socket
+  sudo systemctl stop docker.service
+  sudo mv /var/lib/docker /data/docker
+  sudo ln -s /data/docker /var/lib/docker
+  sudo systemctl start docker.service
+
   LXC:
   sudo apt-get install lxc
   cd /usr/share/lxc/templates/
@@ -2155,17 +2161,21 @@ mysqldump -u root -p123456 --add-drop-table db1 | mysql -u root -p123456 newdb
   sudo fdisk -l
   ls -l /dev/disk/by-id/
 
-  sudo mkfs.ext3 /dev/vdb1
+  df -Th
+  sudo mkfs.ext4 /dev/vdb1
 
   mkdir ~/ethereum
   mount /dev/vdb1 /home/ubuntu/ethereum
 
   lsblk -f
+  blkid /dev/sdb1
+  dumpe2fs -h /dev/sdb1
 
   sudo cp /etc/fstab /etc/fstab.backup
 
   sudo vim /etc/fstab
   /dev/disk/by-id/virtio-disk-o7pgds1a-part1 /home/ubuntu/ethereum ext3 defaults,nofail 0 1
+  /dev/sdb1 /data ext4 defaults,nofail 0 0
 
   sudo mount -a
 
