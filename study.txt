@@ -2466,19 +2466,22 @@ Output: {…,  5,  3,  1,  0,  2,  4,  6, …}
 访问者模式(Visitor Pattern): 将数据结构与数据操作分离,稳定的数据结构和易变的操作耦合问题;被访问类A1/A2实现Accept接口(在Accept方法内调用访问者的Visit方法),类B包含被访问类数组(数组存储A1/A2),B也实现Accept接口(在方法内遍历数组,调用每个对象的Accept方法),访问者类C实现Visit接口(在Visit方法内去操作A1/A2),将C对象传给B对象的Accept方法
 
 
+web前端 PC/手机/平板/嵌入式 小程序 React/Vue/Angular/JQuery/AJAX HTML5/CSS3/JS/node.js
+桌面 PC/嵌入式 windows:MFC/Mac/Linux GTK/GTK+/wxWidgets/QT electron/nw.js GNOME/KDE X Window/X11/Wayland
+移动端 手机/平板 Android/iOS flutter ReactNative
+服务端 编程语言/算法/网络/编译原理/数据库/操作系统:linux/中间件/分布式/设计模式/DevOps/大数据/云计算/安全/音视频
 编程语言/编译原理 Golang C/C++
-数据库 mysql redis mongodb postgresql MQ
+数据库 mysql/postgresql/sqlite/tidb redis mongodb MQ ELK Promethus etcd
 网络 IP TCP UDP HTTP
-容器 docker kubernetes
+容器 docker kubernetes istio
 分布式 微服务
 操作系统 linux
 算法 红黑树
 运维 CI/CD Drone shell makefile
-前端 react vue flutter electron MFC QT Android IOS
 浏览器内核
-音视频/流媒体 ffmpeg
+音视频/流媒体 ffmpeg webrtc
 推荐系统
-人工智能 人脸识别 OpenCV OpenGL GLSL Vulkan
+人工智能 机器学习/深度学习 人脸识别 OpenCV OpenGL GLSL Vulkan 大数据/数据挖掘
 自动驾驶 RTOS
 机器人 ROS SLAM
 物联网/智能家居
@@ -2488,12 +2491,14 @@ Output: {…,  5,  3,  1,  0,  2,  4,  6, …}
 web安全
 区块链 Bitcoin ipfs web3
 AR/VR
+GPU/CUDA
 
-社交 微信 QQ 微博 抖音 小红书
-电商 淘宝 京东 拼多多 虾皮 SHEIN
+社交/IM 微信 QQ 微博 抖音 小红书
+电商/支付 淘宝 京东 拼多多 虾皮 SHEIN
 旅游 携程 客路
-云计算 阿里云 腾讯云
-视频音乐 腾讯视频 爱奇艺 bilibili 酷狗 QQ音乐 网易云音乐
-银行/券商
+云计算/云存储 阿里云 腾讯云
+大数据
+视频/音乐 腾讯视频 爱奇艺 bilibili 酷狗 QQ音乐 网易云音乐
+银行/证券
 机器人 商汤 大疆 Anker 普渡 优必选 科沃斯 高仙机器人 
 自动驾驶 小马智行 文远知行 AutoX Momenta 元戎启行
