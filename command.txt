@@ -3,7 +3,15 @@
   sudo groupdel groupname
   sudo useradd ¨Cd /usr/sam -m sam
   sudo userdel sam
-  passwd
+  
+  useradd -m thomas -s /bin/bash
+  passwd thomas
+  #vim /etc/sudoers
+  visudo ctrl+o enter ctrl+x
+  thomas  ALL=(root) NOPASSWD:ALL
+  cat /etc/passwd
+  userdel -r thomas
+  chroot
   
 2.samba
   sudo apt-get update
