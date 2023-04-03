@@ -2466,32 +2466,35 @@ Output: {…,  5,  3,  1,  0,  2,  4,  6, …}
 访问者模式(Visitor Pattern): 将数据结构与数据操作分离,稳定的数据结构和易变的操作耦合问题;被访问类A1/A2实现Accept接口(在Accept方法内调用访问者的Visit方法),类B包含被访问类数组(数组存储A1/A2),B也实现Accept接口(在方法内遍历数组,调用每个对象的Accept方法),访问者类C实现Visit接口(在Visit方法内去操作A1/A2),将C对象传给B对象的Accept方法
 
 
-web前端 PC/手机/平板/嵌入式 小程序 React/Vue/Angular/JQuery/AJAX HTML5/CSS3/JS/node.js
+web前端 PC/手机/平板/嵌入式 小程序 React/Vue/Angular/JQuery/AJAX HTML5/CSS3/JS/TypeScript/node.js
 桌面 PC/嵌入式 windows:MFC/Mac/Linux GTK/GTK+/wxWidgets/QT electron/nw.js GNOME/KDE X Window/X11/Wayland
 移动端 手机/平板 Android/iOS flutter ReactNative
 服务端 编程语言/算法/网络/编译原理/数据库/操作系统:linux/中间件/分布式/设计模式/DevOps/大数据/云计算/安全/音视频
-编程语言/编译原理 Golang C/C++
-数据库 mysql/postgresql/sqlite/tidb redis mongodb MQ ELK Promethus etcd
-网络 IP TCP UDP HTTP
+操作系统 linux shell makefile/cmake RTOS/uCos/FreeRTOS
+编程语言/编译原理 C/C++ rust lua python
+Golang go-zero kratos
+Java Spring/Spring boot/Spring cloud
+数据库 mysql/postgresql/sqlite/tidb redis mongodb MQ ELK Promethus etcd/consul/Nomad/zookeeper clickhouse nginx kafka/rabbitmq/rocketmq/nsq/MQTT ElasticSearch gfs/ceph/glusterfs/minio Dapr Graphql Promethues
+网络 IP TCP UDP HTTP Socket JSON/Protobuf DNS 
 容器 docker kubernetes istio
-分布式 微服务
-操作系统 linux
+架构 分布式 微服务 Jaeger
 算法 红黑树
-运维 CI/CD Drone shell makefile
+运维 CI/CD Drone Jenkins
 浏览器内核
-音视频/流媒体 ffmpeg webrtc
+音视频/流媒体 直播 ffmpeg webrtc Dolby DTS RTMP
 推荐系统
-人工智能 机器学习/深度学习 人脸识别 OpenCV OpenGL GLSL Vulkan 大数据/数据挖掘
-自动驾驶 RTOS
-机器人 ROS SLAM
+人工智能 机器学习/深度学习 人脸识别 OpenCV OpenGL Openvx/Tiovx WebGL/Three.js GLSL Vulkan 大数据/数据挖掘 Tensorflow
+自动驾驶
+机器人 ROS/rviz SLAM
 物联网/智能家居
 3D deepmind
-大数据 hadoop/storm/hbase/hive/flink/spark
-云计算 openstack
+大数据 hadoop/HDFS/MapReduce/storm/hbase/hive/flink/spark bigquery
+云计算 openstack CDN KVM
 web安全
 区块链 Bitcoin ipfs web3
 AR/VR
 GPU/CUDA
+嵌入式 I2C/SPI/UART OTA
 
 社交/IM 微信 QQ 微博 抖音 小红书
 电商/支付 淘宝 京东 拼多多 虾皮 SHEIN
