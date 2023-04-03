@@ -2785,9 +2785,29 @@ Helm:
   gateway 192.168.1.1
   hwaddress ether 00:0c:29:9e:42:56
 
-  sudo vim /etc/resolvconf/resolv.conf.d/base
-  nameserver 192.168.1.146
-  nameserver 114.114.114.114
+  #sudo vim /etc/resolvconf/resolv.conf.d/base
+  #nameserver 192.168.1.146
+  #nameserver 114.114.114.114
+
+  sudo vim /etc/netplan/00-installer-config.yaml
+  network:
+    ethernets:
+      ens33:
+        dhcp4: true
+        nameservers:
+          addresses: [192.168.45.73]
+    version: 2
+
+  sudo systemctl status systemd-networkd
+  sudo systemctl restart systemd-networkd
+  sudo netplan apply
+  cat /run/systemd/resolve/resolv.conf
+  sudo ln -sf /run/systemd/resolve/resolv.conf /etc/resolv.conf
+
+  sudo vim /etc/systemd/resolved.conf
+  DNS=8.8.8.8 114.114.114.114
+  sudo systemctl status systemd-resolved
+  sudo systemctl restart systemd-resolved
 
   sudo vim /etc/hostname
   ubuntuthomas1
