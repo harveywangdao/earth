@@ -2465,6 +2465,7 @@ Output: {…,  5,  3,  1,  0,  2,  4,  6, …}
 模板模式(Template Pattern): 抽象类定义了执行它的方法的方式(模板),它的子类可以按需要重写方法实现,但调用将以抽象类中定义的方式进行,主要解决一些方法通用却在每一个子类都重新写了这一方法
 访问者模式(Visitor Pattern): 将数据结构与数据操作分离,稳定的数据结构和易变的操作耦合问题;被访问类A1/A2实现Accept接口(在Accept方法内调用访问者的Visit方法),类B包含被访问类数组(数组存储A1/A2),B也实现Accept接口(在方法内遍历数组,调用每个对象的Accept方法),访问者类C实现Visit接口(在Visit方法内去操作A1/A2),将C对象传给B对象的Accept方法
 
+操作系统 计算机系统 数据库原理 编译原理 汇编 数据结构与算法 网络 分布式 音视频
 
 web前端 PC/手机/平板/嵌入式 小程序 React/Vue/Angular/JQuery/AJAX HTML5/CSS3/JS/TypeScript/node.js
 桌面 PC/嵌入式 windows:MFC/Mac/Linux GTK/GTK+/wxWidgets/QT electron/nw.js GNOME/KDE X Window/X11/Wayland
@@ -2472,24 +2473,49 @@ web前端 PC/手机/平板/嵌入式 小程序 React/Vue/Angular/JQuery/AJAX HTM
 服务端 编程语言/算法/网络/编译原理/数据库/操作系统:linux/中间件/分布式/设计模式/DevOps/大数据/云计算/安全/音视频
 操作系统 linux shell makefile/cmake RTOS/uCos/FreeRTOS
 编程语言/编译原理 C/C++ rust lua python
-Golang go-zero kratos
+Golang go-zero kratos gRPC Thrift Gin Beego iris echo fiber chi macaron revel martini go-kit go-micro goa go-chassis dubbo-go
 Java Spring/Spring boot/Spring cloud
-数据库 mysql/postgresql/sqlite/tidb redis mongodb MQ ELK Promethus etcd/consul/Nomad/zookeeper clickhouse nginx kafka/rabbitmq/rocketmq/nsq/MQTT ElasticSearch gfs/ceph/glusterfs/minio Dapr Graphql Promethues
-网络 IP TCP UDP HTTP Socket JSON/Protobuf DNS 
-容器 docker kubernetes istio
-架构 分布式 微服务 Jaeger
-算法 红黑树
-运维 CI/CD Drone Jenkins
+数据库 MySQL/PostgreSQL/sqlite/TiDB Redis MongoDB MQ ELK Prometheus Etcd/consul/Nomad/zookeeper clickhouse Nginx Kafka/RabbitMQ/RocketMQ/nsq/MQTT Pulsar strimzi-kafka-operator ElasticSearch gfs/Ceph/Glusterfs/Minio/ChubaoFS/seaweedfs Dapr Graphql Promethues CockroachDB rqlite dqlite yugabyte vitess Cassandra TiKV FoundationDB GreenPlum ClickHouse Neo4j Dgraph Cayley nebula rook OpenEBS Longhorn LevelDB RocksDB pebble BoltDB Badger buntdb nutsdb
+Redis pika ssdb tidis ramsql memsql summitdb Genji go-memdb
+Flannel Calico Canal Cilium Weave Kube-OVN CoreDNS NATS cni eBPF
+Envoy Nginx MOSN KrakenD lura ingress-nginx Ambassador Gloo HAProxy Ingress Kong Traefik Nginx Ingress Controller
+Kops kind sealos minikube k3s microk8s Rancher Terraform OpenPitrix
+cri-o kata container containerd rkt frakti
+Makisu Kaniko Img Podman Buildah
+KubeSphere KubeVirt KubeEdge Volcano  Kubeflow KubeOperator Kubeless Fission OpenNESS Fargate Firecracker
+CloudEvents Notary TUF falco Cloudtask Chaos Mesh CRD OpenYurt journalctl -u kubelet Kuma KUDO Keptn KEDA in-toto Flux Doris Fluid Karmada
+
+网络 IP TCP UDP HTTP HTTP/2 HTTP/3 QUIC socks5 Socket JSON/Protobuf DNS session oauth2 casbin
+
+容器 Docker Kubernetes Istio Serverless Rancher Terraform 边缘计算 PaaS Helm Docker Compose Docker Swarm Mesos Kubernetes Dashboard Harbor Portainer Prometheus Grafana pushgateway alertmanager OpenTSDB Thanos VictoriaMetrics Cortex InfluxDB Open-Falcon OpenMetrics cAdvisor ELK Logstash Kibana FileBeat Flume Fluentd loki
+
+架构 分布式 微服务 Jaeger 高并发 高可用 分布式一致性 分布式事务 主从 Paxos/Raft Istio Serverless Knative linkerd Jaeger Kiali OpenTracing SkyWalking OpenTelemetry Dragonfly Open Policy Agent Zipkin
+
+算法:
+字符串: KMP、BM、Rabin-Karp、Sunday
+排序算法: 冒泡排序、选择排序、插入排序、希尔排序、快速排序、堆排序、归并排序、桶排序、基数排序、计数排序
+压缩算法: 霍夫曼压缩
+加密算法: aes、rsa、ecc
+hash算法: crc32、md5、sha256
+正则算法
+图: DAG有向无环图、无向图、有向图、最小生成树、最短路径、广度优先搜索、深度优先搜索、拓扑排序
+树: AVL树、红黑树、B树、B+树、B*树、斐波那契堆、二项树、二项队列、哈夫曼树、Trie树、R-tree、splay树、AA树
+算法方法: 动态规划、贪心算法、回溯法、分治算法、分支限界算法、摊还分析、NP完全性、子集和问题、旅行商问题、顶点覆盖问题、随机森林
+一致性算法: Raft、Paxos、Gossip; 共识算法: POW、POS、DPOS、PBFT
+分布式事务: ACID、CAP、BASE理论、2PC、3PC、TCC
+其它: 线段树、树状数组、并查集、跳跃表
+
+运维 CI/CD Drone Jenkins Argo Argo CD Tekton
 浏览器内核
 音视频/流媒体 直播 ffmpeg webrtc Dolby DTS RTMP
 推荐系统
-人工智能 机器学习/深度学习 人脸识别 OpenCV OpenGL Openvx/Tiovx WebGL/Three.js GLSL Vulkan 大数据/数据挖掘 Tensorflow
+人工智能 机器学习/深度学习 人脸识别 OpenCV OpenGL Openvx/Tiovx WebGL/Three.js GLSL Vulkan 大数据/数据挖掘 TensorFlow/PyTorch
 自动驾驶
 机器人 ROS/rviz SLAM
 物联网/智能家居
 3D deepmind
-大数据 hadoop/HDFS/MapReduce/storm/hbase/hive/flink/spark bigquery
-云计算 openstack CDN KVM
+大数据 Hadoop/HDFS/MapReduce/storm/HBase/Hive/Flink/Spark bigquery
+云计算 OpenStack CDN KVM QEMU SLB
 web安全
 区块链 Bitcoin ipfs web3
 AR/VR
@@ -2505,3 +2531,76 @@ GPU/CUDA
 银行/证券
 机器人 商汤 大疆 Anker 普渡 优必选 科沃斯 高仙机器人 
 自动驾驶 小马智行 文远知行 AutoX Momenta 元戎启行
+
+腾讯 阿里 华为 百度 字节 京东 美团 快手 网易 拼多多 商汤 迅雷 顺丰 小米 蔚来理想小鹏 货拉拉 讯飞 用友 360 bli 金蝶 深信服 微博 携程 爱奇艺 58 贝壳 汽车之家 去哪儿网 ucloud 瓜子二手车 平安 大疆 美的格力
+
+互联网：
+电商 外卖 跨境电商 卖房租房 旅游 汽车网 招聘 在线教育
+即时通讯
+社交 短视频 微博
+视频 音乐
+新闻 媒体
+游戏
+云计算
+搜索引擎
+政府网
+
+PC：
+OS 浏览器
+办公软件 输入法 杀毒软件 翻译软件 下载 编辑器 IDE
+
+金融 银行 证券 保险 区块链
+物流 搬家
+
+智能硬件 智能家居 物联网 
+机器人 无人机 扫地机
+汽车 无人驾驶
+
+半导体 电子 通信
+电器 电视 空调 冰箱 洗衣机 电饭锅 电磁炉 热水器 电脑 手机 平板
+
+衣食住行：
+房子 房地产 建筑 建材 装修 家具 
+出行 运输 桥 路 铁路 飞机
+衣服 上衣 裤子 鞋子
+洗 洗澡 洗衣服 洗碗
+睡 床 被子
+食物 主食 蔬菜 肉
+娱乐 旅游 运动 游戏 音乐 视频
+医疗 药
+教育
+
+C/C++、Go、Python、Java、Node.js、Rust、Scala、Kotlin、TypeScript、Dart
+多进程、多线程(线程池)、协程、IPC(共享内存/管道/FIFO/消息队列/unix域套接字/mmap/dbus)、同步(信号量/互斥锁/读写锁/条件变量/自旋锁)、socket(tcp/udp)、文件io(fopen/fclose/fread/fwrite/open/create/close/lseek/read/write/stat/fstat)、io多路复用(epoll/select/poll)、fcntl、ioctl、dup/dup2、sendfile
+linux、shell、基本命令(查进程/查网络)
+数据结构、算法、链表、栈、二叉树、队列、图、排序、查找、红黑树、平衡二叉树、B树、B+树、布隆过滤器、KMP算法、LRU、倒排索引、最大堆和最小堆、深度优先遍历、广度优先遍历
+Go、Gin、Beego、go-micro
+C++、STL、Boost、Boost.Asio、libevent、libev、libuv、libco、web后台、Boost.Beast
+Python、Django、Flask、Tornado、SQLAlchemy
+Java、Spring Boot、Spring Cloud、Spring、Mybatis、Struts2、Hibernate、Eureka、Ribbon、Hystrix、Zuul、Feign、Dubbo
+NewSQL、TiDB
+数据库、MySQL、PostgreSQL、MariaDB
+NoSQL、Mongodb、Cassandra、Neo4j、LevelDB、goleveldb、RocksDB、CouchDB、Couchbase、ClickHouse、OceanBase、BigTable、tikv
+消息队列、Kafka、ActiveMQ、ZeroMQ、RabbitMQ、RocketMQ、NSQ、CMQ(kafka scala、RabbitMQ Erlang AMQP、RocketMQ Java、ActiveMQ Java、ZeroMQ C、CMQ 腾讯云)(高可用、单点问题、热备；负载均衡、高并发；数据丢失问题、持久化；消息回搠；延时消费)
+缓存、Redis
+云计算、Paas、边缘计
+算、虚拟化、容器技术、Docker、Kubernetes、Swarm、Mesos、OpenStack、KVM、QEMU、XEN、libvirt、GPU虚拟化、Terraform、Rancher、Serverless、Knative、KubeVirt、Tekton、Envoy
+网络代理、负载均衡、DNS、Nginx、Haproxy、LVS(NAT/DR/TUN)、IPVS、Keepalived
+日志、Elasticsearch、Logstash、Kibana、FileBeat、Flume
+监控、Prometheus、Grafana、Influxdb、OpenTSDB
+微服务、Service Mesh、Istio、RESTful、gRPC、Etcd、Consul、Zookeeper、Zipkin、Kong、Thrift
+高并发、秒杀(库存,超卖现象,redis乐观锁watch,redis悲观锁 阻塞式(超时) 非阻塞式 setnx expire,mysql乐观锁version,mysql悲观锁select for update用到索引)
+分布式存储、Ceph、GlusterFS、MinIO、Swift、OpenZFS、MogileFS、FastDFS、SeaweedFS、Lustre、MooseFS、S3
+分布式一致性、2PC、3PC、TCC、Paxos、ZAB、Raft、CAP
+大数据、Hadoop、HBase、Hive、Spark、Storm、Flink、Kylin
+网络、TCP、UDP、IP、netlink、netfilter、HTTP、HTTP2、HTTPS、websocket、VPP、DNS、NFS、DHCP、路由器、交换机、iptables、LAN、VLAN、VxLAN、IPsec、SMTP、FTP、TFTP、Telnet、SNMP、IGMP、广播、多播、组播、RIP、CIDR、ICMP、ARP、RARP、BGP、OSPF、NAT、VPN、SDN、NFV、Overlay、Openvswitch、OpenDaylight、OpenFlow、DPDK、SPDK、NUMA、RDMA
+运维、DevOps、Ansible、Jenkins、Nagios、Zabbix
+人工智能、AI、机器学习、深度学习、Numpy、Pandas、Matplotlib、Caffe、Keras、Tensorflow、PyTorch、OpenCV、Scikit-learn、Theano、MXNet
+音视频图片、流媒体、FFmpeg、H.264、H.265、RTSP、RTMP、RTP、RTCP、VOIP、SIP、OpenGL、FLV、MP4、HLV、HLS、WebRTC、MPEG-4、AAC、MP3
+前端技术、js/html/css、Vue、React、Flutter、Electron、小程序
+CDN、搜索引擎、浏览器内核、推荐系统、网络安全、密码学
+磁盘、IDE、SATA、mSATA、M.2、SCSI、PCIe、机械硬盘、SSD、AHCI、NVMe、iSCSI、SAN、NAS、RAID
+容器注册表
+VFS、OpenZFS、XFS、EXT2、EXT3、EXT4、NFS、CIFS、FUSE
+Ramdisk、tmpfs、ramfs
+UnionFS、AUFS、Overlay2、DeviceMapper、Btrfs
