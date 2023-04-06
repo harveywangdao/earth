@@ -1353,7 +1353,6 @@ Logstash/Kibana/filebeat/Flume
 
 Etcd/ZooKeeper/Nacos/Consul
 Ceph
-Nginx kong traefik
 Promethous/Grafana
 MinIO
 
@@ -2466,11 +2465,11 @@ Output: {…,  5,  3,  1,  0,  2,  4,  6, …}
 
 操作系统 计算机系统 数据库原理 编译原理 汇编 数据结构与算法 网络 分布式 音视频
 
-web前端 PC/手机/平板/嵌入式 小程序 React/Vue/Angular/JQuery/AJAX/Bootstrap/ionic HTML5/CSS3/JS/TypeScript/node.js Gulp
+前端 PC/手机/平板/嵌入式 小程序 React/Vue/Angular/JQuery/AJAX/Bootstrap/ionic HTML5/CSS3/JS/TypeScript/node.js Gulp
 桌面 PC/嵌入式 windows:MFC/Mac/Linux GTK/GTK+/Xen/wxWidgets/QT electron/nw.js GNOME/KDE X Window/X11/Wayland
 移动端 手机/平板 Android/iOS flutter ReactNative Dart
-服务端 编程语言/算法/网络/编译原理/数据库/操作系统/中间件/分布式/设计模式/DevOps/大数据/云计算/安全/音视频
-操作系统 linux shell makefile/cmake RTOS/uCos/FreeRTOS
+服务端
+操作系统 linux RTOS/uCos/FreeRTOS
 编程语言/编译原理
 Golang go-zero kratos gRPC Thrift Gin Beego iris echo fiber chi macaron revel martini go-kit go-micro goa go-chassis dubbo-go
 Java Spring/Spring boot/Spring cloud J2SE/J2EE EJB Servlets JSP JDBC Applet JSF JVM Swing/AWT/SWT Tomcat Mybatis Struts/Struts2 Hibernate Eureka Ribbon Hystrix Zuul Feign Dubbo
@@ -2482,87 +2481,66 @@ PHP Magento/Drupal/joomla/Typecho/laravel
 Python Django/Tornado/flask/CMS/Mezzanine/Scrapy SQLAlchemy
 C++ STL boost cocos2d Lua rust Boost.Asio libevent libev libuv libco Boost.Beast
 C glibc/coreutils/Webbench/Tinyhttpd/cJSON/CMockery/Libev bzip2 OpenSSL/SSH libevent
-Linux:
-signal network/NetLink 进程/线程 线程池 安全
-IPC(共享内存/管道/FIFO/消息队列/unix域套接字/mmap/dbus) 同步(信号量/互斥锁/读写锁/条件变量/自旋锁) socket(tcp/udp) 文件io(fopen/fclose/fread/fwrite/open/create/close/lseek/read/write/stat/fstat) io多路复用(epoll/select/poll) fcntl ioctl dup/dup2 sendfile
-文件系统 UnionFS/AUFS/Overlay2/DeviceMapper/Btrfs VFS/OpenZFS/XFS/EXT2/EXT3/EXT4/NFS/CIFS/FUSE Ramdisk/tmpfs/ramfs
-数据库 MySQL/MariaDB/PostgreSQL/sqlite/TiDB Redis MongoDB MQ ELK clickhouse Nginx  Pulsar strimzi-kafka-operator 
-Prometheus Grafana Influxdb OpenTSDB pushgateway alertmanager
+Linux shell makefile/cmake signal network/NetLink 进程/线程 线程池 安全 IPC(共享内存/管道/FIFO/消息队列/unix域套接字/mmap/dbus) 同步(信号量/互斥锁/读写锁/条件变量/自旋锁) socket(tcp/udp) 文件io(fopen/fclose/fread/fwrite/open/create/close/lseek/read/write/stat/fstat) io多路复用(epoll/select/poll) fcntl ioctl dup/dup2 sendfile
+文件系统 VFS/OpenZFS/XFS/EXT2/EXT3/EXT4/NFS/CIFS/FUSE Ramdisk/tmpfs/ramfs UnionFS/AUFS/Overlay2/DeviceMapper/Btrfs
+数据库 MySQL/MariaDB/PostgreSQL/sqlite/TiDB Redis MongoDB
+Prometheus Grafana InfluxDB OpenTSDB pushgateway alertmanager
 ElasticSearch Logstash Kibana FileBeat Flume Fluentd loki
 Etcd/Consul/Nomad/Zookeeper
-Kafka/RabbitMQ/RocketMQ/NSQ/MQTT/ActiveMQ/ZeroMQ/CMQ
-gfs/Ceph/GlusterFS/MinIO/ChubaoFS/SeaweedFS/FastDFS/MogileFS/S3/MooseFS/Lustre
-Dapr Graphql Promethues CockroachDB rqlite dqlite yugabyte vitess Cassandra TiKV FoundationDB GreenPlum ClickHouse Neo4j Dgraph Cayley nebula rook OpenEBS Longhorn LevelDB goleveldb RocksDB pebble BoltDB Badger buntdb nutsdb CouchDB Couchbase OceanBase BigTable
-Redis pika ssdb tidis ramsql memsql summitdb Genji go-memdb
-Flannel Calico Canal Cilium Weave Kube-OVN CoreDNS NATS cni eBPF
-Envoy Nginx MOSN KrakenD lura ingress-nginx Ambassador Gloo HAProxy Ingress Kong Traefik Ingress Controller LVS(NAT/DR/TUN) IPVS Keepalived
-Kops kind sealos minikube k3s microk8s Rancher Terraform OpenPitrix
-cri-o kata container containerd rkt frakti
-Makisu Kaniko Img Podman Buildah
-KubeSphere KubeVirt KubeEdge Volcano  Kubeflow KubeOperator Kubeless Fission OpenNESS Fargate Firecracker
-CloudEvents Notary TUF falco Cloudtask Chaos Mesh CRD OpenYurt journalctl -u kubelet Kuma KUDO Keptn KEDA in-toto Flux Doris Fluid Karmada
+Kafka/RabbitMQ/RocketMQ/NSQ/MQTT/ActiveMQ/ZeroMQ/CMQ/Pulsar strimzi-kafka-operator 
+Ceph/GlusterFS/MinIO/ChubaoFS/SeaweedFS/FastDFS/MogileFS/S3/MooseFS/Lustre/GFS
+Graphql Promethues CockroachDB rqlite dqlite yugabyte vitess Cassandra TiKV FoundationDB GreenPlum ClickHouse Neo4j Dgraph Cayley nebula rook OpenEBS Longhorn LevelDB goleveldb RocksDB pebble BoltDB Badger buntdb nutsdb CouchDB Couchbase OceanBase BigTable pika ssdb tidis ramsql memsql summitdb Genji go-memdb
+Nginx Envoy MOSN KrakenD lura ingress-nginx Ambassador Gloo HAProxy Ingress Kong Traefik Ingress Controller LVS(NAT/DR/TUN) IPVS Keepalived
 网络 IP TCP UDP HTTP HTTPS HTTP/2 HTTP/3 QUIC socks5 Socket JSON/Protobuf RESTful DNS session oauth2 casbin netlink netfilter websocket VPP DHCP 路由器 交换机 iptables LAN VLAN VxLAN IPsec SMTP FTP TFTP Telnet SNMP IGMP 广播 多播 组播 RIP CIDR ICMP ARP RARP BGP OSPF NAT VPN SDN NFV Overlay Openvswitch OpenDaylight OpenFlow DPDK SPDK NUMA RDMA
-容器 Docker Kubernetes Istio linkerd Serverless Knative Rancher Terraform 边缘计算 PaaS Helm Docker Compose Docker Swarm Mesos Kubernetes Dashboard Harbor Portainer Thanos VictoriaMetrics Cortex InfluxDB Open-Falcon OpenMetrics cAdvisor
-架构 高并发 秒杀(库存,超卖现象,redis乐观锁watch,redis悲观锁 阻塞式(超时) 非阻塞式 setnx expire,mysql乐观锁version,mysql悲观锁select for update用到索引)
-微服务 Jaeger 高并发 高可用 分布式一致性 分布式事务 主从 Paxos/Raft Jaeger Kiali OpenTracing SkyWalking OpenTelemetry Dragonfly Open Policy Agent Zipkin
-分布式 2PC 3PC TCC Paxos ZAB Raft CAP
-算法:
-字符串: KMP、BM、Rabin-Karp、Sunday
-排序算法: 冒泡排序、选择排序、插入排序、希尔排序、快速排序、堆排序、归并排序、桶排序、基数排序、计数排序
-压缩算法: 霍夫曼压缩
-加密算法: aes、rsa、ecc
-hash算法: crc32、md5、sha256
-正则算法
-图: DAG有向无环图、无向图、有向图、最小生成树、最短路径、广度优先搜索、深度优先搜索、拓扑排序
-树: AVL树、红黑树、B树、B+树、B*树、斐波那契堆、二项树、二项队列、哈夫曼树、Trie树、R-tree、splay树、AA树
-算法方法: 动态规划、贪心算法、回溯法、分治算法、分支限界算法、摊还分析、NP完全性、子集和问题、旅行商问题、顶点覆盖问题、随机森林
-一致性算法: Raft、Paxos、Gossip; 共识算法: POW、POS、DPOS、PBFT
-分布式事务: ACID、CAP、BASE理论、2PC、3PC、TCC
-其它: 线段树、树状数组、并查集、跳跃表
-倒排索引 LRU 布隆过滤器
+容器 Docker/Docker Compose/Docker Swarm/Mesos
+容器网络 Flannel Calico Canal Cilium Weave Kube-OVN CoreDNS NATS cni eBPF
+容器运行时 cri-o kata container containerd rkt frakti
+容器镜像 Makisu Kaniko Img Podman Buildah
+容器监控 Thanos/VictoriaMetrics/Cortex/Open-Falcon/OpenMetrics/cAdvisor
+Kubernetes Rancher/Terraform/Kops/kind/sealos/minikube/k3s/microk8s Helm/Kubernetes Dashboard/Harbor/Portainer KubeSphere/KubeVirt/KubeEdge/Kubeflow/KubeOperator/Kubeless Volcano Fargate CloudEvents Notary TUF falco Cloudtask Chaos Mesh CRD OpenYurt journalctl -u kubelet KUDO Keptn KEDA in-toto Flux Doris Fluid Karmada OpenPitrix
+服务网格 Istio/linkerd2/Kuma
+Serverless/Fission/Knative/faas Firecracker Dapr 边缘计算 PaaS
+微服务 Jaeger Kiali OpenTracing SkyWalking OpenTelemetry Dragonfly Open Policy Agent Zipkin
+分布式 架构 高并发 高可用 主从 分布式一致性 分布式事务 2PC 3PC TCC Paxos ZAB Raft CAP ACID CAP BASE理论 Gossip 共识算法:POW/POS/DPOS/PBFT 秒杀(库存,超卖现象,redis乐观锁watch,redis悲观锁 阻塞式(超时) 非阻塞式 setnx expire,mysql乐观锁version,mysql悲观锁select for update用到索引)
+算法 字符串:KMP/BM/Rabin-Karp/Sunday 排序算法:冒泡排序/选择排序/插入排序/希尔排序/快速排序/堆排序/归并排序/桶排序/基数排序/计数排序 压缩算法:霍夫曼压缩 加密算法:aes/rsa/ecc hash算法:crc32/md5/sha256 正则算法 图:DAG有向无环图/无向图/有向图/最小生成树/最短路径/广度优先搜索/深度优先搜索/拓扑排序 树:AVL树/红黑树/B树/B+树/B*树/斐波那契堆/二项树/二项队列/哈夫曼树/Trie树/R-tree/splay树/AA树 算法方法:动态规划/贪心算法/回溯法/分治算法/分支限界算法/摊还分析/NP完全性/子集和问题/旅行商问题/顶点覆盖问题/随机森林 其它:线段树/树状数组/并查集/跳跃表 倒排索引 LRU 布隆过滤器
 运维 CI/CD Drone Jenkins Argo Argo CD Tekton DevOps Ansible Nagios Zabbix
 浏览器内核 Chrome
 音视频/流媒体 直播 FFmpeg webrtc Dolby DTS H.264 H.265 RTSP RTMP RTP RTCP VOIP SIP FLV MP4 HLV HLS WebRTC MPEG-4 AAC MP3
 推荐系统
 搜索引擎
-人工智能 机器学习/深度学习 人脸识别 OpenCV OpenGL Openvx/Tiovx WebGL/Three.js GLSL Vulkan 大数据/数据挖掘 TensorFlow/PyTorch Numpy Pandas Matplotlib Caffe Keras Scikit-learn Theano MXNet
-自动驾驶
+大数据 Hadoop/HDFS/MapReduce/Storm/HBase/Hive/Flink/Spark bigquery Kylin
+人工智能 机器学习/深度学习 人脸识别 OpenCV OpenGL Openvx/Tiovx WebGL/Three.js GLSL Vulkan 数据挖掘 TensorFlow/PyTorch Numpy Pandas Matplotlib Caffe Keras Scikit-learn Theano MXNet
 机器人 ROS/rviz SLAM
+自动驾驶
 物联网/智能家居
 3D deepmind
-大数据 Hadoop/HDFS/MapReduce/Storm/HBase/Hive/Flink/Spark bigquery Kylin
 云计算 OpenStack CDN KVM QEMU SLB XEN libvirt
-web安全
 区块链 Bitcoin IPFS web3
 AR/VR
 GPU/CUDA
 嵌入式 I2C/SPI/UART OTA
-网络安全
-密码学
+网络安全 web安全 密码学
 磁盘 IDE SATA mSATA M.2 SCSI PCIe 机械硬盘 SSD AHCI NVMe iSCSI SAN NAS RAID
 
-社交/IM/短视频 新闻/媒体 微信 QQ 微博 抖音 小红书 
-电商/支付/外卖/跨境电商 卖房租房 汽车网 招聘 在线教育 淘宝 京东 拼多多 虾皮 SHEIN
-旅游 携程 客路
-云计算/云存储 阿里云 腾讯云
+社交/IM/短视频 新闻/媒体 微信 QQ 腾讯 微博 抖音 字节 小红书  快手
+电商/支付/外卖/跨境电商 卖房租房 阿里 汽车之家 招聘 在线教育 淘宝 京东 拼多多 虾皮 SHEIN 美团 货拉拉 58 贝壳 瓜子二手车
+旅游 携程 客路 去哪儿网
+云计算/云存储 阿里云 腾讯云 华为 深信服 ucloud
 大数据
 视频/音乐 腾讯视频 爱奇艺 bilibili 酷狗 QQ音乐 网易云音乐
-银行/证券
-机器人 商汤 大疆 Anker 普渡 优必选 科沃斯 高仙机器人 
-自动驾驶 小马智行 文远知行 AutoX Momenta 元戎启行
-游戏
-政府网
-腾讯 阿里 华为 百度 字节 京东 美团 快手 网易 拼多多 商汤 迅雷 顺丰 小米 蔚来理想小鹏 货拉拉 讯飞 用友 360 bli 金蝶 深信服 微博 携程 爱奇艺 58 贝壳 汽车之家 去哪儿网 ucloud 瓜子二手车 平安 大疆 美的 格力
-
-OS 浏览器
+银行/证券/保险/金融 区块链 平安
+机器人 无人机 扫地机 商汤 大疆 Anker 普渡 优必选 科沃斯 高仙机器人 讯飞
+汽车 自动驾驶 小马智行 文远知行 AutoX Momenta 元戎启行 蔚来 理想 小鹏
+搜索引擎 百度
+游戏 网易
+PC软件 迅雷 用友 360 金蝶
 办公软件 输入法 杀毒软件 翻译软件 下载 编辑器 IDE
-金融 银行 证券 保险 区块链
-物流 搬家
-智能硬件 智能家居 物联网 
-机器人 无人机 扫地机
-汽车 无人驾驶
+物流 搬家 顺丰
+手机 小米
+物联网 智能家居 智能硬件
+政府网
 半导体 电子 通信
-电器 电视 空调 冰箱 洗衣机 电饭锅 电磁炉 热水器 电脑 手机 平板
+电器 电视 空调 冰箱 洗衣机 电饭锅 电磁炉 热水器 电脑 平板 美的 格力
 衣食住行：
 房子 房地产 建筑 建材 装修 家具 
 出行 运输 桥 路 铁路 飞机
