@@ -75,39 +75,7 @@
   xz -z xxx.tar.xz
   xz -d xxx.tar.xz
   tar -xvJf
-  
-6.ifconfig eth0 up
-  ifconfig eth0 down
-  
-  ifconfig eth0 192.168.120.56 netmask 255.255.255.0 broadcast 192.168.120.255
-  
-  
-7.sudo su
-  vim /etc/network/interfaces
-  # interfaces(5) file used by ifup(8) and ifdown(8)auto loiface lo inet loopback
-  # The primary network interface
-  auto eth0
-  iface eth0 inet static
-  address 192.168.195.129
-  netmask 255.255.255.0
-  gateway 192.168.195.1
-  network 192.168.195.0
-  broadcast 192.168.195.255
-  
-  vim /etc/resolv.conf
-  nameserver 192.168.0.1
-  nameserver 8.8.8.8
-  
-  vim /etc/resolvconf/resolv.conf.d/base
-  nameserver 192.168.0.1
-  nameserver 8.8.8.8
-  
-  /etc/init.d/networking restart
-    
-  ifdown eth0
-  ifup eth0
-  
-  
+
 8.golang-beego
 	go get github.com/beego/bee
 	go get github.com/astaxie/beego
@@ -2771,11 +2739,15 @@ Helm:
   
 47.Network
   #sudo vim /etc/init.d/rc.local
-  #sudo ifconfig ens33 down
   #sudo ifconfig ens33 hw ether 00:0c:29:9e:42:56
-  #sudo ifconfig ens33 up
   #cat /sys/class/net/ens33/address
 
+  sudo ifup eth0
+  sudo ifdown eth0
+  sudo ifconfig eth0 up
+  sudo ifconfig eth0 down
+  sudo ifconfig eth0 192.168.120.56 netmask 255.255.255.0 broadcast 192.168.120.255
+  
   sudo vim /etc/network/interfaces
   auto ens33
   # iface ens33 inet dhcp
@@ -2784,10 +2756,16 @@ Helm:
   netmask 255.255.255.0
   gateway 192.168.1.1
   hwaddress ether 00:0c:29:9e:42:56
+  dns-nameservers 8.8.8.8 8.8.4.4
+  broadcast 192.168.195.255
 
-  #sudo vim /etc/resolvconf/resolv.conf.d/base
-  #nameserver 192.168.1.146
-  #nameserver 114.114.114.114
+  sudo vim /etc/resolv.conf
+  nameserver 192.168.0.1
+  nameserver 8.8.8.8
+
+  sudo vim /etc/resolvconf/resolv.conf.d/base
+  nameserver 192.168.1.146
+  nameserver 114.114.114.114
 
   sudo vim /etc/netplan/00-installer-config.yaml
   network:
@@ -2820,7 +2798,7 @@ Helm:
   192.168.1.146    ubuntuthomas1
   192.168.1.147    ubuntuthomas2
 
-  #sudo /etc/init.d/networking restart
+  sudo /etc/init.d/networking restart
   sudo reboot
 
 48.Hadoop
