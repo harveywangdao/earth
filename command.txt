@@ -5583,3 +5583,34 @@ InfluxDB:
   
   工具类 (学习成本低,能够拿来就用)
   原理类 (需要学原理并实践)
+
+Debian
+sudo vim /etc/apt/sources.list
+deb http://mirrors.aliyun.com/debian/ bullseye main non-free contrib
+deb-src http://mirrors.aliyun.com/debian/ bullseye main non-free contrib
+deb http://mirrors.aliyun.com/debian-security/ bullseye-security main
+deb-src http://mirrors.aliyun.com/debian-security/ bullseye-security main
+deb http://mirrors.aliyun.com/debian/ bullseye-updates main non-free contrib
+deb-src http://mirrors.aliyun.com/debian/ bullseye-updates main non-free contrib
+deb http://mirrors.aliyun.com/debian/ bullseye-backports main non-free contrib
+deb-src http://mirrors.aliyun.com/debian/ bullseye-backports main non-free contrib
+
+sudo vim /etc/apt/sources.list
+deb https://mirrors.163.com/debian/ bullseye main non-free contrib
+deb-src https://mirrors.163.com/debian/ bullseye main non-free contrib
+deb https://mirrors.163.com/debian-security/ bullseye-security main
+deb-src https://mirrors.163.com/debian-security/ bullseye-security main
+deb https://mirrors.163.com/debian/ bullseye-updates main non-free contrib
+deb-src https://mirrors.163.com/debian/ bullseye-updates main non-free contrib
+deb https://mirrors.163.com/debian/ bullseye-backports main non-free contrib
+deb-src https://mirrors.163.com/debian/ bullseye-backports main non-free contrib
+
+sudo vim /etc/apt/sources.list
+deb http://mirrors.ustc.edu.cn/debian/ bullseye main non-free contrib
+deb-src http://mirrors.ustc.edu.cn/debian/ bullseye main non-free contrib
+deb http://mirrors.ustc.edu.cn/debian-security/ bullseye-security main
+deb-src http://mirrors.ustc.edu.cn/debian-security/ bullseye-security main
+deb http://mirrors.ustc.edu.cn/debian/ bullseye-updates main non-free contrib
+deb-src http://mirrors.ustc.edu.cn/debian/ bullseye-updates main non-free contrib
+deb http://mirrors.ustc.edu.cn/debian/ bullseye-backports main non-free contrib
+deb-src http://mirrors.ustc.edu.cn/debian/ bullseye-backports main non-free contrib
