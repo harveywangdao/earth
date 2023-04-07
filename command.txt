@@ -2723,6 +2723,11 @@ sudo vim /etc/resolvconf/resolv.conf.d/base
 nameserver 192.168.1.146
 nameserver 114.114.114.114
 
+sudo vim /etc/dhcp/dhclient.conf
+supersede domain-name-servers 223.5.5.5, 223.6.6.6;
+systemctl status networking.service
+sudo systemctl restart networking.service
+
 sudo vim /etc/netplan/00-installer-config.yaml
 network:
   ethernets:
@@ -2732,7 +2737,7 @@ network:
         addresses: [192.168.45.73]
   version: 2
 
-sudo systemctl status systemd-networkd
+systemctl status systemd-networkd.service
 sudo systemctl restart systemd-networkd
 sudo netplan apply
 cat /run/systemd/resolve/resolv.conf
@@ -2740,8 +2745,11 @@ sudo ln -sf /run/systemd/resolve/resolv.conf /etc/resolv.conf
 
 sudo vim /etc/systemd/resolved.conf
 DNS=8.8.8.8 114.114.114.114
-sudo systemctl status systemd-resolved
+systemctl status systemd-resolved
 sudo systemctl restart systemd-resolved
+sudo systemctl disable systemd-resolved.service
+
+resolvectl
 
 sudo vim /etc/hostname
 ubuntuthomas1
@@ -5507,3 +5515,62 @@ deb http://mirrors.ustc.edu.cn/debian/ bullseye-updates main non-free contrib
 deb-src http://mirrors.ustc.edu.cn/debian/ bullseye-updates main non-free contrib
 deb http://mirrors.ustc.edu.cn/debian/ bullseye-backports main non-free contrib
 deb-src http://mirrors.ustc.edu.cn/debian/ bullseye-backports main non-free contrib
+
+NTP:
+本地时间带时区/系统时间
+UTC时间/系统时间
+RTC硬件时间
+
+timesyncd替代了ntpd的客户端的部分
+systemctl status systemd-timesyncd.service
+/etc/systemd/timesyncd.conf
+timedatectl set-ntp true
+timedatectl timesync-status
+timedatectl show-timesync
+timedatectl status
+timedatectl show
+timedatectl set-time "2020-04-29 11:30:00"
+timedatectl list-timezones
+timedatectl set-timezone "Asia/Shanghai"
+timedatectl set-local-rtc true
+timedatectl set-local-rtc 0
+
+date "+%Y-%m-%d %H:%M:%S"
+sudo date -s "20150101 8:30:00"  # 不会设置RTC
+
+RTC:
+实时时钟 real-time clock
+hwclock --localtime
+hwclock --utc
+hwclock -r
+sudo hwclock -s # set the system time from the RTC
+sudo hwclock -w # set the RTC from the system time
+sudo hwclock --set --date "20140225 20:23:00"
+
+SNTP/Simple NTP
+RFC5905
+NTP server RFC2030
+ntpdate
+ntpd
+ntpdate和ntpd是互斥的两者不能同时使用
+sudo apt-get install ntp ntpdate ntpstat
+systemctl status ntp.service
+sudo systemctl restart ntp.service
+sudo systemctl stop ntp.service
+sudo systemctl reload ntp.service
+sudo netstat -lanp | grep 123
+ntpq -p 127.0.0.1
+ntpstat
+ntpdate -q 127.0.0.1
+ntpdate -q 192.168.45.146
+ntpdate -q paper.com
+sudo ntpdate paper.com
+
+telnet 192.168.45.146 8080
+nc -vz 192.168.45.146 8080
+nc -vuz 192.168.45.146 123
+
+sntp --version
+sudo vim /etc/ntp.conf
+restrict 192.168.0.0 mask 255.255.255.0 nomodify
+port UDP 123
