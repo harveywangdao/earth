@@ -55,7 +55,6 @@ apt-get remove packagename
 apt-get remove --purge packagename
 apt-get autoremove packagename
 apt-get autoremove --purge packagname
-dpkg --force-all --purge packagename
 apt-get autoclean
 apt-get clean 
 apt-get upgrade
@@ -68,6 +67,11 @@ apt-get build-dep package
 apt-get source package
 apt-get clean && sudo apt-get autoclean
 apt-get install --reinstall ca-certificates
+
+dpkg -l
+dpkg --force-all --purge packagename
+apt-cache search onlyoffice-documentserver
+apt-cache show onlyoffice-documentserver
 
 cat <<EOF >/etc/apt/sources.list
 deb http://mirrors.aliyun.com/ubuntu/ xenial main
@@ -178,6 +182,30 @@ sudo userdel -r postgres
 sudo groupdel postgres
 cat /etc/passwd | cut -f 1 -d:
 grep bash /etc/passwd
+
+sudo -i -u postgres
+sudo -u postgres psql postgres
+\password postgres
+
+CREATE USER xiaoming WITH PASSWORD '123456';
+CREATE DATABASE db01;
+GRANT ALL PRIVILEGES ON DATABASE db01 TO xiaoming;
+
+\c db01;
+GRANT ALL PRIVILEGES ON all tables in schema public TO xiaoming;
+GRANT USAGE,SELECT ON ALL SEQUENCES in schema public TO xiaoming;
+
+\l
+\d
+
+psql -h 127.0.0.1 -p 5432 -U xiaoming db01
+psql -h 127.0.0.1 -p 5432 -U postgres postgres
+
+Schema
+CREATE TYPE week AS ENUM ('Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun');
+sequence
+
+host=127.0.0.1 user=xiaoming password=123456 dbname=db01 port=5432 sslmode=disable
 
 RabbitMQ && Erlang:
 #sudo dpkg -i esl-erlang_22.2.2-1~ubuntu~xenial_amd64.deb
@@ -1217,33 +1245,36 @@ ps -ef |grep nginx
 sudo vim /usr/local/nginx/conf/nginx.conf
 sudo nginx -s reload
 
-git
+git:
 sudo apt-get install git
-
 git config --global user.name "thomas"
 git config --global user.email "1272777053@qq.com"
-
 git config --list
-
 git clone https://github.com/harveywangdao/helloworld.git
-
 git add .
-
 git commit -m "changes log"
-
 git status
-
 git pull
 git push
-  
 git push -u origin master
-
 ssh-keygen -t rsa
-
 git init --bare bigpen.git
 git clone thomas@119.23.8.126:/home/thomas/doc/tech/bigpen.git
-
+git submodule add git@ip:a/b/project.git a/b
+git clone --recurse-submodules git@ip:a/b/project.git
+git clone --recursive git@ip:a/b/project.git
+git submodule init
+git submodule update
 git submodule update --init --recursive
+git submodule foreach git pull
+git submodule update --remote
+git config --global http.proxy http://ip:port
+git config --global http.proxy socks5://ip:port
+git config --global http.https://github.com.proxy socks5://ip:port
+git config --global http.https://github.com.proxy http://ip:port
+git config --global --get http.proxy
+git config --global --unset http.proxy
+git config --global --unset http.https://github.com.proxy
 
 golang:
 goland
@@ -1418,8 +1449,12 @@ sudo /etc/init.d/mysql stop
 sudo /etc/init.d/mysql restart
 
 bind-address = 0.0.0.0
-GRANT ALL PRIVILEGES ON *.* TO'root'@'%' IDENTIFIED BY '180498' WITH GRANT OPTION;
-flush privileges;
+create user 'thomas'@'localhost' identified by 'xxx';
+GRANT ALL PRIVILEGES ON *.* TO 'thomas'@'localhost';
+GRANT ALL PRIVILEGES ON *.* TO'root'@'%' IDENTIFIED BY 'xxx' WITH GRANT OPTION;
+SHOW GRANTS FOR thomas;
+FLUSH PRIVILEGES;
+select user from mysql.user;
 
 show variables like '%max_connections%';
 set global max_connections=1000;
@@ -2705,7 +2740,11 @@ sudo ifconfig eth0 down
 sudo ifconfig eth0 192.168.120.56 netmask 255.255.255.0 broadcast 192.168.120.255
 
 sudo vim /etc/network/interfaces
-auto ens33
+auto lo
+iface lo inet loopback
+
+auto ens33   # 配置了这项systemctl restart networking才会生效
+allow-hotplug ens33
 # iface ens33 inet dhcp
 iface ens33 inet static
 address 192.168.1.146
@@ -5516,15 +5555,46 @@ deb-src http://mirrors.ustc.edu.cn/debian/ bullseye-updates main non-free contri
 deb http://mirrors.ustc.edu.cn/debian/ bullseye-backports main non-free contrib
 deb-src http://mirrors.ustc.edu.cn/debian/ bullseye-backports main non-free contrib
 
+ldd --version
+/lib/x86_64-linux-gnu/libc.so.6
+strings /lib/x86_64-linux-gnu/libm.so.6 | grep GLIBC_
+strings /lib/x86_64-linux-gnu/libc.so.6 | grep GLIBC_
+
+sudo vim /etc/apt/sources.list
+deb http://mirrors.163.com/debian/ testing contrib main non-free
+deb-src http://mirrors.163.com/debian/ testing contrib main non-free
+sudo apt-get update
+sudo apt-get -t testing install libc6-dev
+
+deb http://ftp.debian.org/debian sid main
+sudo apt-get -t sid install libc6 libc6-dev libc6-dbg
+
+wget http://ftp.gnu.org/pub/gnu/glibc/glibc-2.32.tar.bz2
+wget http://ftp.gnu.org/pub/gnu/glibc/glibc-2.34.tar.bz2
+mkdir build
+cd build
+sudo apt install gawk bison
+../configure
+#../configure --prefix=/usr/local --disable-sanity-checks
+make -j4
+make install
+
 NTP:
 本地时间带时区/系统时间
 UTC时间/系统时间
 RTC硬件时间
 
 timesyncd替代了ntpd的客户端的部分
+/lib/systemd/system/systemd-timesyncd.service
+sudo apt install systemd-timesyncd
+sudo systemctl restart systemd-timesyncd.service
+sudo systemctl stop systemd-timesyncd.service
 systemctl status systemd-timesyncd.service
-/etc/systemd/timesyncd.conf
-timedatectl set-ntp true
+sudo vim /etc/systemd/timesyncd.conf
+[Time]
+NTP=paper.com
+sudo timedatectl set-ntp true
+sudo timedatectl set-ntp false
 timedatectl timesync-status
 timedatectl show-timesync
 timedatectl status
@@ -5550,14 +5620,18 @@ sudo hwclock --set --date "20140225 20:23:00"
 SNTP/Simple NTP
 RFC5905
 NTP server RFC2030
+port UDP 123
 ntpdate
 ntpd
 ntpdate和ntpd是互斥的两者不能同时使用
 sudo apt-get install ntp ntpdate ntpstat
+/etc/systemd/system/ntp.service
 systemctl status ntp.service
+sudo systemctl unmask ntp.service
+sudo systemctl mask ntp.service
+sudo systemctl enable ntp.service
 sudo systemctl restart ntp.service
 sudo systemctl stop ntp.service
-sudo systemctl reload ntp.service
 sudo netstat -lanp | grep 123
 ntpq -p 127.0.0.1
 ntpstat
@@ -5573,4 +5647,101 @@ nc -vuz 192.168.45.146 123
 sntp --version
 sudo vim /etc/ntp.conf
 restrict 192.168.0.0 mask 255.255.255.0 nomodify
-port UDP 123
+
+sqlite:
+sqlite3 test.db
+.open test.db
+.databases
+.tables
+.schema tablename
+
+sqlite3 testDB.db .dump > testDB.sql
+sqlite3 testDB.db < testDB.sql
+
+.header on
+.mode column
+
+SELECT tbl_name FROM sqlite_master WHERE type = 'table';
+SELECT sql FROM sqlite_master WHERE type = 'table' AND tbl_name = 'COMPANY';
+
+DROP INDEX index_name;
+
+CREATE INDEX key_create_time ON tablename(create_time);
+CREATE UNIQUE INDEX uni_phone ON tablename(phone);
+CREATE INDEX key_create_time ON tablename(column1, column2);
+
+SELECT * FROM sqlite_master;
+SELECT * FROM sqlite_master WHERE type = 'index';
+
+文件系统:
+setfattr -n user.desc -v "test only file" a.txt
+setfattr -n user.blue -v "test only file" a.txt
+attr -lq a.txt
+getfattr -n user.desc a.txt
+getfattr -d -m ".*" a.txt
+lsattr
+chattr
+setfacl
+
+DBUS:
+https://github.com/godbus/dbus
+系统总线:由操作系统和后台进程使用
+会话总线
+匹配器
+对象路径
+Object
+接口:Interface,多个方法和信号的集合
+信号:signal,广播,一对多通信
+DBUS_SESSION_BUS_ADDRESS
+DBUS_SYSTEM_BUS_ADDRESS
+unix socket:
+listen会自动生成socket文件,如果在listen之前就存在socket文件,listen会失败
+unix:abstract=/tmp/dbus-a1DonZq4BQ,guid=a655273d9fb07ec7a3b36c6264006361
+unix:path=/run/user/1000/bus
+
+sudo apt install dbus dbus-x11
+
+destination
+path object
+iface
+method
+dbus-daemon
+dbus-send
+dbus-monitor
+dbus-launch: 启动新的dbus-daemon
+dbus-cleanup-sockets
+dbus-uuidgen
+dbus-run-session
+dbus-daemon --syslog --fork --print-pid 4 --print-address 6 --session
+DBUS_VERBOSE=1 dbus-daemon --session --print-address --address=unix:path=/tmp/xiaoming
+unix:path=/run/user/1000/bus
+dbus编译安装
+启动dbus-daemon
+dbus性能瓶颈
+进程与内核的通信
+
+rsyslog:
+rsyslogd
+数据来源:imfile/imtcp/imudp/imuxsock
+数据发送:udp/tcp/omuxsock/omfile/ommysql/ompgsql
+facility
+proirity
+module(load="imuxsock" SysSock.Name="/var/sock")
+$ModLoad omuxsock
+$OMUxSockSocket /tmp/socksample
+*.* :omuxsock:
+
+sudo service rsyslog restart
+sudo systemctl restart rsyslog.service
+
+logger -u /var/sock ysdahdahjs
+
+bash:
+/bin/bash -c
+如果存在-c选项,则命令将从第一个非选项参数命令字符串中读取,如果在命令字符串后有参数,则第一个参数被分配给$0,任何剩余的参数被分配给位置参数,对$0的赋值设置了shell的名称,该名称用于警告和错误消息中
+/bin/bash -c 后面接命令
+/bin/bash 后面接执行的脚本
+/bin/bash -c ls
+/bin/bash ls
+sudo echo "kettle" >> nohup.log  #sudo不能给>>权限
+sudo /bin/bash -c 'echo "kettle" >> nohup.log'
