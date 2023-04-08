@@ -1023,6 +1023,14 @@ sudo apt-get install docker-ce docker-ce-cli containerd.io
 #wget -qO- https://get.docker.com/ | sh
 #curl -sSL https://get.docker.com/ | sh
 
+sudo mkdir -p /etc/systemd/system/docker.service.d
+sudo vim /etc/systemd/system/docker.service.d/http-proxy.conf
+[Service]
+Environment="HTTP_PROXY=socks5://ip:port" "HTTPS_PROXY=socks5://ip:port"
+sudo systemctl daemon-reload
+sudo systemctl restart docker
+systemctl show --property=Environment docker
+
 sudo groupadd docker
 sudo usermod -aG docker thomas
 newgrp docker
