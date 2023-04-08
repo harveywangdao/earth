@@ -5525,6 +5525,11 @@ strace:
 strace -o aaa.txt -T -tt -e trace=all -p 1111
 
 Debian:
+export PATH=$PATH:/sbin
+apt install vim sudo
+visudo
+sudo vim /etc/network/interfaces
+
 sudo vim /etc/apt/sources.list
 deb http://mirrors.aliyun.com/debian/ bullseye main non-free contrib
 deb-src http://mirrors.aliyun.com/debian/ bullseye main non-free contrib
@@ -5555,8 +5560,8 @@ deb-src http://mirrors.ustc.edu.cn/debian/ bullseye-updates main non-free contri
 deb http://mirrors.ustc.edu.cn/debian/ bullseye-backports main non-free contrib
 deb-src http://mirrors.ustc.edu.cn/debian/ bullseye-backports main non-free contrib
 
+sudo ldconfig
 ldd --version
-/lib/x86_64-linux-gnu/libc.so.6
 strings /lib/x86_64-linux-gnu/libm.so.6 | grep GLIBC_
 strings /lib/x86_64-linux-gnu/libc.so.6 | grep GLIBC_
 
@@ -5569,15 +5574,23 @@ sudo apt-get -t testing install libc6-dev
 deb http://ftp.debian.org/debian sid main
 sudo apt-get -t sid install libc6 libc6-dev libc6-dbg
 
-wget http://ftp.gnu.org/pub/gnu/glibc/glibc-2.32.tar.bz2
 wget http://ftp.gnu.org/pub/gnu/glibc/glibc-2.34.tar.bz2
+tar -jxvf glibc-2.34.tar.bz2
 mkdir build
 cd build
 sudo apt install gawk bison
-../configure
 #../configure --prefix=/usr/local --disable-sanity-checks
+../configure --prefix=/usr
 make -j4
-make install
+sudo make install
+sudo cp /usr/local/lib/libm.so.6 /lib/x86_64-linux-gnu/libm-2.34.so
+sudo ln -sf libm-2.34.so libm.so.6
+ldd --version
+#sudo ln -sf libm-2.31.so libm.so.6
+
+sudo cp /usr/local/lib/libc.so.6 /lib/x86_64-linux-gnu/libc-2.34.so
+sudo ln -sf libc-2.34.so libc.so.6
+#sudo ln -sf libc-2.31.so libc.so.6
 
 NTP:
 本地时间带时区/系统时间
