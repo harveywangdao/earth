@@ -2740,7 +2740,11 @@ sudo ifconfig eth0 down
 sudo ifconfig eth0 192.168.120.56 netmask 255.255.255.0 broadcast 192.168.120.255
 
 sudo vim /etc/network/interfaces
-auto ens33
+auto lo
+iface lo inet loopback
+
+auto ens33   # 配置了这项systemctl restart networking才会生效
+allow-hotplug ens33
 # iface ens33 inet dhcp
 iface ens33 inet static
 address 192.168.1.146
@@ -5551,15 +5555,46 @@ deb-src http://mirrors.ustc.edu.cn/debian/ bullseye-updates main non-free contri
 deb http://mirrors.ustc.edu.cn/debian/ bullseye-backports main non-free contrib
 deb-src http://mirrors.ustc.edu.cn/debian/ bullseye-backports main non-free contrib
 
+ldd --version
+/lib/x86_64-linux-gnu/libc.so.6
+strings /lib/x86_64-linux-gnu/libm.so.6 | grep GLIBC_
+strings /lib/x86_64-linux-gnu/libc.so.6 | grep GLIBC_
+
+sudo vim /etc/apt/sources.list
+deb http://mirrors.163.com/debian/ testing contrib main non-free
+deb-src http://mirrors.163.com/debian/ testing contrib main non-free
+sudo apt-get update
+sudo apt-get -t testing install libc6-dev
+
+deb http://ftp.debian.org/debian sid main
+sudo apt-get -t sid install libc6 libc6-dev libc6-dbg
+
+wget http://ftp.gnu.org/pub/gnu/glibc/glibc-2.32.tar.bz2
+wget http://ftp.gnu.org/pub/gnu/glibc/glibc-2.34.tar.bz2
+mkdir build
+cd build
+sudo apt install gawk bison
+../configure
+#../configure --prefix=/usr/local --disable-sanity-checks
+make -j4
+make install
+
 NTP:
 本地时间带时区/系统时间
 UTC时间/系统时间
 RTC硬件时间
 
 timesyncd替代了ntpd的客户端的部分
+/lib/systemd/system/systemd-timesyncd.service
+sudo apt install systemd-timesyncd
+sudo systemctl restart systemd-timesyncd.service
+sudo systemctl stop systemd-timesyncd.service
 systemctl status systemd-timesyncd.service
-/etc/systemd/timesyncd.conf
-timedatectl set-ntp true
+sudo vim /etc/systemd/timesyncd.conf
+[Time]
+NTP=paper.com
+sudo timedatectl set-ntp true
+sudo timedatectl set-ntp false
 timedatectl timesync-status
 timedatectl show-timesync
 timedatectl status
@@ -5585,14 +5620,18 @@ sudo hwclock --set --date "20140225 20:23:00"
 SNTP/Simple NTP
 RFC5905
 NTP server RFC2030
+port UDP 123
 ntpdate
 ntpd
 ntpdate和ntpd是互斥的两者不能同时使用
 sudo apt-get install ntp ntpdate ntpstat
+/etc/systemd/system/ntp.service
 systemctl status ntp.service
+sudo systemctl unmask ntp.service
+sudo systemctl mask ntp.service
+sudo systemctl enable ntp.service
 sudo systemctl restart ntp.service
 sudo systemctl stop ntp.service
-sudo systemctl reload ntp.service
 sudo netstat -lanp | grep 123
 ntpq -p 127.0.0.1
 ntpstat
@@ -5608,7 +5647,6 @@ nc -vuz 192.168.45.146 123
 sntp --version
 sudo vim /etc/ntp.conf
 restrict 192.168.0.0 mask 255.255.255.0 nomodify
-port UDP 123
 
 sqlite:
 sqlite3 test.db
@@ -5660,6 +5698,9 @@ unix socket:
 listen会自动生成socket文件,如果在listen之前就存在socket文件,listen会失败
 unix:abstract=/tmp/dbus-a1DonZq4BQ,guid=a655273d9fb07ec7a3b36c6264006361
 unix:path=/run/user/1000/bus
+
+sudo apt install dbus dbus-x11
+
 destination
 path object
 iface
@@ -5694,3 +5735,13 @@ sudo service rsyslog restart
 sudo systemctl restart rsyslog.service
 
 logger -u /var/sock ysdahdahjs
+
+bash:
+/bin/bash -c
+如果存在-c选项,则命令将从第一个非选项参数命令字符串中读取,如果在命令字符串后有参数,则第一个参数被分配给$0,任何剩余的参数被分配给位置参数,对$0的赋值设置了shell的名称,该名称用于警告和错误消息中
+/bin/bash -c 后面接命令
+/bin/bash 后面接执行的脚本
+/bin/bash -c ls
+/bin/bash ls
+sudo echo "kettle" >> nohup.log  #sudo不能给>>权限
+sudo /bin/bash -c 'echo "kettle" >> nohup.log'
