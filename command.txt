@@ -1249,7 +1249,7 @@ golang:
 goland
 
 sudo tar -zxvf go1.6.2.linux-amd64.tar.gz -C /usr/local/
-sudo vim  /etc/profile
+sudo vim /etc/profile
 export GOROOT=/usr/local/go
 //export GOBIN=$GOROOT/bin
 export PATH=$PATH:$GOROOT/bin
