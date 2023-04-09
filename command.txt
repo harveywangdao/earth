@@ -5533,12 +5533,8 @@ strace:
 strace -o aaa.txt -T -tt -e trace=all -p 1111
 
 Debian:
-export PATH=$PATH:/sbin
-apt install vim sudo
-visudo
-sudo vim /etc/network/interfaces
-
-sudo vim /etc/apt/sources.list
+su
+cat << EOF >/etc/apt/sources.list
 deb http://mirrors.aliyun.com/debian/ bullseye main non-free contrib
 deb-src http://mirrors.aliyun.com/debian/ bullseye main non-free contrib
 deb http://mirrors.aliyun.com/debian-security/ bullseye-security main
@@ -5547,6 +5543,8 @@ deb http://mirrors.aliyun.com/debian/ bullseye-updates main non-free contrib
 deb-src http://mirrors.aliyun.com/debian/ bullseye-updates main non-free contrib
 deb http://mirrors.aliyun.com/debian/ bullseye-backports main non-free contrib
 deb-src http://mirrors.aliyun.com/debian/ bullseye-backports main non-free contrib
+EOF
+apt update
 
 sudo vim /etc/apt/sources.list
 deb https://mirrors.163.com/debian/ bullseye main non-free contrib
@@ -5568,6 +5566,17 @@ deb-src http://mirrors.ustc.edu.cn/debian/ bullseye-updates main non-free contri
 deb http://mirrors.ustc.edu.cn/debian/ bullseye-backports main non-free contrib
 deb-src http://mirrors.ustc.edu.cn/debian/ bullseye-backports main non-free contrib
 
+apt install vim sudo
+vim ~/.bashrc
+export PATH=$PATH:/sbin
+exit
+su
+visudo
+thomas  ALL=(root) NOPASSWD:ALL
+vim /etc/network/interfaces
+auto ens33
+exit
+
 sudo ldconfig
 ldd --version
 strings /lib/x86_64-linux-gnu/libm.so.6 | grep GLIBC_
@@ -5576,12 +5585,18 @@ strings /lib/x86_64-linux-gnu/libc.so.6 | grep GLIBC_
 sudo vim /etc/apt/sources.list
 deb http://mirrors.163.com/debian/ testing contrib main non-free
 deb-src http://mirrors.163.com/debian/ testing contrib main non-free
-sudo apt-get update
 sudo apt-get -t testing install libc6-dev
+
+deb http://ftp.us.debian.org/debian testing main
+sudo apt-get install libc6
+
+deb http://deb.debian.org/debian testing main
+deb-src http://deb.debian.org/debian testing main
 
 deb http://ftp.debian.org/debian sid main
 sudo apt-get -t sid install libc6 libc6-dev libc6-dbg
 
+自己的编译容易造成系统无法启动
 wget http://ftp.gnu.org/pub/gnu/glibc/glibc-2.34.tar.bz2
 tar -jxvf glibc-2.34.tar.bz2
 mkdir build
@@ -5595,7 +5610,6 @@ sudo cp /usr/local/lib/libm.so.6 /lib/x86_64-linux-gnu/libm-2.34.so
 sudo ln -sf libm-2.34.so libm.so.6
 ldd --version
 #sudo ln -sf libm-2.31.so libm.so.6
-
 sudo cp /usr/local/lib/libc.so.6 /lib/x86_64-linux-gnu/libc-2.34.so
 sudo ln -sf libc-2.34.so libc.so.6
 #sudo ln -sf libc-2.31.so libc.so.6
