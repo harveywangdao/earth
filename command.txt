@@ -31,6 +31,17 @@ sudo service smbd restart
 
 sudo smbpasswd -x username
 
+sudo apt-get install smbclient
+smbclient -L //192.168.0.111
+smbclient //192.168.0.111/myshare -U thomas
+
+smbd:
+TCP 139: NetBIOS Session Service 用于文件和打印机共享
+TCP 445: Server Message Block (SMB) 用于文件和打印机共享
+nmbd:
+UDP 137: NetBIOS Name Service 用于计算机名称解析
+UDP 138: NetBIOS Datagram Service 用于广播和组播数据传输
+
 disk:
 sudo gedit /etc/default/apport
 sudo rm -rf /var/crash
