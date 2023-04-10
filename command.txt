@@ -2771,9 +2771,11 @@ nameserver 192.168.1.146
 nameserver 114.114.114.114
 
 sudo vim /etc/dhcp/dhclient.conf
-supersede domain-name-servers 223.5.5.5, 223.6.6.6;
-systemctl status networking.service
+supersede domain-name-servers 8.8.8.8, 8.8.4.4; # 覆盖DNS服务器地址
+prepend domain-name-servers 8.8.8.8, 8.8.4.4;   # 增加,优先级大
 sudo systemctl restart networking.service
+systemctl status networking.service
+
 
 sudo vim /etc/netplan/00-installer-config.yaml
 network:
@@ -2796,7 +2798,11 @@ systemctl status systemd-resolved
 sudo systemctl restart systemd-resolved
 sudo systemctl disable systemd-resolved.service
 
-resolvectl
+networkctl status
+resolvectl status
+sudo apt install resolvconf
+nmcli dev show | grep DNS
+
 
 sudo vim /etc/hostname
 ubuntuthomas1
@@ -5619,7 +5625,8 @@ NTP:
 UTC时间/系统时间
 RTC硬件时间
 
-timesyncd替代了ntpd的客户端的部分
+timesyncd:
+timesyncd替代了ntpd的客户端的部分,不同的是timesyncd一检查到时间改变就会同步
 /lib/systemd/system/systemd-timesyncd.service
 sudo apt install systemd-timesyncd
 sudo systemctl restart systemd-timesyncd.service
@@ -5628,17 +5635,20 @@ systemctl status systemd-timesyncd.service
 sudo vim /etc/systemd/timesyncd.conf
 [Time]
 NTP=paper.com
+
+timedatectl:
+timedatectl由systemd-timedated服务实现,和timesyncd冲突,不和ntpd冲突,可以设置RTC时间
 sudo timedatectl set-ntp true
 sudo timedatectl set-ntp false
 timedatectl timesync-status
 timedatectl show-timesync
 timedatectl status
 timedatectl show
-timedatectl set-time "2020-04-29 11:30:00"
+sudo timedatectl set-time "2020-04-29 11:30:00"
 timedatectl list-timezones
-timedatectl set-timezone "Asia/Shanghai"
-timedatectl set-local-rtc true
-timedatectl set-local-rtc 0
+sudo timedatectl set-timezone "Asia/Shanghai"
+sudo timedatectl set-local-rtc true
+sudo timedatectl set-local-rtc 0
 
 date "+%Y-%m-%d %H:%M:%S"
 sudo date -s "20150101 8:30:00"  # 不会设置RTC
@@ -5653,35 +5663,63 @@ sudo hwclock -w # set the RTC from the system time
 sudo hwclock --set --date "20140225 20:23:00"
 
 SNTP/Simple NTP
-RFC5905
-NTP server RFC2030
-port UDP 123
-ntpdate
-ntpd
-ntpdate和ntpd是互斥的两者不能同时使用
+ntpdate:不设置RTC时间,ntpdate和ntpd是互斥的,两者不能同时使用,RFC5905
+ntpd:port UDP 123,RFC2030,会设置RTC时间
 sudo apt-get install ntp ntpdate ntpstat
+service --status-all
 /etc/systemd/system/ntp.service
+/usr/lib/systemd/system/ntp.service
 systemctl status ntp.service
 sudo systemctl unmask ntp.service
 sudo systemctl mask ntp.service
 sudo systemctl enable ntp.service
 sudo systemctl restart ntp.service
 sudo systemctl stop ntp.service
-sudo netstat -lanp | grep 123
+sudo netstat -lunp | grep 123
 ntpq -p 127.0.0.1
 ntpstat
 ntpdate -q 127.0.0.1
 ntpdate -q 192.168.45.146
 ntpdate -q paper.com
+ntpq -p 192.168.0.115
+ntpdate -q 192.168.0.115
+sudo ntpdate 192.168.0.115
 sudo ntpdate paper.com
+sudo ntpdate ntp.aliyun.com
+
+sntp --version
+
+sudo vim /etc/ntp.conf
+driftfile /var/lib/ntp/ntp.drift   # 该选项指定了NTP服务的时钟漂移文件的路径
+leapfile /usr/share/zoneinfo/leap-seconds.list # 闰秒信息
+
+statistics loopstats peerstats clockstats # 统计信息
+filegen loopstats file loopstats type day enable
+filegen peerstats file peerstats type day enable
+filegen clockstats file clockstats type day enable
+
+server ntp.your-provider.example
+
+pool 0.debian.pool.ntp.org iburst
+pool 1.debian.pool.ntp.org iburst
+pool 2.debian.pool.ntp.org iburst
+pool 3.debian.pool.ntp.org iburst
+
+restrict -4 default kod notrap nomodify nopeer noquery limited
+restrict -6 default kod notrap nomodify nopeer noquery limited
+restrict 127.0.0.1   # 本地主机可以访问
+restrict ::1         # 本地主机可以访问
+restrict 0.0.0.0 mask 255.255.255.0 nomodify
+restrict source notrap nomodify noquery
+
+broadcast 192.168.123.255
+
+server 127.127.1.0 # 把本地当成时间来源
+fudge 127.127.1.0 stratum 10  # 0-15层
 
 telnet 192.168.45.146 8080
 nc -vz 192.168.45.146 8080
 nc -vuz 192.168.45.146 123
-
-sntp --version
-sudo vim /etc/ntp.conf
-restrict 192.168.0.0 mask 255.255.255.0 nomodify
 
 sqlite:
 sqlite3 test.db
