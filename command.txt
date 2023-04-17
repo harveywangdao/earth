@@ -5683,6 +5683,7 @@ ntpdate -q 192.168.45.146
 ntpdate -q paper.com
 ntpq -p 192.168.0.115
 ntpdate -q 192.168.0.115
+ntpdate -q 192.168.44.126
 sudo ntpdate 192.168.0.115
 sudo ntpdate paper.com
 sudo ntpdate ntp.aliyun.com
@@ -5818,3 +5819,8 @@ bash:
 /bin/bash ls
 sudo echo "kettle" >> nohup.log  #sudo不能给>>权限
 sudo /bin/bash -c 'echo "kettle" >> nohup.log'
+
+netbios:
+NetBIOS Name Service,NetBIOS名称服务
+它是用于Windows网络中计算机名解析的服务,它允许计算机通过名称而不是IP地址进行通信,当计算机需要与其他计算机通信时,它将查询NetBIOS名称服务以获取目标计算机的IP地址
+UDP 137/138端口
