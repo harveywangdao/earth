@@ -341,10 +341,6 @@ sudo tcpdump -vvennSs 0 -i ens160 'tcp[((tcp[12:1]&0xf0) >> 2):4]=0x504f5354' an
 sudo tcpdump -vvennSs 0 -i ens160 \('tcp[((tcp[12:1] & 0xf0) >> 2):4]=0x47455420' or 'tcp[((tcp[12:1]&0xf0) >> 2):4]=0x504f5354'\) and host account.wps.cn
 sudo tcpdump -vvennSs 0 -i ens160 \('tcp[((tcp[12:1] & 0xf0) >> 2):4]=0x47455420' or 'tcp[((tcp[12:1]&0xf0) >> 2):4]=0x504f5354'\) and host 110.43.90.34
 
-nslookup
-nslookup account.wps.cn
-nslookup www.wps.cn
-
 sysctl
 sysctl -a
 
@@ -394,13 +390,13 @@ traceroute www.baidu.com
 traceroute -n -m 5 -q 4 -w 3 www.baidu.com
 
 nslookup
-nslookup
 www.sohu.com
 
 nslookup www.baidu.com
 nslookup www.baidu.com 114.114.114.114
+nslookup 192.168.44.165 192.168.44.165
 
-nslookup -qt=type domain [dns-server]
+nslookup -type=type domain [dns-server]
 A 地址记录(Ipv4)
 AAAA 地址记录（Ipv6）
 AFSDB Andrew文件系统数据库服务器记录
@@ -421,9 +417,9 @@ SRV TCP服务器信息记录
 TXT 域名对应的文本信息
 X25 域名对应的X.25地址记录
 
-nslookup -qt=mx www.baidu.com 8.8.8.8
-nslookup -qt=ns www.baidu.com
-nslookup –qt=ptr 14.18.240.22 ???
+nslookup -type=mx www.baidu.com 8.8.8.8
+nslookup -type=ns www.baidu.com
+nslookup -type=ptr 14.18.240.22
 
 dig
 dig baidu.com
@@ -437,6 +433,9 @@ dig -x 39.156.69.79
 dig +trace baidu.com
 dig baidu.com NS +noall +answer
 dig baidu.com ANY +noall +answer
+
+host www.baidu.com
+host 192.168.25.26
 
 telnet
 yum install telnet –y
@@ -2805,18 +2804,26 @@ sudo ln -sf /run/systemd/resolve/resolv.conf /etc/resolv.conf
 
 sudo vim /etc/systemd/resolved.conf
 DNS=8.8.8.8 114.114.114.114
-systemctl status systemd-resolved
+
 sudo systemctl restart systemd-resolved
-sudo systemctl disable systemd-resolved.service
+sudo systemctl disable systemd-resolved
+systemctl status systemd-resolved
+resolvectl status
+sudo resolvectl dns ens33 192.168.45.73
+sudo resolvectl dns ens33 --reset
 
 networkctl status
-resolvectl status
-sudo apt install resolvconf
 nmcli dev show | grep DNS
 
+resolvconf NetworkManager/dhclient/ppp等网络管理工具配合使用,支持多种DNS解析器,包括本地缓存/本地域名服务器/公共DNS服务器
+sudo apt install resolvconf
+systemctl status resolvconf
+sudo systemctl restart resolvconf
 
 sudo vim /etc/hostname
 ubuntuthomas1
+同步修改/etc/hosts
+sudo hostnamectl set-hostname dahai
 
 sudo vim /etc/hosts
 127.0.0.1   localhost
@@ -5835,3 +5842,125 @@ netbios:
 NetBIOS Name Service,NetBIOS名称服务
 它是用于Windows网络中计算机名解析的服务,它允许计算机通过名称而不是IP地址进行通信,当计算机需要与其他计算机通信时,它将查询NetBIOS名称服务以获取目标计算机的IP地址
 UDP 137/138端口
+
+
+Kerberos:
+sudo apt install krb5-kdc krb5-admin-server
+
+sudo vim /etc/hosts
+192.168.45.20 paper.com
+
+sudo mkdir /var/log/kerberos
+sudo touch /var/log/kerberos/{krb5kdc,kadmin,krb5lib}.log
+sudo chmod -R 750 /var/log/kerberos
+
+sudo cp /etc/krb5.conf /etc/krb5.conf.bk
+sudo vim /etc/krb5.conf
+[logging]
+    kdc = FILE:/var/log/kerberos/krb5kdc.log
+    admin_server = FILE:/var/log/kerberos/kadmin.log
+    default = FILE:/var/log/kerberos/krb5lib.log
+
+[libdefaults]
+    default_realm = PAPER.COM
+
+[realms]
+    PAPER.COM = {
+        kdc = paper.com
+        admin_server = paper.com
+    }
+
+[domain_realm]
+    .paper.com = PAPER.COM
+    paper.com = PAPER.COM
+
+sudo cp /etc/krb5kdc/kdc.conf /etc/krb5kdc/kdc.conf.bk
+sudo vim /etc/krb5kdc/kdc.conf
+[kdcdefaults]
+    kdc_ports = 750,88
+
+[realms]
+    PAPER.COM = {
+        database_name = /var/lib/krb5kdc/principal
+        admin_keytab = FILE:/etc/krb5kdc/kadm5.keytab
+        acl_file = /etc/krb5kdc/kadm5.acl
+        key_stash_file = /etc/krb5kdc/stash
+        kdc_ports = 750,88
+        max_life = 10h 0m 0s
+        max_renewable_life = 7d 0h 0m 0s
+        master_key_type = des3-hmac-sha1
+        #supported_enctypes = aes256-cts:normal aes128-cts:normal
+        default_principal_flags = +preauth
+    }
+
+sudo cp /etc/krb5kdc/kadm5.acl /etc/krb5kdc/kadm5.acl.bk
+sudo vim /etc/krb5kdc/kadm5.acl
+*/admin@PAPER.COM *
+
+#sudo rm -rf /var/lib/krb5kdc/*
+
+sudo krb5_newrealm
+#sudo kdb5_util create -r PAPER.COM -s
+
+sudo systemctl restart krb5-kdc
+sudo systemctl restart krb5-admin-server
+sudo systemctl status krb5-kdc
+sudo systemctl status krb5-admin-server
+
+#sudo kadmin.local -q "addprinc admin/admin"
+#sudo kadmin.local -q "addprinc root/admin"
+
+#sudo vim /etc/ssh/ssh_config
+sudo vim /etc/ssh/sshd_config
+GSSAPIAuthentication yes
+GSSAPICleanupCredentials yes
+GSSAPIKeyExchange yes
+UsePAM yes
+
+sudo systemctl restart ssh
+sudo systemctl status ssh
+
+sudo kadmin.local
+#add_policy -minlength -minclasses admin
+#add_policy -minlength -minclasses host
+#add_policy -minlength -minclasses service
+#add_policy -minlength -minclasses user
+#add_policy admin
+#add_policy host
+#add_policy service
+#add_policy user
+#addprinc -policy user thomas
+#addprinc -policy service -randkey host/paper.com
+
+addprinc thomas
+addprinc -randkey host/paper.com
+ktadd -k /etc/krb5.keytab -norandkey host/paper.com
+
+kinit thomas
+ssh thomas@paper.com
+
+klist
+klist -t -e -k /etc/krb5.keytab
+kinit -R
+setprinc thomas
+kdestroy
+
+TCP端口88: Kerberos认证服务
+TCP/UDP端口749: Kerberos管理服务
+
+sudo apt install krb5-user krb5-config
+sudo vim /etc/krb5.conf
+[libdefaults]
+    default_realm = PAPER.COM
+[realms]
+    PAPER.COM = {
+        kdc = paper.com
+        admin_server = paper.com
+    }
+[domain_realm]
+    .paper.com = PAPER.COM
+    paper.com = PAPER.COM
+
+kinit thomas
+ssh thomas@paper.com
+不用输入密码
