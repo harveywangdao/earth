@@ -5964,3 +5964,42 @@ sudo vim /etc/krb5.conf
 kinit thomas
 ssh thomas@paper.com
 不用输入密码
+
+nss pam
+sssd
+winbind
+realm
+Kerberos
+AD/LDAP
+
+autofs
+sudo
+su
+id
+getent
+
+sssctl
+KRB5_TRACE=/dev/stdout kinit -V aduser@AD.EXAMPLE.COM.
+/etc/krb5.conf
+/etc/samba/smb.conf
+/etc/sssd/sssd.conf
+/etc/nsswitch.conf
+
+pam-auth-update
+kinit Administrator
+net ads join -k
+net ads join -U Administrator
+
+apt install libnss-sss libpam-sss
+/etc/pam.d/common-auth
+auth sufficient pam_sss.so use_first_pass
+/etc/pam.d/common-account
+account [default=bad success=ok user_unknown=ignore] pam_sss.so
+/etc/pam.d/common-password
+password sufficient pam_sss.so use_authtok
+/etc/pam.d/common-session
+session optional pam_mkhomedir.so
+session optional pam_sss.so
+
+sudo apt-get install -y cifs-utils
+apt install slapd ldap-utils
