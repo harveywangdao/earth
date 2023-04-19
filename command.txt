@@ -5967,6 +5967,7 @@ ssh thomas@paper.com
 
 sssd:
 设置dns地址
+sudo apt install packagekit
 sudo apt install sssd-ad sssd-tools realmd adcli
 sudo realm -v discover paper.com
 sudo realm join -v -U administrator paper.com
@@ -6033,13 +6034,39 @@ smbclient --use-kerberos=required -L winserver1.paper.com -U test1@paper.com
 smbclient //winserver1.paper.com/hahdir -U test1@paper.com
 smbclient //winserver1.paper.com/hahdir -U administrator@paper.com
 
+winbind:
+sudo vim /etc/resolv.conf
+nameserver 192.168.0.113
+
+sudo hostnamectl set-hostname harveynode.book.com
+sudo vim /etc/hosts
+192.168.0.117 harveynode.book.com
+
+sudo apt update
+sudo apt install packagekit
+sudo apt install realmd samba
+sudo apt install libnss-winbind
+
+sudo realm discover book.com
+sudo realm join -v --membership-software=samba --client-software=winbind book.com
+
+sudo vim /etc/nsswitch.conf
+passwd:         files systemd winbind
+group:          files systemd winbind
+
+sudo pam-auth-update --enable mkhomedir
+cat /etc/samba/smb.conf
+
+getent passwd xiaoming@book.com
+groups xiaoming@book.com
+id xiaoming@book.com
+
 sssctl
 
 nss pam
-winbind
 samba
 Kerberos
-AD/LDAP
+LDAP
 
 autofs
 sudo
