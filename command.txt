@@ -5965,32 +5965,93 @@ kinit thomas
 ssh thomas@paper.com
 不用输入密码
 
+sssd:
+设置dns地址
+sudo apt install sssd-ad sssd-tools realmd adcli
+sudo realm -v discover paper.com
+sudo realm join -v -U administrator paper.com
+sudo pam-auth-update --enable mkhomedir
+tail -f /var/log/sssd/sssd.log
+
+getent passwd xiaoming@paper.com
+getent passwd zhanglu@paper.com
+groups xiaoming@paper.com
+groups zhanglu@paper.com
+id xiaoming@paper.com
+id zhanglu@paper.com
+
+sudo cat /etc/krb5.conf
+[libdefaults]
+udp_preference_limit = 0
+default_realm = PAPER.COM
+
+sudo cat /etc/sssd/sssd.conf
+[sssd]
+domains = paper.com
+config_file_version = 2
+services = nss, pam
+
+[domain/paper.com]
+default_shell = /bin/bash
+krb5_store_password_if_offline = True
+cache_credentials = True
+krb5_realm = PAPER.COM
+realmd_tags = manages-system joined-with-adcli 
+id_provider = ad
+fallback_homedir = /home/%u@%d
+ad_domain = paper.com
+use_fully_qualified_names = True
+ldap_id_mapping = True
+access_provider = ad
+
+sudo cat /etc/nsswitch.conf
+passwd:         files systemd sss
+group:          files systemd sss
+shadow:         files sss
+gshadow:        files
+
+hosts:          files dns
+networks:       files
+
+protocols:      db files
+services:       db files sss
+ethers:         db files
+rpc:            db files
+
+netgroup:       nis sss
+automount:      sss
+
+systemctl status sssd
+klist -k /etc/krb5.keytab
+#realm permit --realm paper.com --all
+
+ssh test1@paper.com@192.168.45.249
+sudo login
+sudo apt install smbclient
+smbclient --use-kerberos=required -L winserver1.paper.com
+smbclient --use-kerberos=required -L winserver1.paper.com -U test1@paper.com
+smbclient //winserver1.paper.com/hahdir -U test1@paper.com
+smbclient //winserver1.paper.com/hahdir -U administrator@paper.com
+
+sssctl
+
 nss pam
-sssd
 winbind
-realm
+samba
 Kerberos
 AD/LDAP
 
 autofs
 sudo
 su
-id
-getent
 
-sssctl
 KRB5_TRACE=/dev/stdout kinit -V aduser@AD.EXAMPLE.COM.
-/etc/krb5.conf
-/etc/samba/smb.conf
-/etc/sssd/sssd.conf
-/etc/nsswitch.conf
+sudo cat /etc/samba/smb.conf
 
-pam-auth-update
 kinit Administrator
 net ads join -k
 net ads join -U Administrator
 
-apt install libnss-sss libpam-sss
 /etc/pam.d/common-auth
 auth sufficient pam_sss.so use_first_pass
 /etc/pam.d/common-account
@@ -6002,4 +6063,4 @@ session optional pam_mkhomedir.so
 session optional pam_sss.so
 
 sudo apt-get install -y cifs-utils
-apt install slapd ldap-utils
+sudo apt install slapd ldap-utils
