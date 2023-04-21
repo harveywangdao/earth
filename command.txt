@@ -15,7 +15,8 @@ chroot
 
 samba:
 sudo apt-get update
-sudo apt-get install samba samba-common
+sudo apt-get install samba
+#sudo apt-get install samba-common
 sudo mkdir /home/share
 sudo chmod 777 /home/share
 sudo vim /etc/samba/smb.conf
@@ -5843,7 +5844,6 @@ NetBIOS Name Service,NetBIOS名称服务
 它是用于Windows网络中计算机名解析的服务,它允许计算机通过名称而不是IP地址进行通信,当计算机需要与其他计算机通信时,它将查询NetBIOS名称服务以获取目标计算机的IP地址
 UDP 137/138端口
 
-
 Kerberos:
 sudo apt install krb5-kdc krb5-admin-server
 
@@ -5966,27 +5966,32 @@ ssh thomas@paper.com
 不用输入密码
 
 sssd:
-设置dns地址
-sudo apt install packagekit
-sudo apt install sssd-ad sssd-tools realmd adcli
+sudo vim /etc/dhcp/dhclient.conf
+prepend domain-name-servers 192.168.45.73;
+sudo systemctl restart networking.service
+
+sudo apt install packagekit sssd-ad sssd-tools realmd adcli -y
 sudo realm -v discover paper.com
 sudo realm join -v -U administrator paper.com
+
+grep "sss" /etc/pam.d/ -nR
+grep "mkhomedir" /etc/pam.d/ -nR
 sudo pam-auth-update --enable mkhomedir
-tail -f /var/log/sssd/sssd.log
 
+getent passwd
+getent group
 getent passwd xiaoming@paper.com
-getent passwd zhanglu@paper.com
 groups xiaoming@paper.com
-groups zhanglu@paper.com
 id xiaoming@paper.com
-id zhanglu@paper.com
 
-sudo cat /etc/krb5.conf
-[libdefaults]
-udp_preference_limit = 0
-default_realm = PAPER.COM
+ssh xiaoming@paper.com@192.168.44.230
+sudo login
+sudo apt install smbclient
+smbclient --use-kerberos=required -L winserver1.paper.com -U xiaoming@paper.com
+smbclient //winserver1.paper.com/hahdir -U xiaoming@paper.com
+smbclient //winserver1.paper.com/hahdir -U administrator@paper.com
 
-sudo cat /etc/sssd/sssd.conf
+sudo vim /etc/sssd/sssd.conf
 [sssd]
 domains = paper.com
 config_file_version = 2
@@ -6004,6 +6009,10 @@ ad_domain = paper.com
 use_fully_qualified_names = True
 ldap_id_mapping = True
 access_provider = ad
+enumerate = True
+
+sudo systemctl restart sssd
+systemctl status sssd
 
 sudo cat /etc/nsswitch.conf
 passwd:         files systemd sss
@@ -6022,72 +6031,245 @@ rpc:            db files
 netgroup:       nis sss
 automount:      sss
 
-systemctl status sssd
-klist -k /etc/krb5.keytab
 #realm permit --realm paper.com --all
 
-ssh test1@paper.com@192.168.45.249
-sudo login
-sudo apt install smbclient
-smbclient --use-kerberos=required -L winserver1.paper.com
-smbclient --use-kerberos=required -L winserver1.paper.com -U test1@paper.com
-smbclient //winserver1.paper.com/hahdir -U test1@paper.com
-smbclient //winserver1.paper.com/hahdir -U administrator@paper.com
+cd /var/log/sssd
+tail -f /var/log/auth.log
 
 winbind:
-sudo vim /etc/resolv.conf
-nameserver 192.168.0.113
-
-sudo hostnamectl set-hostname harveynode.book.com
-sudo vim /etc/hosts
-192.168.0.117 harveynode.book.com
+sudo vim /etc/dhcp/dhclient.conf
+prepend domain-name-servers 192.168.45.73;
+sudo systemctl restart networking.service
 
 sudo apt update
-sudo apt install packagekit
-sudo apt install realmd samba
-sudo apt install libnss-winbind
+sudo apt install packagekit realmd samba libnss-winbind -y
 
-sudo realm discover book.com
-sudo realm join -v --membership-software=samba --client-software=winbind book.com
+sudo realm discover paper.com
+sudo realm join -v --membership-software=samba --client-software=winbind paper.com
 
 sudo vim /etc/nsswitch.conf
 passwd:         files systemd winbind
 group:          files systemd winbind
 
+grep "winbind" /etc/pam.d/ -nR
+grep "mkhomedir" /etc/pam.d/ -nR
 sudo pam-auth-update --enable mkhomedir
-cat /etc/samba/smb.conf
 
-getent passwd xiaoming@book.com
-groups xiaoming@book.com
-id xiaoming@book.com
+sudo vim /etc/samba/smb.conf
+workgroup = PAPER
+kerberos method = system keytab
+realm = PAPER.COM
+template homedir = /home/%U@%D
+template shell = /bin/bash
+security = ads
+idmap backend = tdb
+idmap gid = 10000-2000000
+idmap uid = 10000-2000000
+winbind use default domain = no
+winbind refresh tickets = yes
+winbind offline logon = yes
+winbind enum groups = yes
+winbind enum users = yes
 
-sssctl
+getent passwd
+getent group
+getent passwd xiaoming@paper.com
+groups xiaoming@paper.com
+id xiaoming@paper.com
+ssh xiaoming@paper.com@192.168.45.13
 
-nss pam
-samba
-Kerberos
-LDAP
+sudo systemctl restart smbd
+sudo systemctl restart nmbd
+sudo systemctl restart winbind
 
-autofs
-sudo
-su
+systemctl status smbd
+systemctl status nmbd
+systemctl status winbind
 
-KRB5_TRACE=/dev/stdout kinit -V aduser@AD.EXAMPLE.COM.
-sudo cat /etc/samba/smb.conf
+AD winbind:
+sudo hostnamectl set-hostname debianserver02.paper.com
+sudo vim /etc/hosts
+#127.0.1.1    debian02
+192.168.45.13 debianserver02 debianserver02.paper.com
 
-kinit Administrator
-net ads join -k
-net ads join -U Administrator
+sudo vim /etc/dhcp/dhclient.conf
+prepend domain-name-servers 192.168.45.73;
+sudo systemctl restart networking.service
 
-/etc/pam.d/common-auth
-auth sufficient pam_sss.so use_first_pass
-/etc/pam.d/common-account
-account [default=bad success=ok user_unknown=ignore] pam_sss.so
-/etc/pam.d/common-password
-password sufficient pam_sss.so use_authtok
-/etc/pam.d/common-session
-session optional pam_mkhomedir.so
-session optional pam_sss.so
+sudo apt update
+sudo apt install samba winbind libpam-winbind libnss-winbind -y
 
+#smbd提供文件和打印服务
+#nmbd提供名称解析和网络浏览服务
+cd /var/log/samba
+cd /var/lib/samba
+systemctl status smbd
+systemctl status nmbd
+systemctl status winbind
+netstat -lutnp
+
+sudo mv /etc/samba/smb.conf /etc/samba/smb.conf.bk
+sudo vim /etc/samba/smb.conf
+[global]
+include = /etc/samba/smbglb.conf
+include = /etc/samba/smbdomain.conf
+include = /etc/samba/smbshare.conf
+
+sudo vim /etc/samba/smbglb.conf
+workgroup = WORKGROUP
+log file = /var/log/samba/log.%m
+max log size = 100
+logging = file
+log level = 0
+obey pam restrictions = yes
+security = user
+
+sudo touch /etc/samba/smbshare.conf
+sudo vim /etc/samba/smbdomain.conf
+include = /etc/samba/smbad.conf
+
+sudo vim /etc/samba/smbad.conf
+security = ads
+workgroup = PAPER
+realm = PAPER.COM
+template homedir = /home/%U@%D
+template shell = /bin/bash
+idmap config * : backend = tdb
+idmap config * : range = 1000000-1999999
+winbind offline logon = yes
+winbind use default domain = no
+winbind refresh tickets = yes
+winbind enum users = yes
+winbind enum groups = yes
+winbind separator = /
+winbind use krb5 enterprise principals = yes
+winbind scan trusted domains = yes
+kerberos method = secrets and keytab
+
+sudo vim /etc/nsswitch.conf
+passwd:         files systemd winbind sss
+group:          files systemd winbind sss
+shadow:         files winbind sss
+
+sudo apt install krb5-user krb5-doc -y
+#sudo apt install krb5-config
+
+sudo mv /etc/krb5.conf /etc/krb5.conf.bk
+sudo vim /etc/krb5.conf
+[logging]
+    kdc = FILE:/var/log/kerberos/krb5kdc.log
+    admin_server = FILE:/var/log/kerberos/kadmin.log
+    default = FILE:/var/log/kerberos/krb5lib.log
+
+[libdefaults]
+    default_realm = PAPER.COM
+    dns_lookup_kdc = false
+    dns_lookup_realm = false
+    ticket_lifetime = 24h
+    renew_lifetime = 7d
+    forwardable = true
+    rdns = false
+
+[realms]
+    PAPER.COM = {
+        kdc = 192.168.45.73
+        admin_server = 192.168.45.73
+    }
+
+[domain_realm]
+    .paper.com = PAPER.COM
+    paper.com = PAPER.COM
+
+grep "mkhomedir" /etc/pam.d/ -nR
+grep "winbind" /etc/pam.d/ -nR
+sudo pam-auth-update --enable mkhomedir
+sudo pam-auth-update --enable winbind
+
+sudo ntpdate 192.168.45.73
+sudo net ads join -U administrator
+#sudo net ads leave -U administrator
+
+sudo systemctl restart smbd
+sudo systemctl restart nmbd
+sudo systemctl restart winbind
+
+systemctl status smbd
+systemctl status nmbd
+systemctl status winbind
+
+wbinfo -u
+wbinfo -g
+getent passwd
+getent group
+id xiaoming@paper.com
+
+ssh xiaoming@paper.com@192.168.45.13
+sudo login
+sudo apt install smbclient -y
+smbclient --use-kerberos=required -L winserver1.paper.com -U xiaoming@paper.com
+smbclient //winserver1.paper.com/hahdir -U xiaoming@paper.com
+smbclient //winserver1.paper.com/hahdir -U administrator@paper.com
+
+tail -f /var/log/auth.log
+
+sudo apt install sssd-ad sssd-tools realmd adcli packagekit -y
+sudo vim /etc/sssd/sssd.conf
+[sssd]
+domains = paper.com
+config_file_version = 2
+services = nss, pam
+
+[domain/paper.com]
+default_shell = /bin/bash
+krb5_store_password_if_offline = True
+cache_credentials = True
+krb5_realm = PAPER.COM
+realmd_tags = manages-system joined-with-adcli 
+id_provider = ad
+fallback_homedir = /home/%u@%d
+ad_domain = paper.com
+use_fully_qualified_names = True
+ldap_id_mapping = True
+access_provider = ad
+enumerate = True
+#ad_server = paper.com
+
+sudo chmod 0600 /etc/sssd/sssd.conf
+#sudo chown root:root /etc/sssd/sssd.conf
+
+sudo systemctl restart sssd
+systemctl status sssd
+
+grep "sss" /etc/pam.d/ -nR
+sudo pam-auth-update --enable sss
+
+sudo realm -v discover paper.com
+sudo realm leave
+sudo realm join -v -U administrator paper.com
+
+sudo sssctl domain-list
+sudo sssctl domain-status paper.com
+ssh xiaoming@paper.com@192.168.45.13
+sudo sssctl user-show xiaoming@paper.com
+
+sudo apt install ldb-tools -y
+sudo ldbsearch -H /var/lib/sss/db/cache_paper.com.ldb
+ldapsearch -x -H ldap://paper.com -D "Administrator@paper.com" -b "dc=paper,dc=com" -w 137170Wang, >> 1.txt
+
+cd /var/log/sssd
+
+sudo adduser guest
+#sudo adduser --disabled-password guest
+#sudo deluser --remove-all-files guest
+#sudo useradd guest
+#sudo userdel guest
+
+LDAP sssd:
+samba服务端加入域
+autofs/sudo/su
 sudo apt-get install -y cifs-utils
-sudo apt install slapd ldap-utils
+nscd: Name Service Cache Daemon 用于缓存系统的名称服务信息
+nslcd: 用于将LDAP或NIS服务器中的用户和组信息转化为本地系统可用的格式
+NIS: Network Information Service,用于在网络中共享用户主机和其他系统的配置信息,它允许管理员在一个中央位置管理用户/组/主机名/密码等信息,并在整个网络中共享这些信息
+ldd /usr/sbin/sshd | grep pam
+dpkg -S $(which getent)
