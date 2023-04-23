@@ -2,6 +2,7 @@ useradd:
 sudo groupadd groupname
 sudo groupdel groupname
 sudo useradd ¨Cd /usr/sam -m sam
+sudo useradd -g groupname username
 sudo userdel sam
 
 useradd -m thomas -s /bin/bash
@@ -12,6 +13,23 @@ thomas  ALL=(root) NOPASSWD:ALL
 cat /etc/passwd
 userdel -r thomas
 chroot
+
+sudo groupadd redking
+sudo adduser --group redking2
+sudo addgroup redking3
+
+sudo adduser thomas redking
+sudo usermod -aG redking4 thomas
+
+sudo groupdel redking2
+sudo groupmod -n redking4 redking3
+
+id thomas
+groups thomas
+getent passwd thomas
+
+getent group redking
+cat /etc/group
 
 samba:
 sudo apt-get update
@@ -6059,7 +6077,7 @@ sudo vim /etc/samba/smb.conf
 workgroup = PAPER
 kerberos method = system keytab
 realm = PAPER.COM
-template homedir = /home/%U@%D
+template homedir = /home/%D/%U
 template shell = /bin/bash
 security = ads
 idmap backend = tdb
@@ -6071,16 +6089,16 @@ winbind offline logon = yes
 winbind enum groups = yes
 winbind enum users = yes
 
+sudo systemctl restart smbd
+sudo systemctl restart nmbd
+sudo systemctl restart winbind
+
 getent passwd
 getent group
 getent passwd xiaoming@paper.com
 groups xiaoming@paper.com
 id xiaoming@paper.com
 ssh xiaoming@paper.com@192.168.45.13
-
-sudo systemctl restart smbd
-sudo systemctl restart nmbd
-sudo systemctl restart winbind
 
 systemctl status smbd
 systemctl status nmbd
