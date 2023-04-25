@@ -3,6 +3,7 @@ sudo groupadd groupname
 sudo groupdel groupname
 sudo useradd ¨Cd /usr/sam -m sam
 sudo useradd -g groupname username
+sudo useradd -m -p -s /bin/bash username
 sudo userdel sam
 
 useradd -m thomas -s /bin/bash
@@ -6143,6 +6144,7 @@ obey pam restrictions = yes
 security = user
 
 sudo touch /etc/samba/smbshare.conf
+
 sudo vim /etc/samba/smbdomain.conf
 include = /etc/samba/smbad.conf
 
@@ -6291,3 +6293,105 @@ nslcd: 用于将LDAP或NIS服务器中的用户和组信息转化为本地系统
 NIS: Network Information Service,用于在网络中共享用户主机和其他系统的配置信息,它允许管理员在一个中央位置管理用户/组/主机名/密码等信息,并在整个网络中共享这些信息
 ldd /usr/sbin/sshd | grep pam
 dpkg -S $(which getent)
+
+rsync:
+sudo apt install rsync
+rsync -avz /home/thomas/project thomas@192.168.44.126:/home/thomas/filedir
+rsync -avz /home/thomas/project/ thomas@192.168.44.126:/home/thomas/filedir
+rsync -avz --delete -e ssh thomas@192.168.44.126:/home/thomas/filedir/ /home/thomas/filedir
+
+sudo useradd -m -s /bin/bash rsyncuser
+sudo passwd rsyncuser
+#sudo adduser rsyncuser
+#sudo adduser --home /home/rsyncuser --shell /bin/bash
+#sudo userdel -r rsyncuser
+#sudo groupdel rsyncuser
+
+sudo vim /etc/rsyncd.conf
+uid = root
+gid = root
+use chroot = true
+max connections = 4
+pid file = /var/run/rsyncd.pid
+lock file = /var/run/rsync.lock
+log file = /var/log/rsyncd.log
+motd file = /etc/rsyncd.motd
+timeout = 300
+
+[backup01]
+path = /home/rsyncuser
+comment = Rsync directory
+read only = false
+list = true
+auth users = rsyncuser
+secrets file = /etc/rsyncd.secrets
+
+hosts allow = *
+hosts deny = 10.10.10.10
+exclude =  www/ xxx/
+
+sudo vim /etc/rsyncd.secrets
+rsyncuser:123456789
+sudo chmod 600 /etc/rsyncd.secrets
+#sudo chown root:root /etc/rsyncd.secrets
+
+sudo vim /etc/default/rsync
+RSYNC_ENABLE=true
+
+sudo systemctl start rsync
+sudo systemctl enable rsync
+sudo systemctl restart rsync
+systemctl status rsync
+
+sudo netstat -lutnp
+873/tcp
+
+rsync rsyncuser@192.168.45.13::backup01
+rsync -avzP rsyncuser@192.168.45.13::backup01/dir01 /home/thomas/filedir
+rsync -avzP dir02  rsyncuser@192.168.45.13::backup01
+RSYNC_PASSWORD=123456789 rsync -avzP rsyncuser@192.168.45.13::backup01/dir01 /home/thomas/filedir
+
+sudo vim /etc/rsyncd.secrets
+123456789
+sudo chmod 600 /etc/rsyncd.secrets
+rsync -avzP --password-file=/etc/rsyncd.secrets rsyncuser@192.168.45.13::backup01/dir01 /home/thomas/filedir
+
+sudo apt install inotify-tools
+vim /etc/rsync/rsync.init.sh
+#!/bin/bash
+/usr/bin/inotifywait -mrq --timefmt '%d/%m/%y %H:%M' --format '%T %w%f%e' -e modify,delete,create,attrib,move /etc/rsync/temp/ | while read files
+do
+rsync -avzPt --delete --password-file=/etc/rsync/rsyncd.secrets /etc/rsync/temp/ www-data@192.168.27.131::www-data
+echo "{files} was rsynced" >> /temp/rsync.log 2>&1
+done
+chmod 755 /etc/rsync/rsync.init.sh
+
+sudo apt install zsync
+zsyncmake /path/to/myfile.iso
+zsync -i /path/to/myfile.iso.zsync -p 8080 -a 0.0.0.0 /path/to/myfile.iso
+
+systemd
+init.d
+inetd xinetd
+sudo vim /etc/default/rsync
+RSYNC_ENABLE=inetd
+sudo vim /etc/xinetd.d/rsync
+service rsync
+{
+    disable         = no
+    socket_type     = stream
+    wait            = no
+    user            = root
+    server          = /usr/bin/rsync
+    server_args     = --daemon
+    log_on_failure  += USERID
+}
+
+WebDAV:
+linux client:
+apt install -y davfs2
+mkdir /mnt/drive1
+mount -t davfs https://xx.com/dav/ /mnt/drive1
+echo "use_locks       0" >> /etc/davfs2/davfs2.conf
+windows client:
+raidrive
