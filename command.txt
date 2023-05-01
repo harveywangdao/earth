@@ -5848,6 +5848,9 @@ sudo systemctl restart rsyslog.service
 
 logger -u /var/sock ysdahdahjs
 
+/etc/rsyslog.conf
+journalctl -e
+
 bash:
 /bin/bash -c
 如果存在-c选项,则命令将从第一个非选项参数命令字符串中读取,如果在命令字符串后有参数,则第一个参数被分配给$0,任何剩余的参数被分配给位置参数,对$0的赋值设置了shell的名称,该名称用于警告和错误消息中
@@ -6339,14 +6342,16 @@ sudo vim /etc/default/rsync
 RSYNC_ENABLE=true
 
 sudo systemctl start rsync
+sudo systemctl stop rsync
 sudo systemctl enable rsync
+sudo systemctl disable rsync
 sudo systemctl restart rsync
 systemctl status rsync
 
 sudo netstat -lutnp
 873/tcp
 
-rsync rsyncuser@192.168.45.13::backup01
+rsync thomas@192.168.45.13::backup01
 rsync -avzP rsyncuser@192.168.45.13::backup01/dir01 /home/thomas/filedir
 rsync -avzP dir02  rsyncuser@192.168.45.13::backup01
 RSYNC_PASSWORD=123456789 rsync -avzP rsyncuser@192.168.45.13::backup01/dir01 /home/thomas/filedir
@@ -6395,3 +6400,6 @@ mount -t davfs https://xx.com/dav/ /mnt/drive1
 echo "use_locks       0" >> /etc/davfs2/davfs2.conf
 windows client:
 raidrive
+
+tftp:
+sudo apt install tftp
