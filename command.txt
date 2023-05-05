@@ -1327,11 +1327,6 @@ export PATH=$PATH:$GOPATH/bin
 source /etc/profile
 go version
 
-FTP:
-sudo apt-get install vsftpd
-sudo vim /etc/vsftpd.conf
-sudo service vsftpd restart
-
 ssh:
 sudo apt-get install openssh-server openssh-client
 sudo ps -e |grep ssh
@@ -6400,6 +6395,94 @@ mount -t davfs https://xx.com/dav/ /mnt/drive1
 echo "use_locks       0" >> /etc/davfs2/davfs2.conf
 windows client:
 raidrive
+
+FTP:
+sudo apt install vsftpd -y
+
+sudo mv /etc/vsftpd.conf /etc/vsftpd.conf.bk
+sudo vim /etc/vsftpd.conf
+listen=YES
+listen_port=21
+anonymous_enable=NO
+local_enable=YES
+write_enable=YES
+local_umask=022
+
+dual_log_enable=NO
+xferlog_enable=YES
+vsftpd_log_file=/var/log/vsftpd.log
+xferlog_std_format=NO
+xferlog_file=/var/log/xferlog
+
+#ascii_upload_enable=YES
+#ascii_download_enable=YES
+#use_localtime=YES
+
+chroot_local_user=YES
+allow_writeable_chroot=YES
+chroot_list_enable=NO
+chroot_list_file=/etc/vsftpd.chroot_list
+secure_chroot_dir=/var/run/vsftpd/empty
+
+pasv_enable=YES
+pasv_min_port=40000
+pasv_max_port=40100
+
+max_clients=100
+max_per_ip=5
+local_max_rate=200000
+
+ssl_enable=YES
+force_local_logins_ssl=YES
+force_local_data_ssl=YES
+rsa_cert_file=/etc/ssl/certs/ssl-cert-snakeoil.pem
+rsa_private_key_file=/etc/ssl/private/ssl-cert-snakeoil.key
+sudo openssl req -x509 -nodes -days 3650 -newkey rsa:2048 -keyout /etc/ssl/private/vsftpd.pem -out /etc/ssl/certs/vsftpd.pem
+
+#pasv_address=192.168.32.3
+#pasv_promiscuous=YES
+#port_promiscuous=YES
+
+#listen_ipv6=YES
+#listen_address=192.168.0.21
+#tcp_wrappers=YES
+#userlist_enable=YES
+#userlist_file=/etc/vsftpd.userlist
+#userlist_deny=NO
+#local_root=/var/ftp
+#dirmessage_enable=YES
+#connect_from_port_20=YES
+#pam_service_name=vsftpd
+
+sudo systemctl restart vsftpd
+sudo systemctl enable vsftpd
+systemctl status vsftpd
+
+sudo apt install ftp
+ftp 192.168.45.13
+ls
+cd
+get
+put
+quit
+
+cat /etc/pam.d/vsftpd
+sudo ufw allow 20/tcp
+sudo ufw allow 21/tcp
+sudo ufw allow 40000:50000/tcp
+ufw status
+echo "thomas" | sudo tee -a /etc/vsftpd.userlist
+
+utf-8
+
+vsftpd:
+UTF-8
+不区分上传和下载速度
+smbftpd:
+被动式联机自动回报外部ip
+FXP
+ascii
+UTC/本地时间
 
 tftp:
 sudo apt install tftp
