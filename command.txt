@@ -2801,7 +2801,6 @@ prepend domain-name-servers 8.8.8.8, 8.8.4.4;   # 增加,优先级大
 sudo systemctl restart networking.service
 systemctl status networking.service
 
-
 sudo vim /etc/netplan/00-installer-config.yaml
 network:
   ethernets:
@@ -6056,7 +6055,7 @@ tail -f /var/log/auth.log
 winbind:
 sudo vim /etc/dhcp/dhclient.conf
 prepend domain-name-servers 192.168.45.73;
-sudo systemctl restart networking.service
+sudo systemctl restart networking
 
 sudo apt update
 sudo apt install packagekit realmd samba libnss-winbind -y
@@ -6111,7 +6110,7 @@ sudo vim /etc/hosts
 
 sudo vim /etc/dhcp/dhclient.conf
 prepend domain-name-servers 192.168.45.73;
-sudo systemctl restart networking.service
+sudo systemctl restart networking
 
 sudo apt update
 sudo apt install samba winbind libpam-winbind libnss-winbind -y
@@ -6459,6 +6458,11 @@ sudo systemctl enable vsftpd
 systemctl status vsftpd
 
 sudo apt install ftp
+
+ftp ftp://thomas:180498@192.168.45.13:9843
+ftp -P 9843 192.168.45.13
+ftp -P 9843 thomas@192.168.45.13
+ftp thomas@192.168.45.13 9843
 ftp 192.168.45.13
 ls
 cd
@@ -6473,13 +6477,26 @@ sudo ufw allow 40000:50000/tcp
 ufw status
 echo "thomas" | sudo tee -a /etc/vsftpd.userlist
 
-utf-8
+smbftpd:
+sudo apt install make -y
+./configure --with-ssl --with-iconv
+make
+./smbftpd -D -s smbftpd.conf
+ftp 192.168.44.126 5984
+
+dd if=/dev/zero of=bigfile.bin bs=5M count=1024
+
+scp smbftpd-2.10.tar.gz thomas@192.168.45.13:/home/thomas/download
+tar -xzvf smbftpd-2.10.tar.gz
+
+scp smbftpd thomas@192.168.45.13:/home/thomas/download/smbftpd-2.10
+scp smbftpd.conf thomas@192.168.45.13:/home/thomas/download/smbftpd-2.10
 
 vsftpd:
 UTF-8
 不区分上传和下载速度
 smbftpd:
-被动式联机自动回报外部ip
+外部ip
 FXP
 ascii
 UTC/本地时间
