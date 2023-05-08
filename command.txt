@@ -5832,17 +5832,85 @@ rsyslogd
 数据发送:udp/tcp/omuxsock/omfile/ommysql/ompgsql
 facility
 proirity
-module(load="imuxsock" SysSock.Name="/var/sock")
-$ModLoad omuxsock
-$OMUxSockSocket /tmp/socksample
-*.* :omuxsock:
 
-sudo service rsyslog restart
-sudo systemctl restart rsyslog.service
+auth 认证系统，即询问用户名和口令(不推荐使用authpriv替代）
+authpriv: 安全和认证相关消息（私有的）
+cron 系统定时任务cront和at产生的日志
+daemon 某些系统的守护程序的syslog,如由in.ftpd产生的log
+kern 内核的syslog信息
+lpr 打印机的syslog信息
+mail 邮件系统的syslog信息
+mark 定时发送消息的时标程序
+news 新闻系统的syslog信息
+user 本地用户应用程序的syslog信息
+uucp uucp子系统的syslog信息
+local0-7种本地类型的syslog信息,这些信息可以由用户来定义
 
-logger -u /var/sock ysdahdahjs
+emerg 紧急，处于Panic状态。通常应广播到所有用户；
+alert 告警，当前状态必须立即进行纠正。例如，系统数据库崩溃；
+crit 关键状态的警告。例如，硬件故障；
+err 其它错误；
+warning 警告；
+notice 注意；非错误状态的报告，但应特别处理；
+info 通报信息；
+debug 调试程序时的信息；
+none 通常调试程序时用，指示带有none级别的类型产生的信息无需送出。如*.debug;mail.none表示调试时除邮件信息外其它信息都送出。
+
+ -/var/log/syslog # 异步写入
+
+sudo systemctl restart rsyslog
+systemctl status rsyslog
 
 /etc/rsyslog.conf
+/etc/rsyslog.d/*.conf
+
+/var/log/messages
+/var/log/syslog
+
+/dev/log
+/var/run/syslog
+/var/run/log
+
+MODULES
+module(load="imuxsock" SysSock.Name="/var/sock")
+module(load="imuxsock")
+input(type="imuxsock"
+      Socket="/var/run/sshd/dev/log")
+
+module(load="imudp")
+input(type="imudp" port="514")
+
+module(load="imtcp")
+input(type="imtcp" port="514")
+
+RULES
+auth,authpriv.*                 /var/log/auth.log
+*.*;auth,authpriv.none          -/var/log/syslog
+mail.info                       -/var/log/mail.info
+
+*.* action(type="omfwd" target="192.0.2.1" port="10514" protocol="tcp")
+if $msg contains 'error' then /var/log/errlog
+if $fromhost-ip == "172.19.1.135" then {
+  action(type="omfile" file="/var/log/network1.log")
+}
+if $programname == 'vsftpd' then {
+  action(type="omfile" File="/var/log/vsftpd_sys.log")
+}
+
+$ModLoad omuxsock
+$OMUxSockSocket /var/run/ugsyslog.sock
+if $programname == 'vsftpd' then {
+  *.* :omuxsock:
+}
+
+sudo socat unix-recvfrom:/var/run/ugsyslog.sock -
+echo "test" | socat - unix-sendto:/var/run/ugsyslog.sock
+sudo socat UNIX-LISTEN:/var/run/ugsyslog.sock -
+echo "test" | socat - unix-connect:/var/run/ugsyslog.sock
+
+logger -t mylogger_program 'This is an message'
+logger -u /var/sock ysdahdahjs
+
 journalctl -e
 
 bash:
@@ -6409,10 +6477,12 @@ local_umask=022
 
 dual_log_enable=NO
 xferlog_enable=YES
+syslog_enable=YES
 vsftpd_log_file=/var/log/vsftpd.log
 xferlog_std_format=NO
 xferlog_file=/var/log/xferlog
 
+utf8_filesystem=YES
 #ascii_upload_enable=YES
 #ascii_download_enable=YES
 #use_localtime=YES
@@ -6458,17 +6528,12 @@ sudo systemctl enable vsftpd
 systemctl status vsftpd
 
 sudo apt install ftp
-
-ftp ftp://thomas:180498@192.168.45.13:9843
-ftp -P 9843 192.168.45.13
-ftp -P 9843 thomas@192.168.45.13
-ftp thomas@192.168.45.13 9843
-ftp 192.168.45.13
-ls
-cd
-get
-put
-quit
+ftp ftp://thomas:180498@192.168.44.230:9843
+ftp -P 9843 192.168.44.230
+ftp -P 9843 thomas@192.168.44.230
+ftp thomas@192.168.44.230 9843
+ftp 192.168.44.230
+ls/cd/get/put/exit/help
 
 cat /etc/pam.d/vsftpd
 sudo ufw allow 20/tcp
@@ -6478,22 +6543,28 @@ ufw status
 echo "thomas" | sudo tee -a /etc/vsftpd.userlist
 
 smbftpd:
-sudo apt install make -y
+sudo apt install libpam0g-dev libssl-dev -y
+tar -xzvf smbftpd-2.10.tar.gz
 ./configure --with-ssl --with-iconv
 make
+
+vim smbftpd.conf
+Port 5984
+
+DebugMode Yes
+DoWtmpLog Yes
+LogCommand Yes
+TransferLog /var/log/smbftpd.log
+EmptyPasswdLogin Yes
+
 ./smbftpd -D -s smbftpd.conf
-ftp 192.168.44.126 5984
+ftp 192.168.44.230 5984
+ftp -P 5984 192.168.44.230
+ftp ftp://thomas:180498@192.168.44.230:5984
 
-dd if=/dev/zero of=bigfile.bin bs=5M count=1024
-
-scp smbftpd-2.10.tar.gz thomas@192.168.45.13:/home/thomas/download
-tar -xzvf smbftpd-2.10.tar.gz
-
-scp smbftpd thomas@192.168.45.13:/home/thomas/download/smbftpd-2.10
-scp smbftpd.conf thomas@192.168.45.13:/home/thomas/download/smbftpd-2.10
+dd if=/dev/zero of=bigfile.bin bs=2M count=1024
 
 vsftpd:
-UTF-8
 不区分上传和下载速度
 smbftpd:
 外部ip
