@@ -33,9 +33,9 @@ getent group redking
 cat /etc/group
 
 samba:
-sudo apt-get update
-sudo apt-get install samba
-#sudo apt-get install samba-common
+sudo apt update
+sudo apt install samba
+#sudo apt install samba-common
 sudo mkdir /home/share
 sudo chmod 777 /home/share
 sudo vim /etc/samba/smb.conf
@@ -5830,6 +5830,25 @@ rsyslog:
 rsyslogd
 数据来源:imfile/imtcp/imudp/imuxsock
 数据发送:udp/tcp/omuxsock/omfile/ommysql/ompgsql
+
+RFC 3164
+https://tools.ietf.org/html/rfc3164
+<PRI>HEADER MESSAGE
+<15>Jul 10 12:00:00 192.168.1.1 SyslogGen MESSAGE
+<94>May  8 10:24:37 debian03 vsftpd[851]: msg
+
+PRI = Facility * 8 + Level
+94 = 11 * 8 + 6
+
+HEADER = TIMESTAMP HOSTNAME
+MSG = TAG CONTENT
+
+RFC 5424
+https://tools.ietf.org/html/rfc5424
+<PRI>VERSION TIMESTAMP HOSTNAME APP-NAME PROCID MSGID
+
+<34>1 2003-10-11T22:14:15.003Z mymachine.example.com su - ID47
+
 facility
 proirity
 
@@ -5846,6 +5865,31 @@ user 本地用户应用程序的syslog信息
 uucp uucp子系统的syslog信息
 local0-7种本地类型的syslog信息,这些信息可以由用户来定义
 
+0             kernel messages
+1             user-level messages
+2             mail system
+3             system daemons
+4             security/authorization messages
+5             messages generated internally by syslogd
+6             line printer subsystem
+7             network news subsystem
+8             UUCP subsystem
+9             clock daemon
+10             security/authorization messages
+11             FTP daemon
+12             NTP subsystem
+13             log audit
+14             log alert
+15             clock daemon (note 2)
+16             local use 0  (local0)
+17             local use 1  (local1)
+18             local use 2  (local2)
+19             local use 3  (local3)
+20             local use 4  (local4)
+21             local use 5  (local5)
+22             local use 6  (local6)
+23             local use 7  (local7)
+
 emerg 紧急，处于Panic状态。通常应广播到所有用户；
 alert 告警，当前状态必须立即进行纠正。例如，系统数据库崩溃；
 crit 关键状态的警告。例如，硬件故障；
@@ -5854,9 +5898,18 @@ warning 警告；
 notice 注意；非错误状态的报告，但应特别处理；
 info 通报信息；
 debug 调试程序时的信息；
-none 通常调试程序时用，指示带有none级别的类型产生的信息无需送出。如*.debug;mail.none表示调试时除邮件信息外其它信息都送出。
+none 通常调试程序时用，指示带有none级别的类型产生的信息无需送出。如*.debug;mail.none表示调试时除邮件信息外其它信息都送出
 
- -/var/log/syslog # 异步写入
+0       Emergency: system is unusable
+1       Alert: action must be taken immediately
+2       Critical: critical conditions
+3       Error: error conditions
+4       Warning: warning conditions
+5       Notice: normal but significant condition
+6       Informational: informational messages
+7       Debug: debug-level messages
+
+-/var/log/syslog # 异步写入
 
 sudo systemctl restart rsyslog
 systemctl status rsyslog
@@ -6350,6 +6403,86 @@ sudo adduser guest
 #sudo userdel guest
 
 LDAP sssd:
+sudo vim /etc/dhcp/dhclient.conf
+prepend domain-name-servers 192.168.45.73;
+sudo systemctl restart networking.service
+
+sudo apt install sssd-ldap -y
+sudo vim /etc/sssd/sssd.conf
+[sssd]
+config_file_version = 2
+domains = ug-ldap.local
+services = nss, pam
+
+[domain/ug-ldap.local]
+id_provider = ldap
+ldap_uri = ldap://192.168.44.151
+ldap_search_base = dc=ug-ldap,dc=local
+ldap_default_bind_dn = uid=root,cn=users,dc=ug-ldap,dc=local
+ldap_default_authtok_type = password
+ldap_default_authtok = Admin123
+cache_credentials = True
+enumerate = True
+use_fully_qualified_names = True
+override_homedir = /home/%u@%d
+fallback_homedir = /home/%u@%d
+default_shell = /bin/bash
+override_shell = /bin/bash
+debug_level = 0x07F0
+ldap_schema = rfc2307bis
+ldap_tls_reqcert=never
+ldap_pwd_policy=shadow
+ldap_tls_cacertdir=/etc/ssl/certs
+
+case_sensitive=preserving
+ldap_group_search_base = cn=groups,dc=ug-ldap,dc=local
+ldap_user_search_base = cn=users,dc=ug-ldap,dc=local
+auth_provider = ldap
+access_provider = ldap
+
+sudo chmod 0600 /etc/sssd/sssd.conf
+sudo systemctl restart sssd
+systemctl status sssd
+
+sudo sssctl domain-status ug-ldap.local
+
+grep "sss" /etc/pam.d/ -nR
+grep "mkhomedir" /etc/pam.d/ -nR
+sudo pam-auth-update --enable mkhomedir
+
+sudo vim /etc/hosts
+192.168.44.151 ug-ldap.local
+
+ldapwhoami -x -ZZ -H ldap://192.168.44.151
+ldapsearch -x -H ldap://ug-ldap.local -D uid=root,cn=users,dc=ug-ldap,dc=local -b dc=ug-ldap,dc=local -w Admin123
+
+getent passwd
+getent group
+getent passwd xiaoming@ug-ldap.local
+groups xiaoming@ug-ldap.local
+id xiaoming@ug-ldap.local
+id zhanglu@ug-ldap.local
+ssh xiaoming@ug-ldap.local@192.168.45.37
+ssh zhanglu@ug-ldap.local@192.168.45.37
+sudo login
+
+sudo cat /etc/nsswitch.conf
+passwd:         files systemd sss
+group:          files systemd sss
+shadow:         files sss
+gshadow:        files
+
+hosts:          files dns
+networks:       files
+
+protocols:      db files
+services:       db files sss
+ethers:         db files
+rpc:            db files
+
+netgroup:       nis sss
+automount:      sss
+
 samba服务端加入域
 autofs/sudo/su
 sudo apt-get install -y cifs-utils
@@ -6364,6 +6497,15 @@ sudo apt install rsync
 rsync -avz /home/thomas/project thomas@192.168.44.126:/home/thomas/filedir
 rsync -avz /home/thomas/project/ thomas@192.168.44.126:/home/thomas/filedir
 rsync -avz --delete -e ssh thomas@192.168.44.126:/home/thomas/filedir/ /home/thomas/filedir
+
+-e 'ssh -p 61124'
+
+rsync -avz 1.txt wangdaoan@192.168.24.26:/data/wangdaoan/
+rsync -avz 1.txt thomas@192.168.44.151:/volume2/test/thomas
+rsync -avz 1.txt thomas@192.168.45.85:/home/thomas/download
+
+scp 1.txt thomas@192.168.45.85:/home/thomas/download
+scp 1.txt wangdaoan@192.168.24.26:/data/wangdaoan/
 
 sudo useradd -m -s /bin/bash rsyncuser
 sudo passwd rsyncuser
@@ -6414,6 +6556,9 @@ sudo netstat -lutnp
 873/tcp
 
 rsync thomas@192.168.45.13::backup01
+rsync --port=873 -avz 1.txt wangdaoan@192.168.24.26::backup01
+rsync --port=873 -avz 1.txt thomas@192.168.24.26::backup01
+
 rsync -avzP rsyncuser@192.168.45.13::backup01/dir01 /home/thomas/filedir
 rsync -avzP dir02  rsyncuser@192.168.45.13::backup01
 RSYNC_PASSWORD=123456789 rsync -avzP rsyncuser@192.168.45.13::backup01/dir01 /home/thomas/filedir
@@ -6571,6 +6716,13 @@ smbftpd:
 FXP
 ascii
 UTC/本地时间
+
+sftp:
+Subsystem      sftp    internal-sftp -f DAEMON -u 000
+Subsystem      sftp    /usr/lib/openssh/sftp-server
+
+sftp thomas@192.168.45.85
+sftp wangdaoan@192.168.24.26
 
 tftp:
 sudo apt install tftp
