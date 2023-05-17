@@ -49,11 +49,18 @@ sudo useradd smbuser
 sudo smbpasswd -a smbuser
 sudo service smbd restart
 
+sudo pdbedit -L
+testparm
+net use \\192.168.45.37\IPC$ /del
+
 sudo smbpasswd -x username
 
 sudo apt-get install smbclient
-smbclient -L //192.168.0.111
+smbclient -L //192.168.45.37 -U blackpig
 smbclient //192.168.0.111/myshare -U thomas
+
+libpam-smbpass
+libpam-winbind
 
 smbd:
 TCP 139: NetBIOS Session Service 用于文件和打印机共享
@@ -6673,11 +6680,11 @@ sudo systemctl enable vsftpd
 systemctl status vsftpd
 
 sudo apt install ftp
-ftp ftp://thomas:180498@192.168.44.230:9843
-ftp -P 9843 192.168.44.230
-ftp -P 9843 thomas@192.168.44.230
-ftp thomas@192.168.44.230 9843
-ftp 192.168.44.230
+ftp ftp://thomas:180498@192.168.45.37:9843
+ftp -P 9843 192.168.45.37
+ftp -P 9843 thomas@192.168.45.37
+ftp thomas@192.168.45.37 9843
+ftp 192.168.45.37
 ls/cd/get/put/exit/help
 
 cat /etc/pam.d/vsftpd
@@ -6693,8 +6700,10 @@ tar -xzvf smbftpd-2.10.tar.gz
 ./configure --with-ssl --with-iconv
 make
 
+sudo cp smbftpd /usr/sbin/
+
 vim smbftpd.conf
-Port 5984
+Port 9843
 
 DebugMode Yes
 DoWtmpLog Yes
@@ -6702,10 +6711,20 @@ LogCommand Yes
 TransferLog /var/log/smbftpd.log
 EmptyPasswdLogin Yes
 
+sudo vim /lib/systemd/system/smbftpd.service
+sudo systemctl daemon-reload
+sudo systemctl restart smbftpd
+sudo systemctl stop smbftpd
+systemctl status smbftpd
+
+ps -ef | grep ftp
+sudo netstat -ltnp
+sudo journalctl -e -u smbftpd
+
 ./smbftpd -D -s smbftpd.conf
-ftp 192.168.44.230 5984
-ftp -P 5984 192.168.44.230
-ftp ftp://thomas:180498@192.168.44.230:5984
+ftp 192.168.45.37 9843
+ftp -P 9843 192.168.45.37
+ftp ftp://thomas:180498@192.168.45.37:9843
 
 dd if=/dev/zero of=bigfile.bin bs=2M count=1024
 
