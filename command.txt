@@ -52,11 +52,14 @@ sudo service smbd restart
 sudo pdbedit -L
 testparm
 net use \\192.168.45.37\IPC$ /del
+net use \\192.168.45.37\public /del
+net use * /del
 
 sudo smbpasswd -x username
 
 sudo apt-get install smbclient
-smbclient -L //192.168.45.37 -U blackpig
+smbclient -L //192.168.45.37 -U thomas
+smbclient //192.168.45.37/public -U thomas
 smbclient //192.168.0.111/myshare -U thomas
 
 libpam-smbpass
@@ -5794,7 +5797,29 @@ getfattr -n user.desc a.txt
 getfattr -d -m ".*" a.txt
 lsattr
 chattr
-setfacl
+
+setfacl -m u:test1:rwx dir01
+setfacl -m g:test1:rwx dir01
+getfacl -aetn dir01
+getfacl -apnt dir01
+getfattr -d -m ".*" dir01
+getfattr -n system.posix_acl_access dir01
+
+# file: dir03
+# owner: root
+# group: root
+user::rwx
+group::r-x
+other::r-x
+
+# file: dir03
+# owner: root
+# group: root
+user::rwx
+user:thomas:rwx
+group::r-x
+mask::rwx
+other::r-x
 
 DBUS:
 https://github.com/godbus/dbus
@@ -6504,15 +6529,7 @@ sudo apt install rsync
 rsync -avz /home/thomas/project thomas@192.168.44.126:/home/thomas/filedir
 rsync -avz /home/thomas/project/ thomas@192.168.44.126:/home/thomas/filedir
 rsync -avz --delete -e ssh thomas@192.168.44.126:/home/thomas/filedir/ /home/thomas/filedir
-
 -e 'ssh -p 61124'
-
-rsync -avz 1.txt wangdaoan@192.168.24.26:/data/wangdaoan/
-rsync -avz 1.txt thomas@192.168.44.151:/volume2/test/thomas
-rsync -avz 1.txt thomas@192.168.45.85:/home/thomas/download
-
-scp 1.txt thomas@192.168.45.85:/home/thomas/download
-scp 1.txt wangdaoan@192.168.24.26:/data/wangdaoan/
 
 sudo useradd -m -s /bin/bash rsyncuser
 sudo passwd rsyncuser
@@ -6552,7 +6569,6 @@ sudo chmod 600 /etc/rsyncd.secrets
 sudo vim /etc/default/rsync
 RSYNC_ENABLE=true
 
-sudo systemctl start rsync
 sudo systemctl stop rsync
 sudo systemctl enable rsync
 sudo systemctl disable rsync
@@ -6562,18 +6578,16 @@ systemctl status rsync
 sudo netstat -lutnp
 873/tcp
 
-rsync thomas@192.168.45.13::backup01
-rsync --port=873 -avz 1.txt wangdaoan@192.168.24.26::backup01
-rsync --port=873 -avz 1.txt thomas@192.168.24.26::backup01
-
-rsync -avzP rsyncuser@192.168.45.13::backup01/dir01 /home/thomas/filedir
-rsync -avzP dir02  rsyncuser@192.168.45.13::backup01
-RSYNC_PASSWORD=123456789 rsync -avzP rsyncuser@192.168.45.13::backup01/dir01 /home/thomas/filedir
+rsync thomas@192.168.45.37::
+rsync thomas@192.168.45.37::public
+rsync --port=873 -avzP 1.txt thomas@192.168.45.37::public
+rsync --port=873 -avzP 1.txt thomas@192.168.45.37::public/dir01/
 
 sudo vim /etc/rsyncd.secrets
 123456789
 sudo chmod 600 /etc/rsyncd.secrets
 rsync -avzP --password-file=/etc/rsyncd.secrets rsyncuser@192.168.45.13::backup01/dir01 /home/thomas/filedir
+RSYNC_PASSWORD=123456789 rsync -avzP rsyncuser@192.168.45.13::backup01/dir01 /home/thomas/filedir
 
 sudo apt install inotify-tools
 vim /etc/rsync/rsync.init.sh
@@ -6588,23 +6602,6 @@ chmod 755 /etc/rsync/rsync.init.sh
 sudo apt install zsync
 zsyncmake /path/to/myfile.iso
 zsync -i /path/to/myfile.iso.zsync -p 8080 -a 0.0.0.0 /path/to/myfile.iso
-
-systemd
-init.d
-inetd xinetd
-sudo vim /etc/default/rsync
-RSYNC_ENABLE=inetd
-sudo vim /etc/xinetd.d/rsync
-service rsync
-{
-    disable         = no
-    socket_type     = stream
-    wait            = no
-    user            = root
-    server          = /usr/bin/rsync
-    server_args     = --daemon
-    log_on_failure  += USERID
-}
 
 WebDAV:
 linux client:
@@ -6745,3 +6742,7 @@ sftp wangdaoan@192.168.24.26
 
 tftp:
 sudo apt install tftp
+
+suid 让普通用户临时拥有该文件的属主的执行权限,suid权限只能应用在二进制可执行文件,0755移除suid权限,4755添加suid权限
+sgid 一般应用在目录上当一个目录拥有sgid权限时,任何用户在该目录下创建的文件的属组都会继承该目录的属组,增加权限g+s,移除权限g-s,0755移除sgid权限,2755添加sgid权限
+sticky 一般针对目录来设置,只允许该目录下的文件的创建者删除自己的创建的文件,不允许其他人删除文件,增加权限o+t,移除权限o-t,0755移除sticky权限,1755添加sticky权限
