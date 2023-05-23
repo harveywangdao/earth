@@ -60,7 +60,6 @@ sudo smbpasswd -x username
 sudo apt-get install smbclient
 smbclient -L //192.168.45.37 -U thomas
 smbclient //192.168.45.37/public -U thomas
-smbclient //192.168.0.111/myshare -U thomas
 
 libpam-smbpass
 libpam-winbind
@@ -2846,16 +2845,15 @@ sudo systemctl restart resolvconf
 
 sudo vim /etc/hostname
 ubuntuthomas1
-同步修改/etc/hosts
-sudo hostnamectl set-hostname dahai
-
 sudo vim /etc/hosts
 127.0.0.1   localhost
-127.0.1.1   ubuntuthomas1 delete
-
+127.0.1.1   ubuntuthomas1
 192.168.1.145    ubuntuthomas
-192.168.1.146    ubuntuthomas1
-192.168.1.147    ubuntuthomas2
+
+sudo hostnamectl set-hostname debianserver02.paper.com
+sudo vim /etc/hosts
+#127.0.1.1    debian02
+192.168.45.13 debianserver02 debianserver02.paper.com
 
 sudo /etc/init.d/networking restart
 sudo reboot
@@ -6143,9 +6141,11 @@ sudo apt install packagekit sssd-ad sssd-tools realmd adcli -y
 sudo realm -v discover paper.com
 sudo realm join -v -U administrator paper.com
 
+grep "ldap" /etc/pam.d/ -nR
 grep "sss" /etc/pam.d/ -nR
 grep "mkhomedir" /etc/pam.d/ -nR
 sudo pam-auth-update --enable mkhomedir
+sudo pam-auth-update --enable ldap
 
 getent passwd
 getent group
@@ -6157,8 +6157,12 @@ ssh xiaoming@paper.com@192.168.44.230
 sudo login
 sudo apt install smbclient
 smbclient --use-kerberos=required -L winserver1.paper.com -U xiaoming@paper.com
-smbclient //winserver1.paper.com/hahdir -U xiaoming@paper.com
-smbclient //winserver1.paper.com/hahdir -U administrator@paper.com
+smbclient -L //192.168.45.37 -U test6@paper.com
+smbclient //192.168.45.37/public2 -U test6@paper.com
+smbclient //192.168.45.37/public -U administrator@paper.com
+
+ssh test6@ug-ldap.local@192.168.45.37
+smbclient -L //192.168.45.37 -U test6@ug-ldap.local
 
 sudo vim /etc/sssd/sssd.conf
 [sssd]
@@ -6256,11 +6260,6 @@ systemctl status nmbd
 systemctl status winbind
 
 AD winbind:
-sudo hostnamectl set-hostname debianserver02.paper.com
-sudo vim /etc/hosts
-#127.0.1.1    debian02
-192.168.45.13 debianserver02 debianserver02.paper.com
-
 sudo vim /etc/dhcp/dhclient.conf
 prepend domain-name-servers 192.168.45.73;
 sudo systemctl restart networking
@@ -6275,6 +6274,8 @@ cd /var/lib/samba
 systemctl status smbd
 systemctl status nmbd
 systemctl status winbind
+sudo systemctl restart smbd nmbd winbind
+sudo net ads info
 netstat -lutnp
 
 sudo mv /etc/samba/smb.conf /etc/samba/smb.conf.bk
@@ -6373,7 +6374,8 @@ getent passwd
 getent group
 id xiaoming@paper.com
 
-ssh xiaoming@paper.com@192.168.45.13
+ssh xiaoming@paper.com@192.168.45.37
+ssh test6@paper.com@192.168.45.37
 sudo login
 sudo apt install smbclient -y
 smbclient --use-kerberos=required -L winserver1.paper.com -U xiaoming@paper.com
@@ -6412,6 +6414,7 @@ systemctl status sssd
 
 grep "sss" /etc/pam.d/ -nR
 sudo pam-auth-update --enable sss
+sudo pam-auth-update --remove sss
 
 sudo realm -v discover paper.com
 sudo realm leave
@@ -6746,3 +6749,34 @@ sudo apt install tftp
 suid 让普通用户临时拥有该文件的属主的执行权限,suid权限只能应用在二进制可执行文件,0755移除suid权限,4755添加suid权限
 sgid 一般应用在目录上当一个目录拥有sgid权限时,任何用户在该目录下创建的文件的属组都会继承该目录的属组,增加权限g+s,移除权限g-s,0755移除sgid权限,2755添加sgid权限
 sticky 一般针对目录来设置,只允许该目录下的文件的创建者删除自己的创建的文件,不允许其他人删除文件,增加权限o+t,移除权限o-t,0755移除sticky权限,1755添加sticky权限
+
+千字节KB
+兆字节MB
+吉字节GB
+太字节TB
+拍字节PB
+艾字节EB
+泽字节ZB
+尧字节YB
+
+文件管理器
+磁盘管理器
+
+局域网内共享
+公网内共享
+
+快照
+备份/恢复
+
+分布式存储 容灾
+
+安全性
+
+用户管理
+应用管理
+视频/音乐/照片
+文档
+
+SAN
+FC-SAN
+IP-SAN
