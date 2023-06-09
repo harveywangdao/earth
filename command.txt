@@ -73,6 +73,19 @@ nmbd:
 UDP 137: NetBIOS Name Service 用于计算机名称解析
 UDP 138: NetBIOS Datagram Service 用于广播和组播数据传输
 
+systemctl status smbd nmbd winbind
+systemctl stop smbd nmbd winbind
+rm -rf /var/log/samba/* /var/cache/samba/* /var/lib/samba/*
+mkdir /var/lib/samba/private
+systemctl start smbd nmbd winbind
+
+CIFS:
+Common Internet File System 共同互联网文件系统 文件共享协议
+CIFS协议是SMB的方言
+Windows下开放的网络文件系统
+它在接受客户请求时采用SPX序列口协议
+而在TCP/IP传输上客户程序与server之间采用的是NetBIOS(网络基本输入输出系统)的高级封装/拆封层,用于封装发送数据和拆解接受数据
+
 disk:
 sudo gedit /etc/default/apport
 sudo rm -rf /var/crash
@@ -1298,6 +1311,7 @@ git:
 sudo apt-get install git
 git config --global user.name "thomas"
 git config --global user.email "1272777053@qq.com"
+git config --global credential.helper store
 git config --list
 git clone https://github.com/harveywangdao/helloworld.git
 git add .
@@ -5562,6 +5576,10 @@ value01
 get key01
 
 NFS:
+Network File System
+rpcbind是NFS中用来进行消息通知的服务
+mount,像操作文件系统一样操作NFS
+
 sudo apt install nfs-kernel-server
 #sudo apt install nfs-common
 
@@ -5637,16 +5655,14 @@ deb http://mirrors.ustc.edu.cn/debian/ bullseye-backports main non-free contrib
 deb-src http://mirrors.ustc.edu.cn/debian/ bullseye-backports main non-free contrib
 
 sudo vim /etc/apt/sources.list
-deb https://mirrors.tuna.tsinghua.edu.cn/debian/ bullseye main contrib non-free
-deb-src https://mirrors.tuna.tsinghua.edu.cn/debian/ bullseye main contrib non-free
-deb https://mirrors.tuna.tsinghua.edu.cn/debian/ bullseye-updates main contrib non-free
-deb-src https://mirrors.tuna.tsinghua.edu.cn/debian/ bullseye-updates main contrib non-free
-deb https://mirrors.tuna.tsinghua.edu.cn/debian/ bullseye-backports main contrib non-free
-deb-src https://mirrors.tuna.tsinghua.edu.cn/debian/ bullseye-backports main contrib non-free
-deb https://mirrors.tuna.tsinghua.edu.cn/debian-security bullseye-security main contrib non-free
-deb-src https://mirrors.tuna.tsinghua.edu.cn/debian-security bullseye-security main contrib non-free
-#deb https://security.debian.org/debian-security bullseye-security main contrib non-free
-#deb-src https://security.debian.org/debian-security bullseye-security main contrib non-free
+deb http://mirrors.tuna.tsinghua.edu.cn/debian/ bullseye main contrib non-free
+deb-src http://mirrors.tuna.tsinghua.edu.cn/debian/ bullseye main contrib non-free
+deb http://mirrors.tuna.tsinghua.edu.cn/debian/ bullseye-updates main contrib non-free
+deb-src http://mirrors.tuna.tsinghua.edu.cn/debian/ bullseye-updates main contrib non-free
+deb http://mirrors.tuna.tsinghua.edu.cn/debian/ bullseye-backports main contrib non-free
+deb-src http://mirrors.tuna.tsinghua.edu.cn/debian/ bullseye-backports main contrib non-free
+deb http://mirrors.tuna.tsinghua.edu.cn/debian-security bullseye-security main contrib non-free
+deb-src http://mirrors.tuna.tsinghua.edu.cn/debian-security bullseye-security main contrib non-free
 
 apt install vim sudo -y
 vim ~/.bashrc
@@ -6276,6 +6292,7 @@ automount:      sss
 
 cd /var/log/sssd
 tail -f /var/log/auth.log
+sss_cache -E
 
 winbind:
 sudo vim /etc/dhcp/dhclient.conf
@@ -6818,6 +6835,8 @@ ascii
 UTC/本地时间
 
 sftp:
+SSH FTP,Secure File Transfer Protocol/SSH File Transfer Protocol
+
 sudo vim /etc/ssh/sshd_config
 Subsystem      sftp    internal-sftp -f DAEMON -u 000
 Subsystem      sftp    /usr/lib/openssh/sftp-server
@@ -6826,6 +6845,7 @@ sftp thomas@192.168.45.85
 sftp wangdaoan@192.168.24.26
 
 tftp:
+普通文件传输协议 Trivial File Transfer Protocol,FTP的简化版本,缺乏安全性,没有到位的加密机制,与TFTP通信时不需要认证,TFTP使用UDP
 sudo apt install tftpd-hpa
 sudo apt install tftp
 
@@ -6970,17 +6990,16 @@ systemctl status nut-server
 systemctl status nut-monitor
 systemctl status nut-driver
 
-ps -ef | grep ups
-
 systemctl list-dependencies nut-driver.target
 
 cd /etc/systemd/system
 cd /lib/systemd/system
 systemctl status nut-driver@ups0.service
 systemctl restart nut-driver@ups0.service
-systemctl enable nut-driver@ups0.service
 systemctl stop nut-driver@ups0.service
+systemctl enable nut-driver@ups0.service
 systemctl disable nut-driver@ups0.service
+systemctl is-active nut-driver@ups0.service
 
 upscmd -l ups0
 upsc ups0
@@ -6988,7 +7007,7 @@ upsc ups0@192.168.45.99
 upsc ups0@localhost
 nut-scanner -U
 nut-scanner -s 192.168.44.192 -e 192.168.44.192 -S
-nut-scanner -s 192.168.44.192 -e 192.168.44.192 -l noAuthNoPriv -u xiaoming -S 
+nut-scanner -s 192.168.44.192 -e 192.168.44.192 -l noAuthNoPriv -u xiaoming -S
 
 nut-driver-enumerator
 upsdrvsvcctl stop
@@ -7020,7 +7039,6 @@ sudo vim ups.conf
   community = public
   snmp_version = v1
   pollfreq = 15
-  desc = "SNMP v1 device"
 
 [snmpv3]
   driver = snmp-ups
@@ -7030,15 +7048,23 @@ sudo vim ups.conf
   secName = mysecurityname
   authPassword = myauthenticationpassphrase
   privPassword = myprivatepassphrase
-  desc = "SNMP v3 device"
+
+snmpwalk -c public -v 1 192.168.44.192 .1.3.6.1.2.1.1
+snmpwalk -c public -v 2c 192.168.44.192 .1.3.6.1.2.1.1
+snmpwalk -c public -v 3 -u xiaoming 192.168.44.192 .1.3.6.1.2.1.1
+
+git clone https://github.com/networkupstools/nut.git
+git checkout v2.8.0
+sudo apt install autoconf
+./autogen.sh
+tools/nut-scanner/nutscan-usb.h
 
 SNMP采用UDP 161端口接收和发送请求
 162端口接收trap
-v1，v2，v3
 NMS 网管平台
 MIB 管理信息库 MIB定义了设备中的被管理对象
 SNMP代理 agent
-Get、Set 和 Trap代理者主动向管理站通报重要事件
+Get、Set和Trap代理者主动向管理站通报重要事件
 一条SNMP消息由版本号/SNMP共同体名/协议数据单元(PDU)
 version identifier
 Community Name SNMP网络管理员访问SNMP管理代理时的身份验证,类似于密码默认值为public
@@ -7055,17 +7081,11 @@ trap操作：代理进程主动发出的报文，通知管理进程有某些事�
 
 sudo apt install snmpd snmp
 sudo apt install snmp-mibs-downloader
-
 sudo vim /etc/snmp/snmpd.conf
 view   systemonly  included   .1
-
 sudo vim /etc/snmp/snmp.conf
-
 sudo systemctl restart snmpd
 systemctl status snmpd
-
-snmpwalk -c public -v 2c 192.168.44.192 .1.3.6.1.2.1.1
-snmpwalk -c public -v 3 -u xiaoming 192.168.44.192 .1.3.6.1.2.1.1
 
 snmpwalk -v 2c -c public localhost memTotalReal.0
 snmpwalk -v 2c -c public localhost snmp_oid
@@ -7073,6 +7093,9 @@ snmpwalk -v 2c -c public 10.101.137.22 .1.3.6.1.2.1.25.2.2.0
 
 iSNS
 iSCSI
+mDNS
+avahi
+afpd
 
 shutdown now
 shutdown 13:20
@@ -7081,3 +7104,105 @@ shutdown -H now   # halt
 halt 通知硬件来停止所有的CPU功能,但是仍然保持通电
 poweroff 会发送一个ACPI信号来通知系统关机
 reboot
+
+LDAP:
+LDAP: 轻量级目录访问协议 Light Directory Access Portocol X.500
+域控制器
+Active Directory 活动目录
+工作组
+ou: organisation unit 组织单元
+dn: Distinguished Name
+dc: Domain Component
+cn: Common Name
+objectClass
+
+docker run -p 389:389 -p 636:636 --name myopenldap --detach osixia/openldap:latest
+docker exec myopenldap ldapsearch -x -H ldap://localhost -b dc=example,dc=org -D "cn=admin,dc=example,dc=org" -w admin
+
+LdapAdmin.exe
+
+docker run -p 6443:443 \
+        --name phpldapadmin \
+        --add-host "paper.com:192.168.45.73" \
+        --env PHPLDAPADMIN_LDAP_HOSTS=paper.com \
+        --detach osixia/phpldapadmin:latest
+https://192.168.161.129:6443/
+
+cd /home/thomas/golang/src/github.com/eryajf/go-ldap-admin/docs/docker-compose
+docker compose up -d
+http://192.168.161.129:8090
+admin 123456
+http://192.168.161.129:8091
+cn=admin,dc=eryajf,dc=net
+123456
+
+sudo apt-get install ldap-utils libpam-ldap libnss-ldap nslcd
+sudo apt-get install libpam0g-dev libpam-cracklib
+pam Pluggable Authentication Modules
+
+slapacl/slapadd/slapauth/slapcat/slapd/slapdn/slapindex/slapmodify/slappasswd/slapschema/slaptest
+ldapcompare/ldapexop/ldapmodify/ldapmodrdn/ldappasswd/ldapurl
+
+sudo apt-get install slapd ldap-utils
+#dpkg-reconfigure slapd
+/etc/ldap
+
+BASE  dc=andrea,dc=com
+URI ldap://127.0.0.1:389
+
+sudo ufw allow proto tcp from any to 127.0.0.1 port 389
+sudo ufw allow proto tcp from any to 127.0.0.1 port 636
+sudo gufw
+sudo systemctl stop slapd.service
+sudo systemctl start slapd.service
+sudo systemctl status slapd.service
+ldapsearch -x -LLL -b dc=andrea,dc=com
+
+ldapadd -H ldap://192.168.161.129:388 -D "cn=admin,dc=eryajf,dc=net" -w 123456 -f demo.ldif
+ldapdelete -x -H ldap://192.168.161.129:388 -D "cn=admin,dc=eryajf,dc=net" -w 123456 "cn=synoconf,dc=eryajf,dc=net"
+
+ldapsearch -x -H ldap://192.168.161.129:388 -b "dc=eryajf,dc=net" -D "cn=admin,dc=eryajf,dc=net" -w 123456
+ldapwhoami -x -H ldap://192.168.161.129:388 -D "cn=admin,dc=eryajf,dc=net" -w 123456
+
+ldapsearch -H ldap://paper.com -D "Administrator@paper.com" -w 137170Wang,
+ldapsearch -x -H ldap://paper.com -D "Administrator@paper.com" -b "dc=paper,dc=com" -w xxx
+ldapsearch -x -H ldap://paper.com -D "Administrator@paper.com" -b "dc=paper,dc=com" -w xxx objectClass=user
+
+Active Directory
+安装windows server虚拟机
+安装AD DNS
+测试安装:
+netdom query fsmo
+DCDIAG /a
+tasklist | findstr "dns"
+netstat -ano -p TCP | findstr "389"
+netstat -ano | findstr "123"
+tasklist | findstr "932"
+
+apt list --installed
+pstree -aup
+ps aux
+ps -A
+ps -e
+pgrep ssh
+pkill vim
+killall vim
+systemd-analyze
+systemd-analyze blame
+systemctl list-dependencies sshd.service
+systemctl cat sshd.service
+systemctl edit nginx.service
+systemctl edit --full nginx.service
+systemctl list-dependencies multi-user.target
+systemctl get-default
+
+[Unit]
+After=network.target sshd-keygen.service
+Wants=sshd-keygen.service 弱依赖
+Requires 强依赖
+[Install]
+WantedBy=multi-user.target
+
+shell:
+echo $?
+ps -o pgid= 123
