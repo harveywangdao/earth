@@ -7208,3 +7208,52 @@ echo $?
 ps -o pgid= 123
 
 sudo apt install libblkid-dev
+
+deb:
+sudo apt install dpkg
+/var/cache/apt/archives
+apt download tree
+dpkg -c tree_1.8.0-1+b1_amd64.deb
+sudo dpkg -i tree_1.8.0-1+b1_amd64.deb
+dpkg -I tree_1.8.0-1+b1_amd64.deb
+dpkg --info tree_1.8.0-1+b1_amd64.deb
+dpkg -e tree_1.8.0-1+b1_amd64.deb
+dpkg -s tree
+dpkg -L tree
+sudo dpkg -r tree
+sudo dpkg -P tree
+dpkg -S /usr/bin/tree
+dpkg -X tree_1.8.0-1+b1_amd64.deb tmpdir
+sudo dpkg --unpack tree_1.8.0-1+b1_amd64.deb
+
+dpkg-deb --contents tree_1.8.0-1+b1_amd64.deb
+dpkg-deb --info tree_1.8.0-1+b1_amd64.deb
+dpkg-deb --field tree_1.8.0-1+b1_amd64.deb
+dpkg-deb --control tree_1.8.0-1+b1_amd64.deb
+dpkg-deb --extract tree_1.8.0-1+b1_amd64.deb tmpdir
+dpkg-deb --raw-extract tree_1.8.0-1+b1_amd64.deb tmpdir
+
+dpkg-deb -b xxx xxx.deb
+dpkg-deb --build --root-owner-group faker_0.2-5_amd64
+
+sudo dpkg -i --root=dir01 tmpdir3.deb
+sudo dpkg -i --root=dir02 --force-all redis-server_5%3a6.0.16-1+deb11u2_amd64.deb
+sudo rm -rf dir02
+mkdir dir02
+sudo dpkg -i --root=dir02 --force-depends redis-server_5%3a6.0.16-1+deb11u2_amd64.deb
+sudo dpkg -i --root=dir02 --force-all redis-server_5%3a6.0.16-1+deb11u2_amd64.deb
+sudo dpkg -i --admindir=/home/thomas/download/tmp/dir02/var/lib/dpkg --root=/home/thomas/download/tmp/dir02 --instdir=/home/thomas/download/tmp/dir02 --force-depends redis-server_5%3a6.0.16-1+deb11u2_amd64.deb
+sudo dpkg -i --admindir=/home/thomas/download/tmp/dir02/var/lib/dpkg --root=/home/thomas/download/tmp/dir02 --instdir=/home/thomas/download/tmp/dir02 --force-all redis-server_5%3a6.0.16-1+deb11u2_amd64.deb
+sudo dpkg -i --instdir=dir02 --force-depends redis-server_5%3a6.0.16-1+deb11u2_amd64.deb
+sudo dpkg -i --instdir=dir02 --force-all redis-server_5%3a6.0.16-1+deb11u2_amd64.deb
+
+dpkg --configure xxx
+
+control
+preinst
+postinst
+prerm
+postrm
+
+apt-cache depends tree
+apt-get download $(apt-cache depends --recurse --no-recommends --no-suggests --no-conflicts --no-breaks --no-replaces --no-enhances --no-pre-depends tree | grep -v i386 | grep "^\w")
