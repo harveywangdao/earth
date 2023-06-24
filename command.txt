@@ -7257,3 +7257,64 @@ postrm
 
 apt-cache depends tree
 apt-get download $(apt-cache depends --recurse --no-recommends --no-suggests --no-conflicts --no-breaks --no-replaces --no-enhances --no-pre-depends tree | grep -v i386 | grep "^\w")
+
+apt show clamav
+apt info clamav
+sudo dpkg --remove --force-remove-reinstreq redis-server
+
+clamav:
+Malwares恶意软件
+sudo apt install clamav clamav-daemon libclamav-dev
+
+systemctl status clamav-freshclam
+systemctl status clamav-daemon
+
+sigtool -i daily.cvd
+freshclam
+clambc
+clamconf
+clamd
+clamdscan
+clamdtop
+clamonacc
+clamscan
+clamsubmit
+
+sudo vim /etc/clamav/clamd.conf
+sudo vim /etc/clamav/freshclam.conf
+
+sudo systemctl stop clamav-freshclam
+sudo freshclam
+https://database.clamav.net/daily.cvd
+cp daily.cvd /var/lib/clamav/daily.cvd
+sudo systemctl start clamav-freshclam
+
+clamscan -v --infected --recursive /home/thomas
+clamscan -r /home/thomas/download
+clamscan -r --bell -i /home/thomas/download
+sudo clamscan --infected --recursive --remove /
+
+sigtool --md5 /home/thomas/project/log_serv/log_serv > /var/lib/clamav/test.hdb
+clamscan -v --infected -d test.hdb --tempdir=/home/thomas/download/clamav/tmp -r virus
+clamscan -v --infected -d test.hdb --move=/home/thomas/download/clamav/danger -r virus
+clamscan -v --infected -d test.hdb --remove -r virus
+
+1.后台自动扫描
+2.下载的文件扫描
+c++
+cgo
+扫描所有共享目录
+扫描指定路径
+扫描系统
+隔离区
+日志
+白名单
+指定文件类型
+更新病毒库
+定时扫描
+
+iconv:
+iconv --from-code=UTF-8 --to-code=GBK --output=gbk1.txt utf8.txt
+iconv --from-code=UTF-8 --to-code=BIG5 --output=BIG5.txt utf8.txt
+hexdump -C gbk.txt
+hexdump -C gbk1.txt
