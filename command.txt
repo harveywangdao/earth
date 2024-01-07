@@ -3,6 +3,7 @@ sudo groupadd groupname
 sudo groupdel groupname
 sudo useradd ¨Cd /usr/sam -m sam
 sudo useradd -g groupname username
+sudo useradd -m -p -s /bin/bash username
 sudo userdel sam
 
 useradd -m thomas -s /bin/bash
@@ -32,9 +33,9 @@ getent group redking
 cat /etc/group
 
 samba:
-sudo apt-get update
-sudo apt-get install samba
-#sudo apt-get install samba-common
+sudo apt update
+sudo apt install samba
+#sudo apt install samba-common
 sudo mkdir /home/share
 sudo chmod 777 /home/share
 sudo vim /etc/samba/smb.conf
@@ -48,11 +49,22 @@ sudo useradd smbuser
 sudo smbpasswd -a smbuser
 sudo service smbd restart
 
+sudo pdbedit -L
+testparm
+net use \\192.168.45.37\IPC$ /del
+net use \\192.168.45.37\public /del
+net use * /del
+
 sudo smbpasswd -x username
 
 sudo apt-get install smbclient
-smbclient -L //192.168.0.111
-smbclient //192.168.0.111/myshare -U thomas
+smbclient -L //192.168.45.37 -U thomas
+smbclient //192.168.45.37/public -U thomas
+
+libpam-smbpass
+libpam-winbind
+
+sudo smbcontrol smbd reload-config
 
 smbd:
 TCP 139: NetBIOS Session Service 用于文件和打印机共享
@@ -60,6 +72,19 @@ TCP 445: Server Message Block (SMB) 用于文件和打印机共享
 nmbd:
 UDP 137: NetBIOS Name Service 用于计算机名称解析
 UDP 138: NetBIOS Datagram Service 用于广播和组播数据传输
+
+systemctl status smbd nmbd winbind
+systemctl stop smbd nmbd winbind
+rm -rf /var/log/samba/* /var/cache/samba/* /var/lib/samba/*
+mkdir /var/lib/samba/private
+systemctl start smbd nmbd winbind
+
+CIFS:
+Common Internet File System 共同互联网文件系统 文件共享协议
+CIFS协议是SMB的方言
+Windows下开放的网络文件系统
+它在接受客户请求时采用SPX序列口协议
+而在TCP/IP传输上客户程序与server之间采用的是NetBIOS(网络基本输入输出系统)的高级封装/拆封层,用于封装发送数据和拆解接受数据
 
 disk:
 sudo gedit /etc/default/apport
@@ -1286,6 +1311,7 @@ git:
 sudo apt-get install git
 git config --global user.name "thomas"
 git config --global user.email "1272777053@qq.com"
+git config --global credential.helper store
 git config --list
 git clone https://github.com/harveywangdao/helloworld.git
 git add .
@@ -1325,11 +1351,6 @@ export GOPATH=$HOME/goproj
 export PATH=$PATH:$GOPATH/bin
 source /etc/profile
 go version
-
-FTP:
-sudo apt-get install vsftpd
-sudo vim /etc/vsftpd.conf
-sudo service vsftpd restart
 
 ssh:
 sudo apt-get install openssh-server openssh-client
@@ -2805,7 +2826,6 @@ prepend domain-name-servers 8.8.8.8, 8.8.4.4;   # 增加,优先级大
 sudo systemctl restart networking.service
 systemctl status networking.service
 
-
 sudo vim /etc/netplan/00-installer-config.yaml
 network:
   ethernets:
@@ -2841,16 +2861,15 @@ sudo systemctl restart resolvconf
 
 sudo vim /etc/hostname
 ubuntuthomas1
-同步修改/etc/hosts
-sudo hostnamectl set-hostname dahai
-
 sudo vim /etc/hosts
 127.0.0.1   localhost
-127.0.1.1   ubuntuthomas1 delete
-
+127.0.1.1   ubuntuthomas1
 192.168.1.145    ubuntuthomas
-192.168.1.146    ubuntuthomas1
-192.168.1.147    ubuntuthomas2
+
+sudo hostnamectl set-hostname debianserver02.paper.com
+sudo vim /etc/hosts
+#127.0.1.1    debian02
+192.168.45.13 debianserver02 debianserver02.paper.com
 
 sudo /etc/init.d/networking restart
 sudo reboot
@@ -5557,25 +5576,51 @@ value01
 get key01
 
 NFS:
-sudo apt-get install nfs-kernel-server
-sudo apt-get install nfs-common
+Network File System
+rpcbind是NFS中用来进行消息通知的服务
+mount,像操作文件系统一样操作NFS
+
+sudo apt install nfs-kernel-server
+#sudo apt install nfs-common
+
 sudo vim /etc/exports
-/home/thomas/nfsroot *(rw,sync,no_root_squash)
+/home/thomas/download *(rw,sync,no_root_squash,no_subtree_check)
+/home/thomas/download 192.168.45.85(rw,sync,no_root_squash,no_subtree_check)
 
-sudo /etc/init.d/nfs-kernel-server start
-sudo /etc/init.d/nfs-kernel-server restart
+sudo vim /etc/default/nfs-kernel-server
+sudo vim /etc/default/nfs-common
 
-sudo mount -t nfs 192.168.1.12:/home/thomas/nfsroot /mnt -o nolock
+root_squash: root用户转成匿名用户
+no_root_squash: root用户保留root权限
+all_squash: 所有用户转成匿名用户
+
+sudo systemctl restart nfs-kernel-server
+systemctl status nfs-kernel-server
+
+sudo vim /etc/fstab
+host_ip:/home /nfs/home nfs auto,nofail,noatime,nolock,intr,tcp,actimeo=1800 0 0
+
+sudo mount -t nfs 192.168.45.37:/home/thomas/download /mnt
 sudo umount /mnt
-
 sudo exportfs -arv
-sudo showmount -e
+showmount -e
+showmount -e 192.168.45.37
 nfsstat -s
+df -h
+
+cat /etc/mtab
+cat /etc/idmapd.conf
+cat /proc/filesystems
+mount.nfs
+umount.nfs
+nfsmount.conf
+fsck
+findmnt
 
 strace:
 strace -o aaa.txt -T -tt -e trace=all -p 1111
 
-Debian:
+Debian11:
 su
 cat << EOF >/etc/apt/sources.list
 deb http://mirrors.aliyun.com/debian/ bullseye main non-free contrib
@@ -5609,7 +5654,17 @@ deb-src http://mirrors.ustc.edu.cn/debian/ bullseye-updates main non-free contri
 deb http://mirrors.ustc.edu.cn/debian/ bullseye-backports main non-free contrib
 deb-src http://mirrors.ustc.edu.cn/debian/ bullseye-backports main non-free contrib
 
-apt install vim sudo
+sudo vim /etc/apt/sources.list
+deb http://mirrors.tuna.tsinghua.edu.cn/debian/ bullseye main contrib non-free
+deb-src http://mirrors.tuna.tsinghua.edu.cn/debian/ bullseye main contrib non-free
+deb http://mirrors.tuna.tsinghua.edu.cn/debian/ bullseye-updates main contrib non-free
+deb-src http://mirrors.tuna.tsinghua.edu.cn/debian/ bullseye-updates main contrib non-free
+deb http://mirrors.tuna.tsinghua.edu.cn/debian/ bullseye-backports main contrib non-free
+deb-src http://mirrors.tuna.tsinghua.edu.cn/debian/ bullseye-backports main contrib non-free
+deb http://mirrors.tuna.tsinghua.edu.cn/debian-security bullseye-security main contrib non-free
+deb-src http://mirrors.tuna.tsinghua.edu.cn/debian-security bullseye-security main contrib non-free
+
+apt install vim sudo -y
 vim ~/.bashrc
 export PATH=$PATH:/sbin
 exit
@@ -5639,7 +5694,7 @@ deb-src http://deb.debian.org/debian testing main
 deb http://ftp.debian.org/debian sid main
 sudo apt-get -t sid install libc6 libc6-dev libc6-dbg
 
-自己的编译容易造成系统无法启动
+自己编译容易造成系统无法启动
 wget http://ftp.gnu.org/pub/gnu/glibc/glibc-2.34.tar.bz2
 tar -jxvf glibc-2.34.tar.bz2
 mkdir build
@@ -5656,6 +5711,35 @@ ldd --version
 sudo cp /usr/local/lib/libc.so.6 /lib/x86_64-linux-gnu/libc-2.34.so
 sudo ln -sf libc-2.34.so libc.so.6
 #sudo ln -sf libc-2.31.so libc.so.6
+
+Debian12:
+su
+cat << EOF >/etc/apt/sources.list
+deb http://mirrors.tuna.tsinghua.edu.cn/debian/ bookworm main contrib non-free non-free-firmware
+deb-src http://mirrors.tuna.tsinghua.edu.cn/debian/ bookworm main contrib non-free non-free-firmware
+deb http://mirrors.tuna.tsinghua.edu.cn/debian/ bookworm-updates main contrib non-free non-free-firmware
+deb-src http://mirrors.tuna.tsinghua.edu.cn/debian/ bookworm-updates main contrib non-free non-free-firmware
+deb http://mirrors.tuna.tsinghua.edu.cn/debian/ bookworm-backports main contrib non-free non-free-firmware
+deb-src http://mirrors.tuna.tsinghua.edu.cn/debian/ bookworm-backports main contrib non-free non-free-firmware
+deb http://mirrors.tuna.tsinghua.edu.cn/debian-security bookworm-security main contrib non-free non-free-firmware
+deb-src http://mirrors.tuna.tsinghua.edu.cn/debian-security bookworm-security main contrib non-free non-free-firmware
+EOF
+apt update
+
+apt install vim sudo -y
+vim ~/.bashrc
+export PATH=$PATH:/sbin
+alias ll='ls -l'
+exit
+su
+visudo
+thomas  ALL=(root) NOPASSWD:ALL
+vim /etc/network/interfaces
+auto ens33
+exit
+
+sudo systemctl restart networking.service
+sudo apt install net-tools
 
 NTP:
 本地时间带时区/系统时间
@@ -5792,7 +5876,30 @@ getfattr -n user.desc a.txt
 getfattr -d -m ".*" a.txt
 lsattr
 chattr
-setfacl
+
+sudo apt install acl
+setfacl -m u:test1:rwx dir01
+setfacl -m g:test1:rwx dir01
+getfacl -aetn dir01
+getfacl -apnt dir01
+getfattr -d -m ".*" dir01
+getfattr -n system.posix_acl_access dir01
+
+# file: dir03
+# owner: root
+# group: root
+user::rwx
+group::r-x
+other::r-x
+
+# file: dir03
+# owner: root
+# group: root
+user::rwx
+user:thomas:rwx
+group::r-x
+mask::rwx
+other::r-x
 
 DBUS:
 https://github.com/godbus/dbus
@@ -5835,17 +5942,141 @@ rsyslog:
 rsyslogd
 数据来源:imfile/imtcp/imudp/imuxsock
 数据发送:udp/tcp/omuxsock/omfile/ommysql/ompgsql
+
+RFC 3164
+https://tools.ietf.org/html/rfc3164
+<PRI>HEADER MESSAGE
+<15>Jul 10 12:00:00 192.168.1.1 SyslogGen MESSAGE
+<94>May  8 10:24:37 debian03 vsftpd[851]: msg
+
+PRI = Facility * 8 + Level
+94 = 11 * 8 + 6
+
+HEADER = TIMESTAMP HOSTNAME
+MSG = TAG CONTENT
+
+RFC 5424
+https://tools.ietf.org/html/rfc5424
+<PRI>VERSION TIMESTAMP HOSTNAME APP-NAME PROCID MSGID
+
+<34>1 2003-10-11T22:14:15.003Z mymachine.example.com su - ID47
+
 facility
 proirity
+
+auth 认证系统，即询问用户名和口令(不推荐使用authpriv替代）
+authpriv: 安全和认证相关消息（私有的）
+cron 系统定时任务cront和at产生的日志
+daemon 某些系统的守护程序的syslog,如由in.ftpd产生的log
+kern 内核的syslog信息
+lpr 打印机的syslog信息
+mail 邮件系统的syslog信息
+mark 定时发送消息的时标程序
+news 新闻系统的syslog信息
+user 本地用户应用程序的syslog信息
+uucp uucp子系统的syslog信息
+local0-7种本地类型的syslog信息,这些信息可以由用户来定义
+
+0             kernel messages
+1             user-level messages
+2             mail system
+3             system daemons
+4             security/authorization messages
+5             messages generated internally by syslogd
+6             line printer subsystem
+7             network news subsystem
+8             UUCP subsystem
+9             clock daemon
+10             security/authorization messages
+11             FTP daemon
+12             NTP subsystem
+13             log audit
+14             log alert
+15             clock daemon (note 2)
+16             local use 0  (local0)
+17             local use 1  (local1)
+18             local use 2  (local2)
+19             local use 3  (local3)
+20             local use 4  (local4)
+21             local use 5  (local5)
+22             local use 6  (local6)
+23             local use 7  (local7)
+
+emerg 紧急，处于Panic状态。通常应广播到所有用户；
+alert 告警，当前状态必须立即进行纠正。例如，系统数据库崩溃；
+crit 关键状态的警告。例如，硬件故障；
+err 其它错误；
+warning 警告；
+notice 注意；非错误状态的报告，但应特别处理；
+info 通报信息；
+debug 调试程序时的信息；
+none 通常调试程序时用，指示带有none级别的类型产生的信息无需送出。如*.debug;mail.none表示调试时除邮件信息外其它信息都送出
+
+0       Emergency: system is unusable
+1       Alert: action must be taken immediately
+2       Critical: critical conditions
+3       Error: error conditions
+4       Warning: warning conditions
+5       Notice: normal but significant condition
+6       Informational: informational messages
+7       Debug: debug-level messages
+
+-/var/log/syslog # 异步写入
+
+sudo systemctl restart rsyslog
+systemctl status rsyslog
+
+/etc/rsyslog.conf
+/etc/rsyslog.d/*.conf
+
+/var/log/messages
+/var/log/syslog
+
+/dev/log
+/var/run/syslog
+/var/run/log
+
+MODULES
 module(load="imuxsock" SysSock.Name="/var/sock")
+module(load="imuxsock")
+input(type="imuxsock"
+      Socket="/var/run/sshd/dev/log")
+
+module(load="imudp")
+input(type="imudp" port="514")
+
+module(load="imtcp")
+input(type="imtcp" port="514")
+
+RULES
+auth,authpriv.*                 /var/log/auth.log
+*.*;auth,authpriv.none          -/var/log/syslog
+mail.info                       -/var/log/mail.info
+
+*.* action(type="omfwd" target="192.0.2.1" port="10514" protocol="tcp")
+if $msg contains 'error' then /var/log/errlog
+if $fromhost-ip == "172.19.1.135" then {
+  action(type="omfile" file="/var/log/network1.log")
+}
+if $programname == 'vsftpd' then {
+  action(type="omfile" File="/var/log/vsftpd_sys.log")
+}
+
 $ModLoad omuxsock
-$OMUxSockSocket /tmp/socksample
-*.* :omuxsock:
+$OMUxSockSocket /var/run/ugsyslog.sock
+if $programname == 'vsftpd' then {
+  *.* :omuxsock:
+}
 
-sudo service rsyslog restart
-sudo systemctl restart rsyslog.service
+sudo socat unix-recvfrom:/var/run/ugsyslog.sock -
+echo "test" | socat - unix-sendto:/var/run/ugsyslog.sock
+sudo socat UNIX-LISTEN:/var/run/ugsyslog.sock -
+echo "test" | socat - unix-connect:/var/run/ugsyslog.sock
 
+logger -t mylogger_program 'This is an message'
 logger -u /var/sock ysdahdahjs
+
+journalctl -e
 
 bash:
 /bin/bash -c
@@ -5992,9 +6223,13 @@ sudo apt install packagekit sssd-ad sssd-tools realmd adcli -y
 sudo realm -v discover paper.com
 sudo realm join -v -U administrator paper.com
 
+#sudo apt install libpam-ldap libnss-ldap
+
+grep "ldap" /etc/pam.d/ -nR
 grep "sss" /etc/pam.d/ -nR
 grep "mkhomedir" /etc/pam.d/ -nR
 sudo pam-auth-update --enable mkhomedir
+sudo pam-auth-update --enable ldap
 
 getent passwd
 getent group
@@ -6006,8 +6241,12 @@ ssh xiaoming@paper.com@192.168.44.230
 sudo login
 sudo apt install smbclient
 smbclient --use-kerberos=required -L winserver1.paper.com -U xiaoming@paper.com
-smbclient //winserver1.paper.com/hahdir -U xiaoming@paper.com
-smbclient //winserver1.paper.com/hahdir -U administrator@paper.com
+smbclient -L //192.168.45.37 -U test6@paper.com
+smbclient //192.168.45.37/public2 -U test6@paper.com
+smbclient //192.168.45.37/public -U administrator@paper.com
+
+ssh test6@ug-ldap.local@192.168.45.37
+smbclient -L //192.168.45.37 -U test6@ug-ldap.local
 
 sudo vim /etc/sssd/sssd.conf
 [sssd]
@@ -6053,11 +6292,12 @@ automount:      sss
 
 cd /var/log/sssd
 tail -f /var/log/auth.log
+sss_cache -E
 
 winbind:
 sudo vim /etc/dhcp/dhclient.conf
 prepend domain-name-servers 192.168.45.73;
-sudo systemctl restart networking.service
+sudo systemctl restart networking
 
 sudo apt update
 sudo apt install packagekit realmd samba libnss-winbind -y
@@ -6105,14 +6345,9 @@ systemctl status nmbd
 systemctl status winbind
 
 AD winbind:
-sudo hostnamectl set-hostname debianserver02.paper.com
-sudo vim /etc/hosts
-#127.0.1.1    debian02
-192.168.45.13 debianserver02 debianserver02.paper.com
-
 sudo vim /etc/dhcp/dhclient.conf
 prepend domain-name-servers 192.168.45.73;
-sudo systemctl restart networking.service
+sudo systemctl restart networking
 
 sudo apt update
 sudo apt install samba winbind libpam-winbind libnss-winbind -y
@@ -6124,6 +6359,8 @@ cd /var/lib/samba
 systemctl status smbd
 systemctl status nmbd
 systemctl status winbind
+sudo systemctl restart smbd nmbd winbind
+sudo net ads info
 netstat -lutnp
 
 sudo mv /etc/samba/smb.conf /etc/samba/smb.conf.bk
@@ -6143,6 +6380,7 @@ obey pam restrictions = yes
 security = user
 
 sudo touch /etc/samba/smbshare.conf
+
 sudo vim /etc/samba/smbdomain.conf
 include = /etc/samba/smbad.conf
 
@@ -6200,8 +6438,13 @@ sudo vim /etc/krb5.conf
 
 grep "mkhomedir" /etc/pam.d/ -nR
 grep "winbind" /etc/pam.d/ -nR
+grep "sss" /etc/pam.d/ -nR
 sudo pam-auth-update --enable mkhomedir
 sudo pam-auth-update --enable winbind
+sudo pam-auth-update --enable sss
+sudo pam-auth-update --remove mkhomedir
+sudo pam-auth-update --remove winbind
+sudo pam-auth-update --remove sss
 
 sudo ntpdate 192.168.45.73
 sudo net ads join -U administrator
@@ -6221,7 +6464,8 @@ getent passwd
 getent group
 id xiaoming@paper.com
 
-ssh xiaoming@paper.com@192.168.45.13
+ssh xiaoming@paper.com@192.168.45.37
+ssh test6@paper.com@192.168.45.37
 sudo login
 sudo apt install smbclient -y
 smbclient --use-kerberos=required -L winserver1.paper.com -U xiaoming@paper.com
@@ -6260,6 +6504,7 @@ systemctl status sssd
 
 grep "sss" /etc/pam.d/ -nR
 sudo pam-auth-update --enable sss
+sudo pam-auth-update --remove sss
 
 sudo realm -v discover paper.com
 sudo realm leave
@@ -6283,6 +6528,85 @@ sudo adduser guest
 #sudo userdel guest
 
 LDAP sssd:
+sudo vim /etc/dhcp/dhclient.conf
+prepend domain-name-servers 192.168.45.73;
+sudo systemctl restart networking.service
+
+sudo apt install sssd-ldap -y
+sudo vim /etc/sssd/sssd.conf
+[sssd]
+config_file_version = 2
+domains = ug-ldap.local
+services = nss, pam
+
+[domain/ug-ldap.local]
+id_provider = ldap
+ldap_uri = ldap://192.168.44.151
+ldap_search_base = dc=ug-ldap,dc=local
+ldap_default_bind_dn = uid=root,cn=users,dc=ug-ldap,dc=local
+ldap_default_authtok_type = password
+ldap_default_authtok = Admin123
+cache_credentials = True
+enumerate = True
+use_fully_qualified_names = True
+override_homedir = /home/%u@%d
+fallback_homedir = /home/%u@%d
+default_shell = /bin/bash
+override_shell = /bin/bash
+debug_level = 0x07F0
+ldap_schema = rfc2307bis
+ldap_tls_reqcert=never
+ldap_pwd_policy=shadow
+ldap_tls_cacertdir=/etc/ssl/certs
+
+case_sensitive=preserving
+ldap_group_search_base = cn=groups,dc=ug-ldap,dc=local
+ldap_user_search_base = cn=users,dc=ug-ldap,dc=local
+auth_provider = ldap
+access_provider = ldap
+
+sudo chmod 0600 /etc/sssd/sssd.conf
+sudo systemctl restart sssd
+systemctl status sssd
+
+sudo sssctl domain-status ug-ldap.local
+
+grep "mkhomedir" /etc/pam.d/ -nR
+sudo pam-auth-update --enable mkhomedir
+
+sudo vim /etc/hosts
+192.168.44.151 ug-ldap.local
+
+ldapwhoami -x -ZZ -H ldap://192.168.44.151
+ldapsearch -x -H ldap://ug-ldap.local -D uid=root,cn=users,dc=ug-ldap,dc=local -b dc=ug-ldap,dc=local -w Admin123
+
+getent passwd
+getent group
+getent passwd xiaoming@ug-ldap.local
+groups xiaoming@ug-ldap.local
+id xiaoming@ug-ldap.local
+id zhanglu@ug-ldap.local
+ssh xiaoming@ug-ldap.local@192.168.45.37
+ssh zhanglu@ug-ldap.local@192.168.45.37
+sudo login
+
+sudo cat /etc/nsswitch.conf
+passwd:         files systemd sss
+group:          files systemd sss
+shadow:         files sss
+gshadow:        files
+
+hosts:          files dns
+networks:       files
+
+protocols:      db files
+services:       db files sss
+ethers:         db files
+rpc:            db files
+
+netgroup:       nis sss
+automount:      sss
+
 samba服务端加入域
 autofs/sudo/su
 sudo apt-get install -y cifs-utils
@@ -6291,3 +6615,706 @@ nslcd: 用于将LDAP或NIS服务器中的用户和组信息转化为本地系统
 NIS: Network Information Service,用于在网络中共享用户主机和其他系统的配置信息,它允许管理员在一个中央位置管理用户/组/主机名/密码等信息,并在整个网络中共享这些信息
 ldd /usr/sbin/sshd | grep pam
 dpkg -S $(which getent)
+
+rsync:
+sudo apt install rsync
+rsync -avz /home/thomas/project thomas@192.168.44.126:/home/thomas/filedir
+rsync -avz /home/thomas/project/ thomas@192.168.44.126:/home/thomas/filedir
+rsync -avz --delete -e ssh thomas@192.168.44.126:/home/thomas/filedir/ /home/thomas/filedir
+-e 'ssh -p 61124'
+
+sudo useradd -m -s /bin/bash rsyncuser
+sudo passwd rsyncuser
+#sudo adduser rsyncuser
+#sudo adduser --home /home/rsyncuser --shell /bin/bash
+#sudo userdel -r rsyncuser
+#sudo groupdel rsyncuser
+
+sudo vim /etc/rsyncd.conf
+uid = root
+gid = root
+use chroot = true
+max connections = 4
+pid file = /var/run/rsyncd.pid
+lock file = /var/run/rsync.lock
+log file = /var/log/rsyncd.log
+motd file = /etc/rsyncd.motd
+timeout = 300
+
+[backup01]
+path = /home/rsyncuser
+comment = Rsync directory
+read only = false
+list = true
+auth users = rsyncuser
+secrets file = /etc/rsyncd.secrets
+
+hosts allow = *
+hosts deny = 10.10.10.10
+exclude =  www/ xxx/
+
+sudo vim /etc/rsyncd.secrets
+rsyncuser:123456789
+sudo chmod 600 /etc/rsyncd.secrets
+#sudo chown root:root /etc/rsyncd.secrets
+
+sudo vim /etc/default/rsync
+RSYNC_ENABLE=true
+
+sudo systemctl stop rsync
+sudo systemctl enable rsync
+sudo systemctl disable rsync
+sudo systemctl restart rsync
+systemctl status rsync
+
+sudo netstat -lutnp
+873/tcp
+
+rsync thomas@192.168.45.37::
+rsync thomas@192.168.45.37::public
+rsync --port=873 -avzP 1.txt thomas@192.168.45.37::public
+rsync --port=873 -avzP 1.txt thomas@192.168.45.37::public/dir01/
+
+sudo vim /etc/rsyncd.secrets
+123456789
+sudo chmod 600 /etc/rsyncd.secrets
+rsync -avzP --password-file=/etc/rsyncd.secrets rsyncuser@192.168.45.13::backup01/dir01 /home/thomas/filedir
+RSYNC_PASSWORD=123456789 rsync -avzP rsyncuser@192.168.45.13::backup01/dir01 /home/thomas/filedir
+
+sudo apt install inotify-tools
+vim /etc/rsync/rsync.init.sh
+#!/bin/bash
+/usr/bin/inotifywait -mrq --timefmt '%d/%m/%y %H:%M' --format '%T %w%f%e' -e modify,delete,create,attrib,move /etc/rsync/temp/ | while read files
+do
+rsync -avzPt --delete --password-file=/etc/rsync/rsyncd.secrets /etc/rsync/temp/ www-data@192.168.27.131::www-data
+echo "{files} was rsynced" >> /temp/rsync.log 2>&1
+done
+chmod 755 /etc/rsync/rsync.init.sh
+
+sudo apt install zsync
+zsyncmake /path/to/myfile.iso
+zsync -i /path/to/myfile.iso.zsync -p 8080 -a 0.0.0.0 /path/to/myfile.iso
+
+WebDAV:
+linux client:
+apt install -y davfs2
+mkdir /mnt/drive1
+mount -t davfs https://xx.com/dav/ /mnt/drive1
+echo "use_locks       0" >> /etc/davfs2/davfs2.conf
+windows client:
+raidrive
+
+FTP:
+sudo apt install vsftpd -y
+
+sudo mv /etc/vsftpd.conf /etc/vsftpd.conf.bk
+sudo vim /etc/vsftpd.conf
+listen=YES
+listen_port=21
+anonymous_enable=NO
+local_enable=YES
+write_enable=YES
+local_umask=022
+
+dual_log_enable=NO
+xferlog_enable=YES
+syslog_enable=YES
+vsftpd_log_file=/var/log/vsftpd.log
+xferlog_std_format=NO
+xferlog_file=/var/log/xferlog
+
+utf8_filesystem=YES
+#ascii_upload_enable=YES
+#ascii_download_enable=YES
+#use_localtime=YES
+
+chroot_local_user=YES
+allow_writeable_chroot=YES
+chroot_list_enable=NO
+chroot_list_file=/etc/vsftpd.chroot_list
+secure_chroot_dir=/var/run/vsftpd/empty
+
+pasv_enable=YES
+pasv_min_port=40000
+pasv_max_port=40100
+
+max_clients=100
+max_per_ip=5
+local_max_rate=200000
+
+ssl_enable=YES
+force_local_logins_ssl=YES
+force_local_data_ssl=YES
+rsa_cert_file=/etc/ssl/certs/ssl-cert-snakeoil.pem
+rsa_private_key_file=/etc/ssl/private/ssl-cert-snakeoil.key
+sudo openssl req -x509 -nodes -days 3650 -newkey rsa:2048 -keyout /etc/ssl/private/vsftpd.pem -out /etc/ssl/certs/vsftpd.pem
+
+#pasv_address=192.168.32.3
+#pasv_promiscuous=YES
+#port_promiscuous=YES
+
+#listen_ipv6=YES
+#listen_address=192.168.0.21
+#tcp_wrappers=YES
+#userlist_enable=YES
+#userlist_file=/etc/vsftpd.userlist
+#userlist_deny=NO
+#local_root=/var/ftp
+#dirmessage_enable=YES
+#connect_from_port_20=YES
+#pam_service_name=vsftpd
+
+sudo systemctl restart vsftpd
+sudo systemctl enable vsftpd
+systemctl status vsftpd
+
+sudo apt install ftp
+ftp ftp://thomas:180498@192.168.45.37:9843
+ftp -P 9843 192.168.45.37
+ftp -P 9843 thomas@192.168.45.37
+ftp thomas@192.168.45.37 9843
+ftp 192.168.45.37
+ls/cd/get/put/exit/help
+
+cat /etc/pam.d/vsftpd
+sudo ufw allow 20/tcp
+sudo ufw allow 21/tcp
+sudo ufw allow 40000:50000/tcp
+ufw status
+echo "thomas" | sudo tee -a /etc/vsftpd.userlist
+
+smbftpd:
+sudo apt install build-essential byacc -y
+sudo apt install libpam0g-dev libssl-dev -y
+tar -xzvf smbftpd-2.10.tar.gz
+./configure --with-ssl --with-iconv
+make
+
+sudo make install
+sudo install -c -m 644 os/linux/ftpd.pam /etc/pam.d/ftpd
+
+scp os/linux/ftpd.pam root@192.168.45.99:/etc/pam.d/ftpd
+chmod 644 /etc/pam.d/ftpd
+scp smbftpd root@192.168.45.99:/usr/sbin/
+chmod 755 /usr/sbin/smbftpd
+
+sudo cp smbftpd /usr/sbin/
+
+vim smbftpd.conf
+Port 9843
+
+DebugMode Yes
+DoWtmpLog Yes
+LogCommand Yes
+TransferLog /var/log/smbftpd.log
+EmptyPasswdLogin Yes
+
+sudo vim /lib/systemd/system/smbftpd.service
+sudo systemctl daemon-reload
+sudo systemctl restart smbftpd
+sudo systemctl stop smbftpd
+systemctl status smbftpd
+
+ps -ef | grep ftp
+sudo netstat -ltnp
+sudo journalctl -e -u smbftpd
+
+./smbftpd -D -s smbftpd.conf
+ftp 192.168.45.37 9843
+ftp -P 9843 192.168.45.37
+ftp ftp://thomas:180498@192.168.45.37:9843
+
+dd if=/dev/zero of=bigfile.bin bs=2M count=1024
+
+vsftpd:
+不区分上传和下载速度
+smbftpd:
+外部ip
+FXP
+ascii
+UTC/本地时间
+
+sftp:
+SSH FTP,Secure File Transfer Protocol/SSH File Transfer Protocol
+
+sudo vim /etc/ssh/sshd_config
+Subsystem      sftp    internal-sftp -f DAEMON -u 000
+Subsystem      sftp    /usr/lib/openssh/sftp-server
+
+sftp thomas@192.168.45.85
+sftp wangdaoan@192.168.24.26
+
+tftp:
+普通文件传输协议 Trivial File Transfer Protocol,FTP的简化版本,缺乏安全性,没有到位的加密机制,与TFTP通信时不需要认证,TFTP使用UDP
+sudo apt install tftpd-hpa
+sudo apt install tftp
+
+sudo vim /etc/default/tftpd-hpa
+TFTP_USERNAME="tftp"
+TFTP_DIRECTORY="/srv/tftp"
+TFTP_ADDRESS="0.0.0.0:69"
+TFTP_OPTIONS="-4 --secure -vvv"
+
+sudo systemctl restart tftpd-hpa
+systemctl status tftpd-hpa
+
+tftp 192.168.45.37
+UDP 69
+
+suid 让普通用户临时拥有该文件的属主的执行权限,suid权限只能应用在二进制可执行文件,0755移除suid权限,4755添加suid权限
+sgid 一般应用在目录上当一个目录拥有sgid权限时,任何用户在该目录下创建的文件的属组都会继承该目录的属组,增加权限g+s,移除权限g-s,0755移除sgid权限,2755添加sgid权限
+sticky 一般针对目录来设置,只允许该目录下的文件的创建者删除自己的创建的文件,不允许其他人删除文件,增加权限o+t,移除权限o-t,0755移除sticky权限,1755添加sticky权限
+
+千字节KB
+兆字节MB
+吉字节GB
+太字节TB
+拍字节PB
+艾字节EB
+泽字节ZB
+尧字节YB
+
+文件管理器
+磁盘管理器
+
+局域网内共享
+公网内共享
+
+快照
+备份/恢复
+
+分布式存储 容灾
+
+安全性
+
+用户管理
+应用管理
+视频/音乐/照片
+文档
+
+SAN
+FC-SAN
+IP-SAN
+
+ups:
+sudo apt install nut nut-doc nut-snmp -y
+
+sudo vim /etc/nut/nut.conf
+MODE=standalone
+MODE=netserver
+
+sudo vim /etc/nut/ups.conf
+[ups0]
+driver = usbhid-ups
+port = auto
+
+ignorelb
+override.battery.charge.low = 15
+offdelay = 60
+ondelay = 15
+
+sudo vim /etc/nut/upsd.conf
+LISTEN 0.0.0.0 3493
+
+MAXAGE 15
+STATEPATH /var/run/nut
+MAXCONN 1024
+LISTEN 0.0.0.0
+LISTEN 127.0.0.1 3493
+LISTEN ::1 3493
+
+sudo vim /etc/nut/upsd.users
+[nut]
+  password = nut
+  upsmon master
+  
+  #actions = fsd
+  #instcmds = ALL
+
+sudo vim /etc/nut/upsmon.conf
+RUN_AS_USER root
+MINSUPPLIES 1
+SHUTDOWNCMD "/sbin/shutdown"
+POLLFREQ 5
+POLLFREQALERT 5
+HOSTSYNC 15
+DEADTIME 15
+POWERDOWNFLAG /var/run/killpower
+NOTIFYCMD "/usr/sbin/upssched"
+NOTIFYFLAG ONLINE EXEC+SYSLOG
+NOTIFYFLAG ONBATT EXEC+SYSLOG
+NOTIFYFLAG LOWBATT EXEC+SYSLOG
+NOTIFYFLAG FSD EXEC+SYSLOG
+NOTIFYFLAG COMMOK EXEC+SYSLOG
+NOTIFYFLAG COMMBAD EXEC+SYSLOG
+NOTIFYFLAG SHUTDOWN EXEC+SYSLOG
+NOTIFYFLAG REPLBATT EXEC+SYSLOG
+NOTIFYFLAG NOCOMM EXEC+SYSLOG
+NOTIFYFLAG NOPARENT EXEC+SYSLOG
+RBWARNTIME 43200
+NOCOMMWARNTIME 300
+FINALDELAY 5
+CERTVERIFY 0
+FORCESSL 0
+MONITOR ups0@localhost 1 nut nut master
+
+sudo vim /etc/nut/upssched.conf
+CMDSCRIPT /usr/bin/upssched-cmd
+PIPEFN /var/run/upssched.pipe
+LOCKFN /var/run/upssched.lock
+AT ONLINE * EXECUTE online
+AT ONLINE * CANCEL-TIMER fsd
+AT ONBATT * EXECUTE onbatt
+AT ONBATT * START-TIMER fsd 3
+AT LOWBATT * EXECUTE lowbatt
+AT NOCOMM * EXECUTE nocomm
+AT FSD * EXECUTE fsd
+
+#CMDSCRIPT /usr/bin/upsctl
+
+通电
+断电 启用电池
+电池电量低
+电池电源耗尽 UPS关机
+
+lsusb
+systemctl restart nut-server
+systemctl restart nut-monitor
+systemctl restart nut-driver
+
+systemctl stop nut-server
+systemctl stop nut-monitor
+systemctl stop nut-driver
+
+systemctl status nut-server
+systemctl status nut-monitor
+systemctl status nut-driver
+
+systemctl list-dependencies nut-driver.target
+
+cd /etc/systemd/system
+cd /lib/systemd/system
+systemctl status nut-driver@ups0.service
+systemctl restart nut-driver@ups0.service
+systemctl stop nut-driver@ups0.service
+systemctl enable nut-driver@ups0.service
+systemctl disable nut-driver@ups0.service
+systemctl is-active nut-driver@ups0.service
+
+upscmd -l ups0
+upsc ups0
+upsc ups0@192.168.45.99
+upsc ups0@localhost
+nut-scanner -U
+nut-scanner -s 192.168.44.192 -e 192.168.44.192 -S
+nut-scanner -s 192.168.44.192 -e 192.168.44.192 -l noAuthNoPriv -u xiaoming -S
+
+nut-driver-enumerator
+upsdrvsvcctl stop
+nutupsdrv
+upsdrvctl
+upsd
+upsc
+upsmon
+upssched
+upssched-cmd
+upscmd
+
+UPS: Uninterruptible Power Supply
+USB HID (Human Interface Device)
+apcupsd
+sudo upsd -c reload
+
+apt remove nut nut-doc nut-snmp nut-client nut-monitor nut-server
+apt policy nut
+apt-cache madison nut
+apt install nut=2.7.4-13
+
+snmp-ups -a snmp-test -x mibs=--list
+
+sudo vim ups.conf
+[snmpv1]
+  driver = snmp-ups
+  port = 192.168.44.192
+  community = public
+  snmp_version = v1
+  pollfreq = 15
+
+[snmpv3]
+  driver = snmp-ups
+  port = 192.168.44.192
+  snmp_version = v3
+  secLevel = authPriv
+  secName = mysecurityname
+  authPassword = myauthenticationpassphrase
+  privPassword = myprivatepassphrase
+
+snmpwalk -c public -v 1 192.168.44.192 .1.3.6.1.2.1.1
+snmpwalk -c public -v 2c 192.168.44.192 .1.3.6.1.2.1.1
+snmpwalk -c public -v 3 -u xiaoming 192.168.44.192 .1.3.6.1.2.1.1
+
+git clone https://github.com/networkupstools/nut.git
+git checkout v2.8.0
+sudo apt install autoconf
+./autogen.sh
+tools/nut-scanner/nutscan-usb.h
+
+SNMP采用UDP 161端口接收和发送请求
+162端口接收trap
+NMS 网管平台
+MIB 管理信息库 MIB定义了设备中的被管理对象
+SNMP代理 agent
+Get、Set和Trap代理者主动向管理站通报重要事件
+一条SNMP消息由版本号/SNMP共同体名/协议数据单元(PDU)
+version identifier
+Community Name SNMP网络管理员访问SNMP管理代理时的身份验证,类似于密码默认值为public
+
+PDU的5种协议数据单元:
+SNMP规定了5种协议数据单元PDU（也就是SNMP报文），用来在管理进程和代理之间的交换
+get-request操作：从代理进程处提取一个或多个参数值
+get-next-request操作：从代理进程处提取紧跟当前参数值的下一个参数值
+set-request操作：设置代理进程的一个或多个参数值
+get-response操作：返回的一个或多个参数值。这个操作是由代理进程发出的，它是前面三种操作的响应操作
+trap操作：代理进程主动发出的报文，通知管理进程有某些事情发生
+前面的3种操作是由管理进程向代理进程发出的，后面的2个操作是代理进程发给管理进程的，为了简化起见，前面3个操作今后叫做get、get-next和set操作。图1描述了SNMP的这5种报文操作。请注意，在代理进程端是用熟知端口161俩接收get或set报文，而在管理进程端是用熟知端口162来接收trap报文
+公共SNMP首部、get/set首部、trap首部、变量绑定
+
+sudo apt install snmpd snmp
+sudo apt install snmp-mibs-downloader
+sudo vim /etc/snmp/snmpd.conf
+view   systemonly  included   .1
+sudo vim /etc/snmp/snmp.conf
+sudo systemctl restart snmpd
+systemctl status snmpd
+
+snmpwalk -v 2c -c public localhost memTotalReal.0
+snmpwalk -v 2c -c public localhost snmp_oid
+snmpwalk -v 2c -c public 10.101.137.22 .1.3.6.1.2.1.25.2.2.0
+
+iSNS
+iSCSI
+mDNS
+avahi
+afpd
+
+shutdown now
+shutdown 13:20
+shutdown -P now   # poweroff
+shutdown -H now   # halt
+halt 通知硬件来停止所有的CPU功能,但是仍然保持通电
+poweroff 会发送一个ACPI信号来通知系统关机
+reboot
+
+LDAP:
+LDAP: 轻量级目录访问协议 Light Directory Access Portocol X.500
+域控制器
+Active Directory 活动目录
+工作组
+ou: organisation unit 组织单元
+dn: Distinguished Name
+dc: Domain Component
+cn: Common Name
+objectClass
+
+docker run -p 389:389 -p 636:636 --name myopenldap --detach osixia/openldap:latest
+docker exec myopenldap ldapsearch -x -H ldap://localhost -b dc=example,dc=org -D "cn=admin,dc=example,dc=org" -w admin
+
+LdapAdmin.exe
+
+docker run -p 6443:443 \
+        --name phpldapadmin \
+        --add-host "paper.com:192.168.45.73" \
+        --env PHPLDAPADMIN_LDAP_HOSTS=paper.com \
+        --detach osixia/phpldapadmin:latest
+https://192.168.161.129:6443/
+
+cd /home/thomas/golang/src/github.com/eryajf/go-ldap-admin/docs/docker-compose
+docker compose up -d
+http://192.168.161.129:8090
+admin 123456
+http://192.168.161.129:8091
+cn=admin,dc=eryajf,dc=net
+123456
+
+sudo apt-get install ldap-utils libpam-ldap libnss-ldap nslcd
+sudo apt-get install libpam0g-dev libpam-cracklib
+pam Pluggable Authentication Modules
+
+slapacl/slapadd/slapauth/slapcat/slapd/slapdn/slapindex/slapmodify/slappasswd/slapschema/slaptest
+ldapcompare/ldapexop/ldapmodify/ldapmodrdn/ldappasswd/ldapurl
+
+sudo apt-get install slapd ldap-utils
+#dpkg-reconfigure slapd
+/etc/ldap
+
+BASE  dc=andrea,dc=com
+URI ldap://127.0.0.1:389
+
+sudo ufw allow proto tcp from any to 127.0.0.1 port 389
+sudo ufw allow proto tcp from any to 127.0.0.1 port 636
+sudo gufw
+sudo systemctl stop slapd.service
+sudo systemctl start slapd.service
+sudo systemctl status slapd.service
+ldapsearch -x -LLL -b dc=andrea,dc=com
+
+ldapadd -H ldap://192.168.161.129:388 -D "cn=admin,dc=eryajf,dc=net" -w 123456 -f demo.ldif
+ldapdelete -x -H ldap://192.168.161.129:388 -D "cn=admin,dc=eryajf,dc=net" -w 123456 "cn=synoconf,dc=eryajf,dc=net"
+
+ldapsearch -x -H ldap://192.168.161.129:388 -b "dc=eryajf,dc=net" -D "cn=admin,dc=eryajf,dc=net" -w 123456
+ldapwhoami -x -H ldap://192.168.161.129:388 -D "cn=admin,dc=eryajf,dc=net" -w 123456
+
+ldapsearch -H ldap://paper.com -D "Administrator@paper.com" -w 137170Wang,
+ldapsearch -x -H ldap://paper.com -D "Administrator@paper.com" -b "dc=paper,dc=com" -w xxx
+ldapsearch -x -H ldap://paper.com -D "Administrator@paper.com" -b "dc=paper,dc=com" -w xxx objectClass=user
+
+Active Directory
+安装windows server虚拟机
+安装AD DNS
+测试安装:
+netdom query fsmo
+DCDIAG /a
+tasklist | findstr "dns"
+netstat -ano -p TCP | findstr "389"
+netstat -ano | findstr "123"
+tasklist | findstr "932"
+
+apt list --installed
+pstree -aup
+ps aux
+ps -A
+ps -e
+pgrep ssh
+pkill vim
+killall vim
+systemd-analyze
+systemd-analyze blame
+systemctl list-dependencies sshd.service
+systemctl cat sshd.service
+systemctl edit nginx.service
+systemctl edit --full nginx.service
+systemctl list-dependencies multi-user.target
+systemctl get-default
+
+[Unit]
+After=network.target sshd-keygen.service
+Wants=sshd-keygen.service 弱依赖
+Requires 强依赖
+[Install]
+WantedBy=multi-user.target
+
+shell:
+echo $?
+ps -o pgid= 123
+
+sudo apt install libblkid-dev
+
+deb:
+sudo apt install dpkg
+/var/cache/apt/archives
+apt download tree
+dpkg -c tree_1.8.0-1+b1_amd64.deb
+sudo dpkg -i tree_1.8.0-1+b1_amd64.deb
+dpkg -I tree_1.8.0-1+b1_amd64.deb
+dpkg --info tree_1.8.0-1+b1_amd64.deb
+dpkg -e tree_1.8.0-1+b1_amd64.deb
+dpkg -s tree
+dpkg -L tree
+sudo dpkg -r tree
+sudo dpkg -P tree
+dpkg -S /usr/bin/tree
+dpkg -X tree_1.8.0-1+b1_amd64.deb tmpdir
+sudo dpkg --unpack tree_1.8.0-1+b1_amd64.deb
+
+dpkg-deb --contents tree_1.8.0-1+b1_amd64.deb
+dpkg-deb --info tree_1.8.0-1+b1_amd64.deb
+dpkg-deb --field tree_1.8.0-1+b1_amd64.deb
+dpkg-deb --control tree_1.8.0-1+b1_amd64.deb
+dpkg-deb --extract tree_1.8.0-1+b1_amd64.deb tmpdir
+dpkg-deb --raw-extract tree_1.8.0-1+b1_amd64.deb tmpdir
+
+dpkg-deb -b xxx xxx.deb
+dpkg-deb --build --root-owner-group faker_0.2-5_amd64
+
+sudo dpkg -i --root=dir01 tmpdir3.deb
+sudo dpkg -i --root=dir02 --force-all redis-server_5%3a6.0.16-1+deb11u2_amd64.deb
+sudo rm -rf dir02
+mkdir dir02
+sudo dpkg -i --root=dir02 --force-depends redis-server_5%3a6.0.16-1+deb11u2_amd64.deb
+sudo dpkg -i --root=dir02 --force-all redis-server_5%3a6.0.16-1+deb11u2_amd64.deb
+sudo dpkg -i --admindir=/home/thomas/download/tmp/dir02/var/lib/dpkg --root=/home/thomas/download/tmp/dir02 --instdir=/home/thomas/download/tmp/dir02 --force-depends redis-server_5%3a6.0.16-1+deb11u2_amd64.deb
+sudo dpkg -i --admindir=/home/thomas/download/tmp/dir02/var/lib/dpkg --root=/home/thomas/download/tmp/dir02 --instdir=/home/thomas/download/tmp/dir02 --force-all redis-server_5%3a6.0.16-1+deb11u2_amd64.deb
+sudo dpkg -i --instdir=dir02 --force-depends redis-server_5%3a6.0.16-1+deb11u2_amd64.deb
+sudo dpkg -i --instdir=dir02 --force-all redis-server_5%3a6.0.16-1+deb11u2_amd64.deb
+
+dpkg --configure xxx
+
+control
+preinst
+postinst
+prerm
+postrm
+
+apt-cache depends tree
+apt-get download $(apt-cache depends --recurse --no-recommends --no-suggests --no-conflicts --no-breaks --no-replaces --no-enhances --no-pre-depends tree | grep -v i386 | grep "^\w")
+
+apt show clamav
+apt info clamav
+sudo dpkg --remove --force-remove-reinstreq redis-server
+
+clamav:
+Malwares恶意软件
+sudo apt install clamav clamav-daemon libclamav-dev
+
+systemctl status clamav-freshclam
+systemctl status clamav-daemon
+
+sigtool -i daily.cvd
+freshclam
+clambc
+clamconf
+clamd
+clamdscan
+clamdtop
+clamonacc
+clamscan
+clamsubmit
+
+sudo vim /etc/clamav/clamd.conf
+sudo vim /etc/clamav/freshclam.conf
+
+sudo systemctl stop clamav-freshclam
+sudo freshclam
+https://database.clamav.net/daily.cvd
+cp daily.cvd /var/lib/clamav/daily.cvd
+sudo systemctl start clamav-freshclam
+
+clamscan -v --infected --recursive /home/thomas
+clamscan -r /home/thomas/download
+clamscan -r --bell -i /home/thomas/download
+sudo clamscan --infected --recursive --remove /
+
+sigtool --md5 /home/thomas/project/log_serv/log_serv > /var/lib/clamav/test.hdb
+clamscan -v --infected -d test.hdb --tempdir=/home/thomas/download/clamav/tmp -r virus
+clamscan -v --infected -d test.hdb --move=/home/thomas/download/clamav/danger -r virus
+clamscan -v --infected -d test.hdb --remove -r virus
+
+1.后台自动扫描
+2.下载的文件扫描
+c++
+cgo
+扫描所有共享目录
+扫描指定路径
+扫描系统
+隔离区
+日志
+白名单
+指定文件类型
+更新病毒库
+定时扫描
+
+iconv:
+iconv --from-code=UTF-8 --to-code=GBK --output=gbk1.txt utf8.txt
+iconv --from-code=UTF-8 --to-code=BIG5 --output=BIG5.txt utf8.txt
+hexdump -C gbk.txt
+hexdump -C gbk1.txt
