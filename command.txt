@@ -15,6 +15,8 @@ cat /etc/passwd
 userdel -r thomas
 chroot
 
+groupmems --group admin --list
+
 sudo groupadd redking
 sudo adduser --group redking2
 sudo addgroup redking3
@@ -51,11 +53,15 @@ sudo service smbd restart
 
 sudo pdbedit -L
 testparm
+net use
 net use \\192.168.45.37\IPC$ /del
 net use \\192.168.45.37\public /del
 net use * /del
 
 sudo smbpasswd -x username
+
+smbpasswd -D 10 -a thomas
+smbpasswd -c /etc/samba/smbglb.conf -a hair
 
 sudo apt-get install smbclient
 smbclient -L //192.168.45.37 -U thomas
@@ -3837,7 +3843,7 @@ kubectl exec -it $POD_NAME -n ingress-nginx -- /nginx-ingress-controller --versi
 
 Istio:
 control plane,data plane,Envoy,sidecar,Mixer,Pilot,Galley,Citadel
-iostat -k -x 1 3
+iostat -k -x 1 100
 
 Envoy:
 docker pull envoyproxy/envoy:v1.11.1
@@ -5581,11 +5587,15 @@ rpcbind是NFS中用来进行消息通知的服务
 mount,像操作文件系统一样操作NFS
 
 sudo apt install nfs-kernel-server
-#sudo apt install nfs-common
 
 sudo vim /etc/exports
 /home/thomas/download *(rw,sync,no_root_squash,no_subtree_check)
 /home/thomas/download 192.168.45.85(rw,sync,no_root_squash,no_subtree_check)
+
+/exports             gss/krb5p(rw,insecure,sync,wdelay,no_subtree_check,fsid=0,no_root_squash,anonuid=65534,anongid=65534)
+/exports/distros     gss/krb5p(ro,insecure,sync,wdelay,no_subtree_check,nohide,no_root_squash,anonuid=65534,anongid=65534)
+/export       192.168.1.0/24(rw,fsid=0,no_subtree_check,sync)
+/export/users 192.168.1.0/24(rw,nohide,insecure,no_subtree_check,sync)
 
 sudo vim /etc/default/nfs-kernel-server
 sudo vim /etc/default/nfs-common
@@ -5594,28 +5604,96 @@ root_squash: root用户转成匿名用户
 no_root_squash: root用户保留root权限
 all_squash: 所有用户转成匿名用户
 
-sudo systemctl restart nfs-kernel-server
-systemctl status nfs-kernel-server
-
 sudo vim /etc/fstab
 host_ip:/home /nfs/home nfs auto,nofail,noatime,nolock,intr,tcp,actimeo=1800 0 0
 
-sudo mount -t nfs 192.168.45.37:/home/thomas/download /mnt
-sudo umount /mnt
-sudo exportfs -arv
+sudo mount -t nfs 192.168.78.144:/volume1/rainbow /home/thomas/apple/dir01
+sudo mount -t nfs4 192.168.78.144:/volume1/rainbow /home/thomas/apple/dir01
+sudo mount.nfs 192.168.78.144:/volume1/rainbow /home/thomas/apple/dir01
+sudo mount.nfs4 192.168.78.144:/volume1/rainbow /home/thomas/apple/dir01
+
+sudo mount.nfs4 192.168.78.144:/rainbow /home/thomas/apple/dir01
+sudo mount.nfs4 192.168.78.144:/lonely /home/thomas/apple/dir02
+
+sudo umount /home/thomas/apple/dir01
+sudo umount.nfs /home/thomas/apple/dir01
+sudo umount.nfs4 /home/thomas/apple/dir01
+sudo mount.nfs -v -o vers=3,proto=udp,mountproto=udp 192.168.78.144:/volume1/bigbang /home/thomas/apple/dir02
+
+CONFIG_NFS_DISABLE_UDP_SUPPORT=y
+
+exportfs -arv
 showmount -e
-showmount -e 192.168.45.37
+showmount -e 192.168.78.144
 nfsstat -s
-df -h
+fsck
+findmnt
+
+NFSv4 virtual root directory fsid=0
+
+cat /proc/fs/nfsd/versions
+cat /proc/fs/nfsd/exports
+
+systemctl restart rpc-statd
+systemctl status rpc-statd
+systemctl restart nfs-kernel-server
+systemctl status nfs-kernel-server
+rpc.nfsd
+rpc.mountd
+rpc.idmapd
+rpcinfo
+rpcinfo -p | grep nfs
+rpcctl
+rpcbind
+rpcclient
+rpcdebug
+
+nlockmgr
+portmapper
+
+nfsconf
+nfsdcld
+nfsdclddb
+nfsdclnts
+nfsdcltrack
+nfsidmap
+nfsiostat
+nfsstat
+
+sysctl -a | grep nfs
 
 cat /etc/mtab
 cat /etc/idmapd.conf
 cat /proc/filesystems
-mount.nfs
-umount.nfs
-nfsmount.conf
-fsck
-findmnt
+/etc/nfs.conf
+/etc/nfs.conf.d
+/etc/nfsmount.conf
+/etc/nfsmount.conf.d
+/etc/exports
+/etc/exports.d
+/var/lib/nfs/etab
+/var/lib/nfs/rmtab
+
+systemctl restart nfs-kernel-server
+systemctl stop nfs-kernel-server
+systemctl status nfs-kernel-server
+
+apt remove nfs-kernel-server
+apt remove nfs-common
+apt --purge remove nfs-kernel-server
+apt purge nfs-kernel-server
+
+apt autoremove
+apt clean && apt autoclean
+apt upgrade
+
+apt install nfs-kernel-server
+
+apt reinstall nfs-kernel-server
+
+dpkg -l
+apt-cache search nfs-kernel-server
+apt-cache show nfs-kernel-server
 
 strace:
 strace -o aaa.txt -T -tt -e trace=all -p 1111
@@ -5750,10 +5828,10 @@ timesyncd:
 timesyncd替代了ntpd的客户端的部分,不同的是timesyncd一检查到时间改变就会同步
 /lib/systemd/system/systemd-timesyncd.service
 sudo apt install systemd-timesyncd
-sudo systemctl restart systemd-timesyncd.service
-sudo systemctl stop systemd-timesyncd.service
+systemctl restart systemd-timesyncd.service
+systemctl stop systemd-timesyncd.service
 systemctl status systemd-timesyncd.service
-sudo vim /etc/systemd/timesyncd.conf
+cat /etc/systemd/timesyncd.conf
 [Time]
 NTP=paper.com
 
@@ -6518,6 +6596,7 @@ sudo sssctl user-show xiaoming@paper.com
 sudo apt install ldb-tools -y
 sudo ldbsearch -H /var/lib/sss/db/cache_paper.com.ldb
 ldapsearch -x -H ldap://paper.com -D "Administrator@paper.com" -b "dc=paper,dc=com" -w 137170Wang, >> 1.txt
+ldapsearch -x -H ldap://ugdomain.com -D "Administrator@ugdomain.com" -b "CN=Domain Users,CN=Users,DC=ugdomain,DC=com" -w Aa123456
 
 cd /var/log/sssd
 
@@ -6824,7 +6903,7 @@ ftp 192.168.45.37 9843
 ftp -P 9843 192.168.45.37
 ftp ftp://thomas:180498@192.168.45.37:9843
 
-dd if=/dev/zero of=bigfile.bin bs=2M count=1024
+dd if=/dev/zero of=bigfile.bin bs=1024M count=1
 
 vsftpd:
 不区分上传和下载速度
@@ -6972,42 +7051,26 @@ AT FSD * EXECUTE fsd
 
 #CMDSCRIPT /usr/bin/upsctl
 
-通电
-断电 启用电池
-电池电量低
-电池电源耗尽 UPS关机
-
 lsusb
 systemctl restart nut-server
 systemctl restart nut-monitor
-systemctl restart nut-driver
+systemctl restart nut-driver@ups0
 
 systemctl stop nut-server
 systemctl stop nut-monitor
-systemctl stop nut-driver
+systemctl stop nut-driver@ups0
 
 systemctl status nut-server
 systemctl status nut-monitor
-systemctl status nut-driver
+systemctl status nut-driver@ups0
 
-systemctl list-dependencies nut-driver.target
-
-cd /etc/systemd/system
-cd /lib/systemd/system
-systemctl status nut-driver@ups0.service
-systemctl restart nut-driver@ups0.service
-systemctl stop nut-driver@ups0.service
-systemctl enable nut-driver@ups0.service
-systemctl disable nut-driver@ups0.service
-systemctl is-active nut-driver@ups0.service
-
-upscmd -l ups0
 upsc ups0
 upsc ups0@192.168.45.99
 upsc ups0@localhost
 nut-scanner -U
 nut-scanner -s 192.168.44.192 -e 192.168.44.192 -S
 nut-scanner -s 192.168.44.192 -e 192.168.44.192 -l noAuthNoPriv -u xiaoming -S
+upscmd -l ups0
 
 nut-driver-enumerator
 upsdrvsvcctl stop
@@ -7015,10 +7078,10 @@ nutupsdrv
 upsdrvctl
 upsd
 upsc
-upsmon
 upssched
 upssched-cmd
 upscmd
+/sbin/upsmon -DDDDD -F
 
 UPS: Uninterruptible Power Supply
 USB HID (Human Interface Device)
@@ -7143,12 +7206,15 @@ pam Pluggable Authentication Modules
 slapacl/slapadd/slapauth/slapcat/slapd/slapdn/slapindex/slapmodify/slappasswd/slapschema/slaptest
 ldapcompare/ldapexop/ldapmodify/ldapmodrdn/ldappasswd/ldapurl
 
-sudo apt-get install slapd ldap-utils
-#dpkg-reconfigure slapd
-/etc/ldap
+sudo apt install slapd ldap-utils
+sudo dpkg-reconfigure slapd
 
-BASE  dc=andrea,dc=com
+sudo vim /etc/ldap/ldap.conf
+BASE dc=ugsun,dc=com
 URI ldap://127.0.0.1:389
+
+/etc/ldap/slapd.d
+slapd.conf
 
 sudo ufw allow proto tcp from any to 127.0.0.1 port 389
 sudo ufw allow proto tcp from any to 127.0.0.1 port 636
@@ -7266,11 +7332,8 @@ clamav:
 Malwares恶意软件
 sudo apt install clamav clamav-daemon libclamav-dev
 
-systemctl status clamav-freshclam
-systemctl status clamav-daemon
-
 sigtool -i daily.cvd
-freshclam
+freshclam/cvdupdate
 clambc
 clamconf
 clamd
@@ -7282,12 +7345,17 @@ clamsubmit
 
 sudo vim /etc/clamav/clamd.conf
 sudo vim /etc/clamav/freshclam.conf
-
 sudo systemctl stop clamav-freshclam
-sudo freshclam
-https://database.clamav.net/daily.cvd
-cp daily.cvd /var/lib/clamav/daily.cvd
 sudo systemctl start clamav-freshclam
+systemctl status clamav-freshclam
+systemctl status clamav-daemon
+/var/lib/clamav
+
+https://database.clamav.net/main.cvd
+https://database.clamav.net/daily.cvd
+https://database.clamav.net/bytecode.cvd
+
+https://db.cn.clamav.net/daily.cvd
 
 clamscan -v --infected --recursive /home/thomas
 clamscan -r /home/thomas/download
@@ -7299,22 +7367,10 @@ clamscan -v --infected -d test.hdb --tempdir=/home/thomas/download/clamav/tmp -r
 clamscan -v --infected -d test.hdb --move=/home/thomas/download/clamav/danger -r virus
 clamscan -v --infected -d test.hdb --remove -r virus
 
-1.后台自动扫描
-2.下载的文件扫描
-c++
-cgo
-扫描所有共享目录
-扫描指定路径
-扫描系统
-隔离区
-日志
-白名单
-指定文件类型
-更新病毒库
-定时扫描
-
 iconv:
 iconv --from-code=UTF-8 --to-code=GBK --output=gbk1.txt utf8.txt
 iconv --from-code=UTF-8 --to-code=BIG5 --output=BIG5.txt utf8.txt
 hexdump -C gbk.txt
 hexdump -C gbk1.txt
+
+systemctl list-dependencies nut-server
