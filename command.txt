@@ -3843,7 +3843,6 @@ kubectl exec -it $POD_NAME -n ingress-nginx -- /nginx-ingress-controller --versi
 
 Istio:
 control plane,data plane,Envoy,sidecar,Mixer,Pilot,Galley,Citadel
-iostat -k -x 1 100
 
 Envoy:
 docker pull envoyproxy/envoy:v1.11.1
@@ -7374,3 +7373,33 @@ hexdump -C gbk.txt
 hexdump -C gbk1.txt
 
 systemctl list-dependencies nut-server
+
+磁盘io:
+iostat -m -x 1 100
+pidstat -d 1
+iotop -oP
+
+hdparm -Tt /dev/mapper/ug_239361_1702435068_pool1-volume1
+
+dd if=bigfile.bin of=/dev/null bs=1024M
+dd if=/dev/zero of=bigfile1.bin bs=2k count=1000000
+dd if=/dev/zero of=bigfile2.bin bs=1024M count=10
+
+网络:
+apt install vnstat iftop nethogs iperf iperf3 nload dstat
+vnstat -i eth0 -l
+iftop
+nethogs
+ip -s link
+nload
+iperf3 -s
+iperf3 -c 192.168.78.144 -p 5201
+ethtool eth0
+dstat -n
+lspci -vvv
+
+wget https://raw.github.com/sivel/speedtest-cli/master/speedtest.py
+chmod a+rx speedtest.py
+mv speedtest.py /usr/local/bin/speedtest
+chown root:root /usr/local/bin/speedtest
+apt install speedtest-cli
