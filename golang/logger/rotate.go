@@ -5,7 +5,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/natefinch/lumberjack"
+	"gopkg.in/natefinch/lumberjack.v2"
 )
 
 func do1() {

@@ -5,8 +5,8 @@ import (
 	"log"
 	"net"
 
-	pb "github.com/harveywangdao/earth/elegant/http/grpc/hello"
-	"github.com/harveywangdao/earth/elegant/logger/logger"
+	"github.com/harveywangdao/earth/golang/logger/logger"
+	pb "github.com/harveywangdao/earth/golang/net/grpc/hello"
 	"google.golang.org/grpc"
 	//"google.golang.org/grpc/metadata"
 )

@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/btcsuite/btcd/btcec"
+	btcec "github.com/btcsuite/btcd/btcec/v2"
 	"github.com/btcsuite/btcd/chaincfg/chainhash"
 	"log"
 )

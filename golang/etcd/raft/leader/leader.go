@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/harveywangdao/earth/elegant/etcd/raft/common"
+	"github.com/harveywangdao/earth/golang/etcd/raft/common"
 	"github.com/hashicorp/raft"
 )
 

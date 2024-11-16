@@ -8,7 +8,7 @@ import (
 	"github.com/justinas/alice"
 	"github.com/justinas/nosurf"
 	"github.com/throttled/throttled"
-	"github.com/throttled/throttled/store/memstore"
+	"github.com/throttled/throttled/v2/store/memstore"
 )
 
 func timeoutHandler(h http.Handler) http.Handler {

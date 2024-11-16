@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/harveywangdao/earth/elegant/etcd/raft/common"
+	"github.com/harveywangdao/earth/golang/etcd/raft/common"
 )
 
 func joincluster(leaderAddr, addr string) {
