@@ -7,7 +7,6 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/pem"
-	"io/ioutil"
 	"log"
 	"math/big"
 	"net/http"
@@ -92,16 +91,15 @@ func do2() {
 	keyPEM := pem.EncodeToMemory(&pem.Block{Type: "RSA PRIVATE KEY", Bytes: x509.MarshalPKCS1PrivateKey(key)})
 	certPEM := pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: certDER})
 
-	ioutil.WriteFile("priv.key", keyPEM, os.ModePerm)
-	ioutil.WriteFile("cert.pem", certPEM, os.ModePerm)
+	os.WriteFile("priv.key", keyPEM, os.ModePerm)
+	os.WriteFile("cert.pem", certPEM, os.ModePerm)
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/hello", func(w http.ResponseWriter, r *http.Request) {
 		log.Printf("http3 request")
 		w.Write([]byte("http3 response"))
 	})
-
-	log.Fatal(http3.ListenAndServe(":8586", "cert.pem", "priv.key", mux))
+	log.Fatal(http3.ListenAndServeQUIC(":8586", "cert.pem", "priv.key", mux))
 }
 
 func main() {

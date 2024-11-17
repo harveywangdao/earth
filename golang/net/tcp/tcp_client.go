@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-func do1() {
+func c1() {
 	conn, err := net.Dial("tcp", "127.0.0.1:8564")
 	if err != nil {
 		log.Fatal(err)
@@ -29,7 +29,7 @@ func do1() {
 	time.Sleep(time.Hour)
 }
 
-func do2() {
+func c2() {
 	var d net.Dialer
 	d.KeepAlive = 3 * time.Second
 
@@ -57,5 +57,5 @@ func do2() {
 
 func main() {
 	log.SetFlags(log.Lshortfile | log.LstdFlags)
-	do1()
+	c1()
 }

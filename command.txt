@@ -7404,3 +7404,12 @@ chmod a+rx speedtest.py
 mv speedtest.py /usr/local/bin/speedtest
 chown root:root /usr/local/bin/speedtest
 apt install speedtest-cli
+
+export http_proxy=http://172.20.10.5:25489/
+export https_proxy=https://172.20.10.5:25489/
+
+./client_linux_amd64 -r "127.0.0.1:4000" -l ":8388" -mode fast3 -nocomp -autoexpire 900 -sockbuf 16777217 -dscp 46
+./server_linux_amd64 -t "127.0.0.1:8388" -l ":4000" -mode fast3 -nocomp -sockbuf 16777217 -dscp 46
+
+client -> kcpclient -> kcpserver -> server
+              8388       4000        8388

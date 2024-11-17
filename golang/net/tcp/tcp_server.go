@@ -8,7 +8,7 @@ import (
 	"github.com/felixge/tcpkeepalive"
 )
 
-func do1() {
+func s1() {
 	lis, err := net.Listen("tcp", ":8564")
 	if err != nil {
 		log.Fatal(err)
@@ -41,7 +41,7 @@ func do1() {
 	}
 }
 
-func do2() {
+func s2() {
 	lis, err := net.Listen("tcp", ":8564")
 	if err != nil {
 		log.Fatal(err)
@@ -85,7 +85,7 @@ func do2() {
 	}
 }
 
-func do3() {
+func s3() {
 	lis, err := net.Listen("tcp", ":8564")
 	if err != nil {
 		log.Fatal(err)
@@ -137,5 +137,5 @@ func do3() {
 
 func main() {
 	log.SetFlags(log.Lshortfile | log.LstdFlags)
-	do1()
+	s1()
 }

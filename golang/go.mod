@@ -67,6 +67,7 @@ require (
 	github.com/throttled/throttled/v2 v2.12.0
 	github.com/timtadh/fs2 v0.1.0
 	github.com/ulule/limiter v2.2.2+incompatible
+	github.com/xtaci/kcptun v0.0.0-20241114025705-1989e91e90f2
 	go.etcd.io/etcd/client/v3 v3.5.17
 	go.uber.org/ratelimit v0.3.1
 	go.uber.org/zap v1.27.0
@@ -95,13 +96,14 @@ require (
 	github.com/cloudwego/iasm v0.2.0 // indirect
 	github.com/cockroachdb/logtags v0.0.0-20230118201751-21c54148d20b // indirect
 	github.com/cockroachdb/redact v1.1.5 // indirect
+	github.com/coreos/go-iptables v0.7.0 // indirect
 	github.com/coreos/go-semver v0.3.0 // indirect
 	github.com/coreos/go-systemd/v22 v22.5.0 // indirect
 	github.com/crackcomm/go-gitignore v0.0.0-20170627025303-887ab5e44cc3 // indirect
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.1.0 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
-	github.com/fatih/color v1.13.0 // indirect
+	github.com/fatih/color v1.18.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.3 // indirect
 	github.com/getsentry/sentry-go v0.27.0 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
@@ -111,7 +113,9 @@ require (
 	github.com/go-task/slim-sprig v0.0.0-20230315185526-52ccab3ef572 // indirect
 	github.com/goccy/go-json v0.10.2 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
+	github.com/golang/snappy v0.0.4 // indirect
 	github.com/gomodule/redigo v2.0.0+incompatible // indirect
+	github.com/google/gopacket v1.1.19 // indirect
 	github.com/google/pprof v0.0.0-20221203041831-ce31453925ec // indirect
 	github.com/gorilla/context v1.1.2 // indirect
 	github.com/gorilla/securecookie v1.1.2 // indirect
@@ -122,7 +126,8 @@ require (
 	github.com/ipfs/go-cid v0.4.1 // indirect
 	github.com/jonboulle/clockwork v0.1.1-0.20190114141812-62fb9bc030d1 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
-	github.com/klauspost/cpuid/v2 v2.2.7 // indirect
+	github.com/klauspost/cpuid/v2 v2.2.8 // indirect
+	github.com/klauspost/reedsolomon v1.12.4 // indirect
 	github.com/kr/pretty v0.3.1 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
@@ -154,6 +159,8 @@ require (
 	github.com/rogpeppe/go-internal v1.11.0 // indirect
 	github.com/rs/xid v1.5.0 // indirect
 	github.com/spaolacci/murmur3 v1.1.0 // indirect
+	github.com/templexxx/cpu v0.1.1 // indirect
+	github.com/templexxx/xorsimd v0.4.3 // indirect
 	github.com/tidwall/btree v1.4.2 // indirect
 	github.com/tidwall/buntdb v1.3.2 // indirect
 	github.com/tidwall/gjson v1.14.3 // indirect
@@ -162,8 +169,12 @@ require (
 	github.com/tidwall/pretty v1.2.0 // indirect
 	github.com/tidwall/rtred v0.1.2 // indirect
 	github.com/tidwall/tinyqueue v0.1.1 // indirect
+	github.com/tjfoc/gmsm v1.4.1 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.2.12 // indirect
+	github.com/xtaci/kcp-go/v5 v5.6.18 // indirect
+	github.com/xtaci/qpp v1.1.17 // indirect
+	github.com/xtaci/tcpraw v1.2.31 // indirect
 	go.etcd.io/etcd/api/v3 v3.5.17 // indirect
 	go.etcd.io/etcd/client/pkg/v3 v3.5.17 // indirect
 	go.uber.org/mock v0.4.0 // indirect

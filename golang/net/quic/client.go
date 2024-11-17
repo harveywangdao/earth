@@ -11,12 +11,12 @@ import (
 	"github.com/quic-go/quic-go/http3"
 )
 
-func do1() {
+func cl1() {
 	tlsConf := &tls.Config{
 		InsecureSkipVerify: true,
 		NextProtos:         []string{"quic-echo-example"},
 	}
-	session, err := quic.DialAddr("localhost:8586", tlsConf, nil)
+	session, err := quic.DialAddr(context.Background(), "localhost:8586", tlsConf, nil)
 	if err != nil {
 		log.Println(err)
 		return
@@ -45,14 +45,14 @@ func do1() {
 	log.Printf("Client: Got size: %d, msg: '%s'", n, string(buf[:n]))
 }
 
-func do2() {
+func cl2() {
 	roundTripper := &http3.RoundTripper{
 		TLSClientConfig: &tls.Config{
 			//RootCAs:            pool,
 			InsecureSkipVerify: true,
 			//KeyLogWriter:       keyLog,
 		},
-		QuicConfig: &quic.Config{},
+		//QuicConfig: &quic.Config{},
 	}
 	defer roundTripper.Close()
 
@@ -77,5 +77,5 @@ func do2() {
 
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
-	do2()
+	cl2()
 }
