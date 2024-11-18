@@ -7409,7 +7409,30 @@ export http_proxy=http://172.20.10.5:25489/
 export https_proxy=https://172.20.10.5:25489/
 
 ./client_linux_amd64 -r "127.0.0.1:4000" -l ":8388" -mode fast3 -nocomp -autoexpire 900 -sockbuf 16777217 -dscp 46
-./server_linux_amd64 -t "127.0.0.1:8388" -l ":4000" -mode fast3 -nocomp -sockbuf 16777217 -dscp 46
+./server_linux_amd64 -t "127.0.0.1:8080" -l ":4000" -mode fast3 -nocomp -sockbuf 16777217 -dscp 46
 
 client -> kcpclient -> kcpserver -> server
-              8388       4000        8388
+              8388       4000        8080
+
+frp:
+vim frps.toml
+bindPort = 7000
+
+./frps -c ./frps.toml
+
+vim frpc.toml
+serverAddr = "public ip"
+serverPort = 7000
+
+[[proxies]]
+name = "ssh"
+type = "tcp"
+localIP = "127.0.0.1"
+localPort = 22
+remotePort = 6000
+
+./frpc -c ./frpc.toml
+
+ssh -p 6000 thomas@ip
+
+172.20.10.9:9297/113.84.40.91:46329 -> 47.239.67.241:9298
