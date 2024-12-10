@@ -27,25 +27,25 @@ var connectLostHandler mqtt.ConnectionLostHandler = func(client mqtt.Client, err
 }
 
 func brokerServer() {
-	broker := "broker.emqx.io"
-	port := 1883
+	mqtt.DEBUG = log.New(os.Stdout, "DEBUG ", log.Llongfile|log.LstdFlags)
+	mqtt.ERROR = log.New(os.Stdout, "ERROR ", log.Llongfile|log.LstdFlags)
 	opts := mqtt.NewClientOptions()
-	opts.AddBroker(fmt.Sprintf("tcp://%s:%d", broker, port))
+	opts.AddBroker("tcp://192.168.43.239:1883")
 	opts.SetClientID("go_mqtt_client")
-	opts.SetUsername("emqx")
-	opts.SetPassword("public")
+	//opts.SetUsername("emqx")
+	//opts.SetPassword("public")
 	opts.SetDefaultPublishHandler(messagePubHandler)
 	opts.OnConnect = connectHandler
 	opts.OnConnectionLost = connectLostHandler
 	client := mqtt.NewClient(opts)
 	if token := client.Connect(); token.Wait() && token.Error() != nil {
-		log.Println(token.Error())
+		log.Fatal(token.Error())
 	}
 
 	sub(client)
 	publish(client)
 
-	client.Disconnect(250)
+	//client.Disconnect(250)
 }
 
 func NewTlsConfig() *tls.Config {
@@ -91,14 +91,14 @@ func brokerServer2() {
 
 func sub(client mqtt.Client) {
 	topic := "topic/test"
-	token := client.Subscribe(topic, 1, nil)
-	token.Wait()
+	if token := client.Subscribe(topic, 1, nil); token.Wait() && token.Error() != nil {
+		log.Fatal(token.Error())
+	}
 	log.Printf("Subscribed to topic %s", topic)
 }
 
 func publish(client mqtt.Client) {
-	num := 10
-	for i := 0; i < num; i++ {
+	for i := 0; i < 10; i++ {
 		text := fmt.Sprintf("Message %d", i)
 		token := client.Publish("topic/test", 0, false, text)
 		token.Wait()
@@ -109,4 +109,5 @@ func publish(client mqtt.Client) {
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	brokerServer()
+	time.Sleep(time.Hour)
 }

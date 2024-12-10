@@ -7535,3 +7535,25 @@ RoCE
 InfiniBand
 RoCE
 iWARP
+
+MQTT:
+docker run -d --name emqx -p 1883:1883 -p 8083:8083 -p 8084:8084 -p 8883:8883 -p 18083:18083 emqx/emqx:latest
+admin/public
+docker pull emqx/mqttx-cli
+docker run -it --rm emqx/mqttx-cli
+docker pull emqx/mqttx-web
+docker run -d --name mqttx-web -p 80:80 emqx/mqttx-web
+
+ClickHouse:
+docker run -d -p 18123:8123 -p 19000:9000 --name clickhouse-server --ulimit nofile=262144:262144 clickhouse/clickhouse-server
+echo 'SELECT version()' | curl 'http://localhost:18123/' --data-binary @-
+#docker run -d -p 18123:8123 -p 19000:9000 --name clickhouse-server --ulimit nofile=262144:262144 clickhouse
+/var/lib/clickhouse/
+
+docker run -it --rm --link clickhouse-server:clickhouse-server --entrypoint clickhouse-client clickhouse --host clickhouse-server
+docker exec -it clickhouse-server clickhouse-client
+docker pull clickhouse/clickhouse-keeper
+docker pull clickhouse/clickhouse-client
+
+curl https://clickhouse.com/ | sh
+clickhouse-local

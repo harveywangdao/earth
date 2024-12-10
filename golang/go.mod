@@ -6,6 +6,7 @@ toolchain go1.23.3
 
 require (
 	github.com/BurntSushi/toml v1.4.0
+	github.com/ClickHouse/clickhouse-go/v2 v2.30.0
 	github.com/Unknwon/log v0.0.0-20200308114134-929b1006e34a
 	github.com/allegro/bigcache v1.2.1
 	github.com/arl/statsviz v0.6.0
@@ -84,8 +85,10 @@ require (
 )
 
 require (
+	github.com/ClickHouse/ch-go v0.61.5 // indirect
 	github.com/PuerkitoBio/boom v0.0.0-20140219125548-fecdef1c97ca // indirect
 	github.com/airbrake/gobrake/v4 v4.0.3 // indirect
+	github.com/andybalholm/brotli v1.1.1 // indirect
 	github.com/armon/go-metrics v0.4.1 // indirect
 	github.com/benbjohnson/clock v1.3.0 // indirect
 	github.com/blang/semver/v4 v4.0.0 // indirect
@@ -109,6 +112,8 @@ require (
 	github.com/gabriel-vasile/mimetype v1.4.3 // indirect
 	github.com/getsentry/sentry-go v0.27.0 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
+	github.com/go-faster/city v1.0.1 // indirect
+	github.com/go-faster/errors v0.7.1 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/go-playground/validator/v10 v10.20.0 // indirect
@@ -119,6 +124,7 @@ require (
 	github.com/gomodule/redigo v2.0.0+incompatible // indirect
 	github.com/google/gopacket v1.1.19 // indirect
 	github.com/google/pprof v0.0.0-20221203041831-ce31453925ec // indirect
+	github.com/google/uuid v1.6.0 // indirect
 	github.com/gorilla/context v1.1.2 // indirect
 	github.com/gorilla/securecookie v1.1.2 // indirect
 	github.com/hashicorp/go-immutable-radix v1.0.0 // indirect
@@ -128,6 +134,7 @@ require (
 	github.com/ipfs/go-cid v0.4.1 // indirect
 	github.com/jonboulle/clockwork v0.1.1-0.20190114141812-62fb9bc030d1 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
+	github.com/klauspost/compress v1.17.7 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.8 // indirect
 	github.com/klauspost/reedsolomon v1.12.4 // indirect
 	github.com/kr/pretty v0.3.1 // indirect
@@ -152,14 +159,18 @@ require (
 	github.com/multiformats/go-varint v0.0.7 // indirect
 	github.com/olekukonko/ts v0.0.0-20171002115256-78ecb04241c0 // indirect
 	github.com/onsi/ginkgo/v2 v2.9.5 // indirect
+	github.com/paulmach/orb v0.11.1 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.2 // indirect
 	github.com/petermattis/goid v0.0.0-20240813172612-4fcff4a6cae7 // indirect
+	github.com/pierrec/lz4/v4 v4.1.21 // indirect
 	github.com/quic-go/qpack v0.5.1 // indirect
 	github.com/rakyll/pb v0.0.0-20160123035540-8d46b8b097ef // indirect
 	github.com/redis/go-redis/v9 v9.0.5 // indirect
 	github.com/robfig/go-cache v0.0.0-20130306151617-9fc39e0dbf62 // indirect
 	github.com/rogpeppe/go-internal v1.11.0 // indirect
 	github.com/rs/xid v1.5.0 // indirect
+	github.com/segmentio/asm v1.2.0 // indirect
+	github.com/shopspring/decimal v1.4.0 // indirect
 	github.com/spaolacci/murmur3 v1.1.0 // indirect
 	github.com/templexxx/cpu v0.1.1 // indirect
 	github.com/templexxx/xorsimd v0.4.3 // indirect
@@ -178,8 +189,10 @@ require (
 	github.com/xtaci/tcpraw v1.2.31 // indirect
 	go.etcd.io/etcd/api/v3 v3.5.17 // indirect
 	go.etcd.io/etcd/client/pkg/v3 v3.5.17 // indirect
+	go.opentelemetry.io/otel v1.26.0 // indirect
+	go.opentelemetry.io/otel/trace v1.26.0 // indirect
 	go.uber.org/mock v0.4.0 // indirect
-	go.uber.org/multierr v1.10.0 // indirect
+	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/arch v0.8.0 // indirect
 	golang.org/x/exp v0.0.0-20240506185415-9bf2ced13842 // indirect
 	golang.org/x/mod v0.17.0 // indirect
