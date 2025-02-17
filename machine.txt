@@ -1,0 +1,110 @@
+1.安装环境
+Python
+Anaconda
+PyCharm
+Jupyter Notebook
+vs code
+PyTorch
+GPU NVIDIA: nvidia-smi
+CUDA Toolkit: nvcc -V
+
+conda create -n test2 python=3.12.8
+conda activate test2
+conda env list
+conda info
+conda install pytorch torchvision torchaudio cpuonly -c pytorch
+pip3 install torch torchvision torchaudio
+
+Python
+Numpy
+Scipy
+Pandas
+Scikit-learn
+PyTorch
+TensorFlow/Keras
+Caffe/MXNet
+
+机器学习、深度学习、强化学习
+opencv
+opengl
+
+机器学习
+监督学习
+回归
+均方损失函数 MSE(Mean Squared Error) MSD(mean squared deviation)
+线性回归
+分类
+K-means
+GMM 高斯混合模型
+非监督学习
+主成分分析 PCA(principal component analysis)
+因果关系 (causality)
+概率图模型 (probabilistic graphical models)
+生成对抗性网络 (generative adversarial networks)
+
+准确率 Accuracy
+精确率 Precision
+召回率 Recall
+PR曲线
+AP (Average Precision)
+
+数据集
+训练集
+验证集 收集数据 数据准备 选择模型 训练 评估 参数调整 预估
+测试集
+超参数
+过拟合
+欠拟合
+学习率
+神经网络层数
+泛化能力
+留出法
+自组法
+k折交叉验证
+L1正则化
+L2正则化
+Dropout
+
+逻辑回归 Logistic Regression 二分类问题 线性回归 sigmoid
+梯度下降算法 牛顿法
+线性回归 Linear regression
+softmax
+损失函数 loss function
+梯度下降 gradient descent
+超参数 hyperparameters
+
+BP算法 误差反向传播
+自动编码器
+多层前溃网络
+
+计算机视觉
+自然语言处理 NLP
+卷积神经网络 CNN(Convolutional Neural Networks)
+卷积层 池化层 全连接层
+深度前馈神经网络
+强化学习 奖励、惩罚
+
+生成式AI
+文本到文本
+文本到图像
+文本到视频
+文本到代码
+文本转语音
+图片转文字
+
+支持向量机SVM
+循环神经网络RNN
+深度神经网络DNN
+ReLU Rectified Linear Units 激活函数
+LSTM
+
+特征向量
+Transformer
+大语言模型 LLM
+
+理论书
+实践书
+理论视频
+实践视频
+网上文章
+github上文章
