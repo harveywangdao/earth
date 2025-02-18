@@ -2481,16 +2481,16 @@ Python Django/Tornado/flask/CMS/Mezzanine/Scrapy SQLAlchemy
 C++ STL boost cocos2d Lua rust Boost.Asio libevent libev libuv libco Boost.Beast
 C glibc/coreutils/Webbench/Tinyhttpd/cJSON/CMockery/Libev bzip2 OpenSSL/SSH libevent
 Linux shell makefile/cmake signal network/NetLink 进程/线程 线程池 安全 IPC(共享内存/管道/FIFO/消息队列/unix域套接字/mmap/dbus) 同步(信号量/互斥锁/读写锁/条件变量/自旋锁) socket(tcp/udp) 文件io(fopen/fclose/fread/fwrite/open/create/close/lseek/read/write/stat/fstat) io多路复用(epoll/select/poll) fcntl ioctl dup/dup2 sendfile
-文件系统 VFS/OpenZFS/XFS/EXT2/EXT3/EXT4/NFS/CIFS/FUSE Ramdisk/tmpfs/ramfs UnionFS/AUFS/Overlay2/DeviceMapper/Btrfs
+文件系统 VFS/OpenZFS/XFS/EXT2/EXT3/EXT4/NFS/CIFS/FUSE Ramdisk/tmpfs/ramfs UnionFS/AUFS/Overlay2/DeviceMapper/Btrfs SMB
 数据库 MySQL/MariaDB/PostgreSQL/sqlite/TiDB Redis MongoDB
 Prometheus Grafana InfluxDB OpenTSDB pushgateway alertmanager
 ElasticSearch Logstash Kibana FileBeat Flume Fluentd loki
 Etcd/Consul/Nomad/Zookeeper
 Kafka/RabbitMQ/RocketMQ/NSQ/MQTT/ActiveMQ/ZeroMQ/CMQ/Pulsar strimzi-kafka-operator 
-Ceph/GlusterFS/MinIO/ChubaoFS/SeaweedFS/FastDFS/MogileFS/S3/MooseFS/Lustre/GFS/Juicefs
+Ceph/GlusterFS/MinIO/ChubaoFS/SeaweedFS/FastDFS/MogileFS/S3/MooseFS/Lustre/GFS/Juicefs/alluxio
 Graphql Promethues CockroachDB rqlite dqlite yugabyte vitess Cassandra TiKV FoundationDB GreenPlum ClickHouse Neo4j Dgraph Cayley nebula rook OpenEBS Longhorn LevelDB goleveldb RocksDB Pebble BadgerDB BoltDB BuntDB nutsdb CouchDB Couchbase OceanBase BigTable pika ssdb tidis ramsql memsql summitdb Genji go-memdb
 Nginx Envoy MOSN KrakenD lura ingress-nginx Ambassador Gloo HAProxy Ingress Kong Traefik Ingress Controller LVS(NAT/DR/TUN) IPVS Keepalived
-网络 IP TCP UDP HTTP HTTPS HTTP/2 HTTP/3 QUIC socks5 Socket JSON/Protobuf RESTful DNS session oauth2 casbin netlink netfilter websocket VPP DHCP 路由器 交换机 iptables LAN VLAN VxLAN IPsec SMTP FTP TFTP Telnet SNMP IGMP 广播 多播 组播 RIP CIDR ICMP ARP RARP BGP OSPF NAT VPN SDN NFV Overlay Openvswitch OpenDaylight OpenFlow DPDK SPDK NUMA RDMA
+网络 IP TCP UDP HTTP HTTPS HTTP/2 HTTP/3 QUIC socks5 Socket JSON/Protobuf RESTful DNS session oauth2 casbin netlink netfilter websocket VPP DHCP 路由器 交换机 iptables LAN VLAN VxLAN IPsec SMTP FTP TFTP Telnet SNMP IGMP 广播 多播 组播 RIP CIDR ICMP ARP RARP BGP OSPF NAT VPN SDN NFV Overlay Openvswitch OpenDaylight OpenFlow DPDK SPDK NUMA RDMA frp P2P
 容器 Docker/Docker Compose/Docker Swarm/Mesos
 容器网络 Flannel Calico Canal Cilium Weave Kube-OVN CoreDNS NATS cni eBPF
 容器运行时 cri-o kata container containerd rkt frakti
