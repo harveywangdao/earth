@@ -2535,5 +2535,5 @@ QNX
 区块链 web3 IPFS 量化
 人工智能 AI 机器学习 深度学习 PyTorch/TensorFlow opencv 自动驾驶 RAG agent LLM大模型 AIGC
 机器人 ROS C++ QT
-音视频 WebRTC 短视频/直播 ffmpeg
+音视频 流媒体 WebRTC 短视频/直播 ffmpeg
 云计算 容器 docker k8s istio serverless OpenStack KVM/QEMU
