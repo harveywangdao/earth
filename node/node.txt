@@ -1,0 +1,58 @@
+Ubuntu安装node.js
+export http_proxy="http://192.168.79.47:10811"
+export https_proxy="http://192.168.79.47:10811"
+
+sudo vim /etc/apt/apt.conf
+Acquire::http::proxy "http://192.168.79.47:10811";
+Acquire::https::proxy "http://192.168.79.47:10811";
+
+curl -fsSL https://deb.nodesource.com/setup_16.x | sudo -E bash - && sudo apt-get install -y nodejs
+node -v
+npm -v
+#sudo apt-get install npm yarn -y
+sudo apt-get install yarn -y
+yarn --version
+
+sudo npm config set proxy http://192.168.79.47:10811
+sudo npm config set https-proxy http://192.168.79.47:10811
+#npm config set registry http://registry.npmjs.org
+#npm config delete proxy
+#npm config delete https-proxy
+sudo npm config list
+npm help config
+
+sudo npm install -g grunt-cli
+grunt --version
+sudo npm install -g pkg
+sudo npm install -g cnpm --registry=https://registry.npm.taobao.org
+sudo npm uninstall -g cnpm
+
+node.js开发环境
+vscode
+
+CommonJS模块使用require()加载和module.exports输出
+ES6模块使用import和export
+
+npm
+npm init
+npm install package-name
+npm install
+npm update package-name
+npm uninstall package-name
+npm list
+
+async/await/Promise/then/catch
+async用于声明一个异步函数，该函数会自动返回一个Promise
+await用于等待一个Promise完成，并返回其结果，只能在async函数内部使用
+让异步代码更加简洁和易读，避免了回调地狱
+
+function*
+yield
+yield*
+co(function* () {})
+
+new
+
+TypeScript
+
+prototype
