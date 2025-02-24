@@ -7584,3 +7584,13 @@ taosBenchmark -y
 taos
 SELECT COUNT(*) FROM test.meters;
 SELECT AVG(current), MAX(voltage), MIN(phase) FROM test.meters;
+
+cat /proc/sys/vm/swappiness
+sysctl -a | grep swappiness
+fallocate -l 8G /swapfile
+chmod 0600 /swapfile
+mkswap /swapfile
+swapon /swapfile
+free -h
+echo "/swapfile swap swap defaults 0 0" >> /etc/fstab
+swapoff /swap
