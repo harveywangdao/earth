@@ -56,3 +56,9 @@ new
 TypeScript
 
 prototype
+
+typeof
+instanceof
+
+npx
+sudo npm install -g npx
