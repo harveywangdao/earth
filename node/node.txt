@@ -81,3 +81,17 @@ node-profiler
 
 内存泄漏
 全局变量,闭包引用,事件绑定,缓存爆炸
+
+package.json
+
+Function.prototype.bind() 返回的是函数，参数和call一样
+Function.prototype.call() 参数是逗号分开 func.call(this, arg1, arg2);
+Function.prototype.apply() 参数都放在一个数组 func.apply(this, [arg1, arg2])
+call和apply为了改变函数体内部this的指向
+
+Array.prototype.slice()
+Array.prototype.slice.call
+
+Object.keys() 返回一个由给定对象自身的可枚举的字符串键属性名组成的数组
+Object.values()
+Object.create() 以一个现有对象作为原型，创建一个新对象
