@@ -95,3 +95,11 @@ Array.prototype.slice.call
 Object.keys() 返回一个由给定对象自身的可枚举的字符串键属性名组成的数组
 Object.values()
 Object.create() 以一个现有对象作为原型，创建一个新对象
+
+require
+module.exports = sayHello;
+module.exports = { add, subtract };
+default export
+
+import
+import { member } from 'modulePath'

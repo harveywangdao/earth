@@ -1,0 +1,413 @@
+onlyoffice:
+core: office内核,c++,QT,boost
+sdkjs: 公共库
+server: 服务端,node.js
+web-apps: 前端
+dictionaries: for spellchecking
+sdkjs-plugins
+字体
+兼容性
+WOPI protocol
+
+Docker安装:
+docker run -itd -p 8081:80 --restart=always -e JWT_SECRET=my_jwt_secret --name onlyofficeserver onlyoffice/documentserver
+docker exec onlyofficeserver sudo supervisorctl start ds:example
+http://192.168.45.85:8081/
+docker exec onlyofficeserver /var/www/onlyoffice/documentserver/npm/json -f /etc/onlyoffice/documentserver/local.json 'services.CoAuthoring.secret.session.string'
+docker exec onlyofficeserver sudo sed 's,autostart=false,autostart=true,' -i /etc/supervisor/conf.d/ds-example.conf
+
+DEB安装:
+sudo apt install postgresql -y
+sudo su postgres
+psql -c "CREATE USER onlyoffice WITH PASSWORD 'onlyoffice';"
+psql -c "CREATE DATABASE onlyoffice OWNER onlyoffice;"
+exit
+
+sudo apt install rabbitmq-server -y
+echo onlyoffice-documentserver onlyoffice/ds-port select 8080 | sudo debconf-set-selections
+sudo apt install gpg curl -y
+mkdir -p -m 700 ~/.gnupg
+curl -fsSL https://download.onlyoffice.com/GPG-KEY-ONLYOFFICE | gpg --no-default-keyring --keyring gnupg-ring:/tmp/onlyoffice.gpg --import
+chmod 644 /tmp/onlyoffice.gpg
+sudo chown root:root /tmp/onlyoffice.gpg
+sudo mv /tmp/onlyoffice.gpg /usr/share/keyrings/onlyoffice.gpg
+echo "deb [signed-by=/usr/share/keyrings/onlyoffice.gpg] https://download.onlyoffice.com/repo/debian squeeze main" | sudo tee /etc/apt/sources.list.d/onlyoffice.list
+sudo apt update
+sudo apt install ttf-mscorefonts-installer -y
+sudo apt install onlyoffice-documentserver -y
+
+wget http://download.onlyoffice.com/docs/docs-install.sh
+sudo su
+bash docs-install.sh
+
+源码构建:
+https://helpcenter.onlyoffice.com/installation/docs-community-compile.aspx
+
+mkdir /home/thomas/build
+cd /home/thomas/build
+git clone https://github.com/ONLYOFFICE/build_tools.git
+#git checkout v8.0.1.31
+#docker run -itd --cpus=3 --blkio-weight 800 -v $PWD:/build --name ubuntu01 ubuntu:16.04
+docker run -itd -v $PWD:/build --name ubuntu01 ubuntu:16.04
+docker run -itd -v $PWD:/build --name ubuntu01 ubuntu:18.04
+docker exec -it ubuntu01 bash
+cd /build/build_tools/tools/linux
+#rm -rf node_js_setup_14.x packages_complete
+apt-get update && apt-get install python git sudo vim tree -y
+./automate.py server
+./automate.py server --platform="linux_arm64"
+./automate.py server --branch=v8.2.2.26 --platform="linux_arm64"
+
+编译ARM版:
+vim /build/build_tools/tools/linux/automate.py
+amd64->arm64
+
+mkdir /root/office
+cd /root/office
+apt install ninja-build clang -y
+#https://gn.googlesource.com/gn.git
+git clone https://github.com/wangzq0807/gn.git
+#python3 build/gen.py --allow-warning
+./build/gen.py
+ninja -C out
+out/gn_unittests
+cp /root/office/gn/out/gn /build/core/Common/3dParty/v8_89/v8/buildtools/linux64/gn
+#/build/core/Common/3dParty/v8_89/v8/third_party/ninja/ninja
+
+apt install wget
+wget https://github.com/llvm/llvm-project/releases/download/llvmorg-12.0.1/clang+llvm-12.0.1-aarch64-linux-gnu.tar.xz
+xz -d clang+llvm-12.0.1-aarch64-linux-gnu.tar.xz
+tar -xvf clang+llvm-12.0.1-aarch64-linux-gnu.tar
+mv clang+llvm-12.0.1-aarch64-linux-gnu clang12
+#apt-get install clang-12
+#wget https://apt.llvm.org/llvm.sh
+#chmod u+x llvm.sh
+#sudo ./llvm.sh 12
+
+vim /build/build_tools/scripts/core_common/modules/v8_89.py
+args_copy.append("clang_base_path=\\\"/root/office/clang12\\\"")
+args_copy.append("clang_use_chrome_plugins=false")
+#cd /build/core/Common/3dParty/v8_89/v8/out.gn/linux_arm64
+#cat toolchain.ninja
+#cat args.gn
+
+vim /build/build_tools/make.py
+# base.check_python()
+ls -l /usr/bin/python*
+cd /usr/bin
+rm -rf python
+ln -s python3.6 python
+#ln -s python2.7 python
+
+apt-get install optipng
+cp /usr/bin/optipng /build/web-apps/build/node_modules/optipng-bin/vendor/optipng
+
+去掉限制:
+vim /build/server/Common/sources/constants.js
+exports.LICENSE_CONNECTIONS = 20
+vim /build/build_tools/tools/linux/automate.py
+build_tools_params = ["--update", "0"]
+
+vim /build/server/FileConverter/sources/convertermaster.js
+去掉cluster
+
+vim /build/web-apps/apps/documenteditor/main/app/controller/Toolbar.js
+false&&t.isOForm&&t.canDownload&&Common.UI.warning
+
+cd /home/thomas/build/build_tools/out/linux_64/onlyoffice/documentserver
+mv dictionaries dictionaries2
+mkdir dictionaries
+mv dictionaries2/en_US dictionaries/
+rm -rf dictionaries2
+rm -rf web-apps/apps/documenteditor/main/resources/help
+rm -rf web-apps/apps/spreadsheeteditor/main/resources/help
+rm -rf web-apps/apps/presentationeditor/main/resources/help
+rm -rf web-apps/apps/pdfeditor/main/resources/help
+rm -rf web-apps/apps/common/main/resources/help
+
+cd /home/thomas/build/build_tools/out/linux_64/onlyoffice
+tar -zcvf documentserver.tar.gz documentserver
+tar -zcvf documentserver-example.tar.gz documentserver-example
+sftp thomas@47.86.103.144
+get /home/thomas/build/build_tools/out/linux_64/onlyoffice/documentserver.tar.gz ./
+get /home/thomas/build/build_tools/out/linux_arm64/onlyoffice/documentserver.tar.gz ./
+get /home/thomas/build/build_tools/out/linux_64/onlyoffice/documentserver-example.tar.gz ./
+
+mkdir -p /var/www/onlyoffice
+tar -zxvf documentserver.tar.gz -C /var/www/onlyoffice
+tar -zxvf documentserver-example.tar.gz -C /var/www/onlyoffice
+
+cd /build/build_tools/out/linux_64/onlyoffice/documentserver
+mkdir fonts
+LD_LIBRARY_PATH=${PWD}/server/FileConverter/bin server/tools/allfontsgen \
+  --input="${PWD}/core-fonts" \
+  --allfonts-web="${PWD}/sdkjs/common/AllFonts.js" \
+  --allfonts="${PWD}/server/FileConverter/bin/AllFonts.js" \
+  --images="${PWD}/sdkjs/common/Images" \
+  --selection="${PWD}/server/FileConverter/bin/font_selection.bin" \
+  --output-web="${PWD}/fonts" \
+  --use-system="true"
+
+LD_LIBRARY_PATH=${PWD}/server/FileConverter/bin server/tools/allthemesgen \
+  --converter-dir="${PWD}/server/FileConverter/bin"\
+  --src="${PWD}/sdkjs/slide/themes"\
+  --output="${PWD}/sdkjs/common/Images"
+
+vim documentserver/server/Common/config/default.json
+{
+    "services": {
+        "CoAuthoring": {
+            "autoAssembly": {
+                "enable": true,
+                "interval": "1m"
+            },
+            "sql": {
+                "dbPort": 5437,
+                "dbUser": "postgres",
+            }
+        }
+    }
+}
+
+if (Ua && Ua.length > 5) {if (Ua.substring(0, 5) == "http:" && window.location.protocol == 'https:') {Ua = Ua.replace("http://", "https://");}};
+if (Va && Va.length > 5) {if (Va.substring(0, 5) == "http:" && window.location.protocol == 'https:') {Va = Va.replace("http://", "https://");}};
+if (Db && Db.length > 5) {if (Db.substring(0, 5) == "http:" && window.location.protocol == 'https:') {Db = Db.replace("http://", "https://");}};
+
+su - postgres -c "/usr/lib/postgresql/15/bin/pg_ctl start -D db -s -w"
+psql -h localhost -p 5437 -d onlyoffice -U postgres -f /var/www/onlyoffice/documentserver/server/schema/postgresql/createdb.sql
+su - postgres -c "/usr/lib/postgresql/15/bin/pg_ctl stop -D db -s -w"
+
+/*
+sudo apt install postgresql -y
+sudo su postgres
+psql -c "CREATE DATABASE onlyoffice;"
+psql -c "CREATE USER onlyoffice WITH password 'onlyoffice';"
+psql -c "GRANT ALL privileges ON DATABASE onlyoffice TO onlyoffice;"
+psql
+\c onlyoffice postgres
+GRANT CREATE ON SCHEMA public TO onlyoffice;
+\q
+psql -h localhost -p 5432 -d onlyoffice -U onlyoffice -f /var/www/onlyoffice/documentserver/server/schema/postgresql/createdb.sql
+exit
+*/
+
+apt install rabbitmq-server -y
+apt download erlang-asn1 erlang-base erlang-crypto erlang-eldap erlang-ftp erlang-inets erlang-mnesia erlang-os-mon erlang-parsetools erlang-public-key erlang-runtime-tools erlang-snmp erlang-ssl erlang-syntax-tools erlang-tftp erlang-tools erlang-xmerl rabbitmq-server socat
+Erlang   25.2.3
+RabbitMQ 3.10.8
+
+export NODE_ENV=development-linux
+export NODE_CONFIG_DIR=/var/www/onlyoffice/documentserver/server/Common/config
+export LD_LIBRARY_PATH=/var/www/onlyoffice/documentserver/server/FileConverter/bin
+cd /var/www/onlyoffice/documentserver/server/FileConverter
+nohup /var/www/onlyoffice/documentserver/server/FileConverter/converter >>/root/converter.log 2>&1 &
+cd /var/www/onlyoffice/documentserver/server/DocService
+nohup /var/www/onlyoffice/documentserver/server/DocService/docservice >>/root/docservice.log 2>&1 &
+
+cd /var/www/onlyoffice/documentserver-example
+mkdir files
+vim config/development-linux.json
+{
+  "server": {
+    "port": 3000,
+    "siteUrl": "http://192.168.78.92:8000/",
+    "apiUrl": "web-apps/apps/api/documents/api.js",
+    "preloaderUrl": "web-apps/apps/api/documents/cache-scripts.html"
+  }
+}
+NODE_ENV=development-linux NODE_CONFIG_DIR=$PWD/config ./example
+
+export NODE_ENV=development-linux
+export NODE_CONFIG_DIR=$PWD/config
+nohup ./example >>example.log 2>&1 &
+
+http://192.168.78.92:3000/
+http://192.168.78.92:8000/web-apps/apps/api/documents/api.js
+
+git clone https://github.com/ONLYOFFICE/document-editor-vue.git
+curl -sL https://deb.nodesource.com/setup_14.x | sudo -E bash -
+sudo apt-get install -y nodejs
+sudo npm install -g npm
+cd document-editor-vue
+npm install --save @onlyoffice/document-editor-vue
+vim config/default.json
+{
+  "documentServerUrl": "http://192.168.44.89:8000/"
+}
+npm run build-storybook
+npm run storybook
+http://192.168.44.89:6006/
+
+apt-get install --reinstall -y rabbitmq/*.deb >> /tmp/office_install.log 2>&1 || true
+apt install --reinstall -y rabbitmq/*.deb
+
+dpkg --install rabbitmq/*.deb
+dpkg --remove erlang-asn1 erlang-base erlang-crypto erlang-eldap erlang-ftp erlang-inets erlang-mnesia erlang-os-mon erlang-parsetools erlang-public-key erlang-runtime-tools erlang-snmp erlang-ssl erlang-syntax-tools erlang-tftp erlang-tools erlang-xmerl rabbitmq-server socat
+dpkg --purge erlang-asn1 erlang-base erlang-crypto erlang-eldap erlang-ftp erlang-inets erlang-mnesia erlang-os-mon erlang-parsetools erlang-public-key erlang-runtime-tools erlang-snmp erlang-ssl erlang-syntax-tools erlang-tftp erlang-tools erlang-xmerl rabbitmq-server socat
+
+apt-get install -d rabbitmq-server
+cd /var/cache/apt/archives
+apt-get download rabbitmq-server
+
+erlang-asn1 erlang-base erlang-crypto erlang-eldap erlang-ftp erlang-inets erlang-mnesia erlang-os-mon erlang-parsetools erlang-public-key erlang-runtime-tools erlang-snmp erlang-ssl erlang-syntax-tools erlang-tftp erlang-tools erlang-xmerl libsctp1 rabbitmq-server socat
+
+卸载:
+systemctl stop office_serv
+apt-get purge -y erlang-asn1 erlang-base erlang-crypto erlang-eldap erlang-ftp erlang-inets erlang-mnesia erlang-os-mon erlang-parsetools erlang-public-key erlang-runtime-tools erlang-snmp erlang-ssl erlang-syntax-tools erlang-tftp erlang-tools erlang-xmerl rabbitmq-server socat
+su - postgres -c "/usr/lib/postgresql/15/bin/pg_ctl stop -D db -s -w"
+
+psql -h localhost -p $dbport -d $dbname -U $dbuser
+su - postgres -c "/usr/lib/postgresql/15/bin/pg_ctl restart -D db -s -w"
+
+systemctl status office_serv
+netstat -ltnp | grep 5437
+systemctl status rabbitmq-server
+ps -ef | grep converter
+ps -ef | grep docservice
+ps -ef | grep office_serv
+
+pg 5437
+mq 25672 5672 4369
+serv 3302
+onlyoffice unix socket
+
+map $http_host $this_host {
+        "" $host;
+        default $http_host;
+}
+map $http_x_forwarded_proto $the_scheme {
+        default $http_x_forwarded_proto;
+        "" $scheme;
+}
+map $http_x_forwarded_host $the_host {
+        default $http_x_forwarded_host;
+        "" $this_host;
+}
+
+upstream docservice {  
+  server localhost:8000 max_fails=0 fail_timeout=0s;
+}
+
+map $http_cloudfront_forwarded_proto:$http_x_forwarded_proto $the_scheme {
+     default $scheme;
+     "~^https?:.*" $http_cloudfront_forwarded_proto;
+     "~^:https?$" $http_x_forwarded_proto;
+}
+
+map $http_x_forwarded_prefix $the_prefix {
+    default $http_x_forwarded_prefix;
+}
+
+#welcome page
+rewrite ^/$ $the_scheme://$the_host$the_prefix/welcome/ redirect;
+
+#script caching protection
+rewrite ^(?<cache>\/web-apps\/apps\/(?!api\/).*)$ $the_scheme://$the_host$the_prefix/8.0.1-31$cache redirect;
+
+#disable caching for api.js
+location ~ ^(\/[\d]+\.[\d]+\.[\d]+[\.|-][\d]+)?\/(web-apps\/apps\/api\/documents\/api\.js)$ {
+  expires -1;
+gzip_static on;
+  alias  /var/www/onlyoffice/documentserver/$2;
+}
+
+#suppress logging the unsupported locale error in web-apps
+location ~ ^(\/[\d]+\.[\d]+\.[\d]+[\.|-][\d]+)?\/(web-apps)(\/.*\.json)$ {
+  expires 365d;
+  error_log /dev/null crit;
+gzip_static on;
+  alias /var/www/onlyoffice/documentserver/$2$3;
+}
+
+#suppress logging the unsupported locale error in plugins
+location ~ ^(\/[\d]+\.[\d]+\.[\d]+[\.|-][\d]+)?\/(sdkjs-plugins)(\/.*\.json)$ {
+  expires 365d;
+  error_log /dev/null crit;
+gzip_static on;
+  alias /var/www/onlyoffice/documentserver/$2$3;
+}
+
+location ~ ^(\/[\d]+\.[\d]+\.[\d]+[\.|-][\d]+)?\/(web-apps|sdkjs|sdkjs-plugins|fonts)(\/.*)$ {
+  expires 365d;
+gzip_static on;
+  alias /var/www/onlyoffice/documentserver/$2$3;
+}
+
+location ~* ^(\/cache\/files.*)(\/.*) {
+  alias /var/lib/onlyoffice/documentserver/App_Data$1;
+  add_header Content-Disposition "attachment; filename*=UTF-8''$arg_filename";
+
+  secure_link $arg_md5,$arg_expires;
+  secure_link_md5 "$secure_link_expires$uri$secure_link_secret";
+
+  if ($secure_link = "") {
+    return 403;
+  }
+
+  if ($secure_link = "0") {
+    return 410;
+  }
+}
+
+# Allow "/internal" interface only from 127.0.0.1
+# Don't comment out the section below for the security reason!
+ location ~* ^(\/[\d]+\.[\d]+\.[\d]+[\.|-][\d]+)?\/(internal)(\/.*)$ {
+  allow 127.0.0.1;
+  deny all;
+  proxy_pass http://docservice/$2$3;
+}
+
+# Allow "/info" interface only from 127.0.0.1 by default
+# Comment out lines allow 127.0.0.1; and deny all; 
+# of below section to turn on the info page
+location ~* ^(\/[\d]+\.[\d]+\.[\d]+[\.|-][\d]+)?\/(info)(\/.*)$ {
+  allow 127.0.0.1;
+  deny all;
+  proxy_pass http://docservice/$2$3;
+}
+
+location / {
+  proxy_pass http://docservice;
+}
+
+location ~ ^(\/[\d]+\.[\d]+\.[\d]+[\.|-][\d]+)?(\/doc\/.*) {
+  proxy_pass http://docservice$2$is_args$args;
+  proxy_http_version 1.1;
+}
+
+location /8.0.1-31/ {
+  proxy_pass http://docservice/;
+}
+
+location ~ ^(\/[\d]+\.[\d]+\.[\d]+[\.|-][\d]+)?\/(dictionaries)(\/.*)$ {
+  expires 365d;
+  alias /var/www/onlyoffice/documentserver/$2$3;
+}
+
+var t=a.onerror;
+if(!a.WebgetBrowserUI){a.WebgetBrowserUI=function(){}}
+
+STSong-Light-UniGB-UCS2-H
+
+从docker容器中导出:
+tar -zcvf documentserver.tar.gz documentserver
+docker cp onlyofficeserver:/var/www/onlyoffice/documentserver.tar.gz ./
+docker cp onlyofficeserver:/etc/onlyoffice/documentserver_config.tar.gz ./
+sftp thomas@47.76.149.204
+get /home/thomas/office/documentserver.tar.gz ./
+get /home/thomas/office/documentserver_config.tar.gz ./
+
+rm -rf sdkjs/common/AllFonts.js
+rm -rf sdkjs/common/AllFonts.js.gz
+rm -rf server/FileConverter/bin/AllFonts.js
+rm -rf server/FileConverter/bin/font_selection.bin
+rm -rf sdkjs/slide/themes/theme*
+rm -rf sdkjs/common/Images/fonts_thumbnail*
+rm -rf sdkjs/common/Images/themes_thumbnail*
+rm -rf fonts
+
+find . -name "*.gz" -type f -exec rm -rf {} \;
+
+apryse:
+Web SDK
+Server SDK
