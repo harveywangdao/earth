@@ -23,7 +23,6 @@ npm help config
 
 sudo npm install -g grunt-cli
 grunt --version
-sudo npm install -g pkg
 sudo npm install -g cnpm --registry=https://registry.npm.taobao.org
 sudo npm uninstall -g cnpm
 
@@ -40,6 +39,9 @@ npm install
 npm update package-name
 npm uninstall package-name
 npm list
+
+npm install根据package.json和已有的node_modules增量更新依赖，可能导致版本不一致
+npm ci 强制清空node_modules，完全依赖package-lock.json
 
 async/await/Promise/then/catch
 async用于声明一个异步函数，该函数会自动返回一个Promise
@@ -66,9 +68,6 @@ sudo npm install -g npx
 
 垃圾回收
 标记清除算法
-node --max-old-space-size=6000 index.js
-ode --expose-gc example.js
-global.gc()
 新空间中的对象都非常小大约为1-8MB,这里的垃圾回收也很快,新生代空间中垃圾回收过程中幸存下来的对象会被提升到老生代空间
 新生代--max-new-space-size=2048,Scavenge算法,新生代空间会被一分为二划分成两个相等大小的from-space和to-space,将from space中存活的对象复制出来,然后移动它们到to space中或者被提升到老生代空间中,对于from space中没有存活的对象将会被释放,Scavenge算法非常快适合少量内存的垃圾回收,但是它有很大的空间开销,对于新生代少量内存是可以接受的
 老生代--max-old-space-size=2048
@@ -103,3 +102,37 @@ default export
 
 import
 import { member } from 'modulePath'
+
+addons
+
+sudo npm install -g pkg
+pkg app.js --target=node16 --output=myapp
+
+vim package.json
+{
+  "name": "helloapp",
+  "version": "1.0.0",
+  "description": "xxx",
+  "main": "app.js",
+  "bin": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}
+pkg .
+pkg --options expose-gc app.js
+pkg app.js --options max-old-space-size=1024,tls-min-v1.0,expose-gc
+
+{"tag":"v3.4","name":"node-v16.16.0-linux-x64"}
+mkdir /home/thomas/.pkg-cache/v3.4
+mv node-v16.16.0-linux-x64 /home/thomas/.pkg-cache/v3.4/fetched-v16.16.0-linux-x64
+
+global.gc();
+node --expose-gc app.js
+node --trace_gc --trace_gc_verbose app.js
+node --max-old-space-size=128 app.js
+--trace_gc_nvp
+node-inspector
+grunt
