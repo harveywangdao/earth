@@ -21,8 +21,6 @@ sudo npm config set https-proxy http://192.168.79.47:10811
 sudo npm config list
 npm help config
 
-sudo npm install -g grunt-cli
-grunt --version
 sudo npm install -g cnpm --registry=https://registry.npm.taobao.org
 sudo npm uninstall -g cnpm
 
@@ -135,7 +133,6 @@ node --max-old-space-size=128 app.js
 --trace_gc_nvp
 node-inspector
 heap-profiler
-grunt
 
 apt install build-essential # gcc make
 npm install -g node-gyp
@@ -190,3 +187,40 @@ pm2 stop all
 pm2 list
 pm2 logs
 pm2 monit
+
+webpack前端模块打包工具
+npm install webpack webpack-cli
+vim webpack.config.js
+const path = require("path")
+module.exports = {
+  mode: 'development', // 指定为开发模式
+  // 入口文件
+  entry: {
+    main: './src/main.js'
+  },
+  // 出口文件
+  output: {
+    // 输出到dist文件夹(打包自动生成)
+    path: path.resolve(__dirname, 'dist'), // __dirname：表示当前文件的绝对路径(根目录)
+    // 输出文件名在dist文件夹里的js文件夹的chunk.js下
+    filename: 'js/chunk-[contenthash].js' // 使用由生成的内容产生的 hash
+  }
+}
+
+npm install html-webpack-plugin -D
+
+CSS/less/Sass
+npm install -g less
+lessc styles.less styles.css
+
+Babel:
+JavaScript编译器,将现代 JavaScript代码转换为向后兼容的JavaScript版本
+
+npm install --global gulp-cli
+npm install --save-dev gulp
+vim gulpfile.js
+
+sudo npm install -g grunt-cli
+grunt --version
+
+Vite
