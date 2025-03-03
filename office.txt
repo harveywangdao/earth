@@ -128,7 +128,7 @@ rm -rf web-apps/apps/common/main/resources/help
 cd /home/thomas/build/build_tools/out/linux_64/onlyoffice
 tar -zcvf documentserver.tar.gz documentserver
 tar -zcvf documentserver-example.tar.gz documentserver-example
-sftp thomas@47.86.103.144
+sftp thomas@47.86.50.125
 get /home/thomas/build/build_tools/out/linux_64/onlyoffice/documentserver.tar.gz ./
 get /home/thomas/build/build_tools/out/linux_arm64/onlyoffice/documentserver.tar.gz ./
 get /home/thomas/build/build_tools/out/linux_64/onlyoffice/documentserver-example.tar.gz ./

@@ -75,8 +75,6 @@ Mark-Sweep处理时分为标记、清除两个步骤,与Scavenge算法只复制�
 Mark-Compact标记整理算法,其在工作过程中将活着的对象往一端移动,这时内存空间是紧凑的,移动完成之后,直接清理边界之外的内存
 增量标记的方式减少停顿时间
 如果新生区中某个对象只有一个指向它的指针而这个指针恰好是在老生区的对象当中,我们如何才能知道新生区中那个对象是活跃的呢,我们并不希望将老生区再遍历一次,因为老生区中的对象很多,这样做一次消耗太大,为了解决这个问题,实际上在写缓冲区中有一个列表(我们称之为CrossRefList),列表中记录了所有老生区对象指向新生区的情况,新对象诞生的时候,并不会有指向它的指针,而当有老生区中的对象出现指向新生区对象的指针时,我们便记录下来这样的跨区指向,由于这种记录行为总是发生在写操作时,它被称为写屏障,因为每个写操作都要经历这样一关
-node-heapdump
-node-profiler
 
 内存泄漏
 全局变量,闭包引用,事件绑定,缓存爆炸
@@ -132,7 +130,63 @@ mv node-v16.16.0-linux-x64 /home/thomas/.pkg-cache/v3.4/fetched-v16.16.0-linux-x
 global.gc();
 node --expose-gc app.js
 node --trace_gc --trace_gc_verbose app.js
+--trace-gc
 node --max-old-space-size=128 app.js
 --trace_gc_nvp
 node-inspector
+heap-profiler
 grunt
+
+apt install build-essential # gcc make
+npm install -g node-gyp
+npm install heapdump
+
+const v8 = require('v8');
+v8.writeHeapSnapshot()
+v8.getHeapSpaceStatistics()
+v8.setFlagsFromString('--trace-gc');
+
+node --heapsnapshot-signal=SIGUSR2 app.js
+kill -USR2 681473
+pkg --target=node16 --options "heapsnapshot-signal=SIGUSR2" --output=myapp index.js
+
+node --inspect app.js
+chrome://inspect
+npm install node-oom-heapdump
+require('node-oom-heapdump')({
+  path: '/path/to/dump',
+  heapdumpOnOOM: true
+});
+npm install -g heapdump-analyser
+heapdump-analyser dump.heapsnapshot
+node --max_old_space_size=500 --heapsnapshot-near-heap-limit=1 your_app.js
+pm2
+
+cd /volume1/@appstore/com.ugreen.office/onlyoffice/documentserver/server/FileConverter
+systemctl stop office_serv
+rm -rf converter
+sftp thomas@47.86.50.125
+get /home/thomas/build/build_tools/out/linux_arm64/onlyoffice/documentserver/server/FileConverter/converter ./
+rm -rf /volume1/@appstore/com.ugreen.office/onlyoffice/documentserver/server/App_Data
+rm -rf /volume1/@appstore/com.ugreen.office/app_data/office.db
+systemctl start office_serv
+systemctl status office_serv
+
+su - postgres -c "/usr/lib/postgresql/15/bin/pg_ctl stop -D /usr/ugreen/local/com.ugreen.office/psql/db -s -w >/dev/null 2>&1"
+su - postgres -c "/usr/lib/postgresql/15/bin/pg_ctl start -D /usr/ugreen/local/com.ugreen.office/psql/db -s -w >/dev/null 2>&1"
+
+Native Addons 或 C++ 扩展
+lsof -c converter
+内存碎片化
+
+
+sudo npm install pm2 -g
+pm2 updated
+
+pm2 start app.js
+pm2 start index.js
+pm2 stop [AppName]
+pm2 stop all
+pm2 list
+pm2 logs
+pm2 monit
