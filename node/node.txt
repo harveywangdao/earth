@@ -224,3 +224,12 @@ sudo npm install -g grunt-cli
 grunt --version
 
 Vite
+
+addon:
+npm install node-addon-api
+npm install node-gyp
+binding.gyp
+Node-API napi node_api.h c语言
+node-addon-api napi.h c++
+nan nan.h c++
+bindings
