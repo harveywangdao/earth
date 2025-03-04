@@ -159,19 +159,6 @@ heapdump-analyser dump.heapsnapshot
 node --max_old_space_size=500 --heapsnapshot-near-heap-limit=1 your_app.js
 pm2
 
-cd /volume1/@appstore/com.ugreen.office/onlyoffice/documentserver/server/FileConverter
-systemctl stop office_serv
-rm -rf converter
-sftp thomas@47.86.50.125
-get /home/thomas/build/build_tools/out/linux_arm64/onlyoffice/documentserver/server/FileConverter/converter ./
-rm -rf /volume1/@appstore/com.ugreen.office/onlyoffice/documentserver/server/App_Data
-rm -rf /volume1/@appstore/com.ugreen.office/app_data/office.db
-systemctl start office_serv
-systemctl status office_serv
-
-su - postgres -c "/usr/lib/postgresql/15/bin/pg_ctl stop -D /usr/ugreen/local/com.ugreen.office/psql/db -s -w >/dev/null 2>&1"
-su - postgres -c "/usr/lib/postgresql/15/bin/pg_ctl start -D /usr/ugreen/local/com.ugreen.office/psql/db -s -w >/dev/null 2>&1"
-
 Native Addons 或 C++ 扩展
 lsof -c converter
 内存碎片化
@@ -233,3 +220,16 @@ Node-API napi node_api.h c语言
 node-addon-api napi.h c++
 nan nan.h c++
 bindings
+
+Node.js 堆外内存 RSS 分析
+ptmalloc/jemalloc/tcmalloc
+sudo apt-get install libjemalloc-dev
+sudo find / -name "*jemalloc*"
+/usr/lib/x86_64-linux-gnu/libjemalloc.so
+export LD_PRELOAD=$LD_PRELOAD:/usr/lib/x86_64-linux-gnu/libjemalloc.so
+cat /proc/863317/smaps | grep jemalloc
+/etc/ld.so.preload
+
+LD_PRELOAD="/usr/lib/x86_64-linux-gnu/libjemalloc.so $LD_PRELOAD" node index.js
+
+/usr/lib/aarch64-linux-gnu/libjemalloc.so
