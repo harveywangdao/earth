@@ -23,3 +23,11 @@ eventEmitter.on('data_received', function(){
 eventEmitter.emit('connection');
  
 console.log("程序执行完毕。");
+
+eventEmitter.on('someEvent', function(arg1, arg2) { 
+   console.log('listener1', arg1, arg2); 
+}); 
+eventEmitter.on('someEvent', function(arg1, arg2) { 
+   console.log('listener2', arg1, arg2); 
+}); 
+eventEmitter.emit('someEvent', 'arg1 参数', 'arg2 参数');

@@ -233,3 +233,8 @@ cat /proc/863317/smaps | grep jemalloc
 LD_PRELOAD="/usr/lib/x86_64-linux-gnu/libjemalloc.so $LD_PRELOAD" node index.js
 
 /usr/lib/aarch64-linux-gnu/libjemalloc.so
+
+ds.convertdead
+ds.delayed
+ds.convertresponse
+ds.converttask6
