@@ -7594,3 +7594,18 @@ swapon /swapfile
 free -h
 echo "/swapfile swap swap defaults 0 0" >> /etc/fstab
 swapoff /swap
+
+sudo vim /etc/apt/apt.conf
+Acquire::http::proxy "http://ip:port";
+Acquire::https::proxy "http://ip:port";
+cat >> /etc/apt/apt.conf << EOF
+EOF
+
+export http_proxy=http://ip:port
+export https_proxy=http://ip:port
+curl
+
+npm config set proxy http://ip:port
+npm config set https-proxy http://ip:port
+npm config delete proxy
+npm config delete https-proxy

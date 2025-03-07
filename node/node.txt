@@ -90,6 +90,7 @@ Array.prototype.slice.call
 Object.keys() 返回一个由给定对象自身的可枚举的字符串键属性名组成的数组
 Object.values()
 Object.create() 以一个现有对象作为原型，创建一个新对象
+Object.assign 将所有可枚举属性的值从一个或多个源对象复制到目标对象
 
 require
 module.exports = sayHello;
