@@ -55,8 +55,15 @@ cd /build/build_tools/tools/linux
 #rm -rf node_js_setup_14.x packages_complete
 apt-get update && apt-get install python git sudo vim tree -y
 ./automate.py server
+./automate.py server --branch=v8.2.2.26
 ./automate.py server --platform="linux_arm64"
 ./automate.py server --branch=v8.2.2.26 --platform="linux_arm64"
+
+rm -rf *
+git checkout -- .
+git status
+git checkout v8.2.2.26
+git status
 
 编译ARM版:
 vim /build/build_tools/tools/linux/automate.py

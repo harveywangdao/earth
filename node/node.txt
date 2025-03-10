@@ -239,3 +239,7 @@ ds.convertdead
 ds.delayed
 ds.convertresponse
 ds.converttask6
+
+dbus
+redis
+unix socket
