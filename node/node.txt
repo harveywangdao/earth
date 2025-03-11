@@ -243,3 +243,20 @@ ds.converttask6
 dbus
 redis
 unix socket
+
+基本类型:
+string
+number
+boolean
+object
+function
+symbol
+
+null
+undefined
+
+Object
+Date
+Array
+
+NaN
