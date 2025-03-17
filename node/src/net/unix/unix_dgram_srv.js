@@ -11,18 +11,28 @@ try {
 
 let server = unix.createSocket('unix_dgram', function(buf, rinfo) {
   console.log('server recv:', buf.toString(), rinfo);
-
-  //let msg = Buffer.from('I am server');
-  //server.send(msg);
 });
 server.on('listening', function () {
     console.info('listening');
 });
 server.on('error', function (err) {
-    console.error(err);
+    console.error('unix socket server err:', err);
 });
 server.bind(srvSockFile);
+//server.close();
 
-setTimeout(function () {
-    server.close();
-}, 30000);
+let client = unix.createSocket('unix_dgram');
+client.on('error', function (err) {
+    console.error('unix socket client err:', err);
+    setTimeout(function () {
+        client.connect(cliSockFile);
+    }, 5000);
+});
+client.on('connect', function () {
+    console.info('client connect');
+    for (let i = 0; i < 2; i++) {
+        let msg = Buffer.from('I am server'+i);
+        client.send(msg);
+    }
+});
+client.connect(cliSockFile);
