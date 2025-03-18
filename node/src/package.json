@@ -6,6 +6,7 @@
     "express": "^4.21.2",
     "heapdump": "^0.3.15",
     "log4js": "^6.9.1",
+    "redis": "^4.7.0",
     "request": "^2.88.2",
     "unix-dgram": "^2.0.6"
   }
