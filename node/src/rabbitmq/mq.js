@@ -6,7 +6,7 @@ amqp.connect('amqp://localhost', function(error0, connection) {
     if (error0) {
       throw error0;
     }
-    createConfirmChannel
+    //createConfirmChannel
     //connection.createConfirmChannel();
     connection.createChannel(function(error1, channel) {
       if (error1) {
@@ -53,6 +53,8 @@ amqp.connect('amqp://localhost', function(error0, connection) {
         //channel.ack(msg);
       }, {
         noAck: true
+      }, function (err, ok) {
+        console.log('err:', err, "ok:", ok);
       });
     });
 });
