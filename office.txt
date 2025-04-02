@@ -56,12 +56,13 @@ cd /build/build_tools/tools/linux
 apt-get update && apt-get install python git sudo vim tree -y
 ./automate.py server
 ./automate.py server --branch=v8.2.2.26
-./automate.py server --branch=v8.3.0.98 --platform="linux_arm64"
+./automate.py server --branch=v8.2.2.26 --platform="linux_arm64"
 
 rm -rf *
 git checkout -- .
 git status
 git checkout v8.2.2.26
+v8.3.0.98
 git status
 
 编译ARM版:
@@ -117,6 +118,9 @@ build_tools_params = ["--update", "0"]
 vim /build/server/FileConverter/sources/convertermaster.js
 去掉cluster
 
+DE.ApplicationController.textConvertFormDownload
+DE.Controllers.Toolbar.textConvertFormDownload
+textConvertFormSave
 vim /build/web-apps/apps/documenteditor/main/app/controller/Toolbar.js
 false&&t.isOForm&&t.canDownload&&Common.UI.warning
 
