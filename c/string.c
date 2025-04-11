@@ -33,9 +33,19 @@ void do1()
   printf("str:%s\n", str);
 }
 
+void do2()
+{
+  char c1[] = "中";
+  printf("sizeof(c1): %ld\n", sizeof(c1));
+  for (int i = 0; i < sizeof(c1); i++)
+  {
+    printf("%x\n", c1[i]);
+  }
+}
+
 int main(int argc, char const *argv[])
 {
-  do1();
+  do2();
 
   return 0;
 }

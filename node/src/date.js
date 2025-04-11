@@ -9,3 +9,4 @@ console.log(d4);
 
 console.log(Date.now());
 console.log(new Date().getTime());
+console.log('+d1:', +d1);
