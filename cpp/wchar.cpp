@@ -22,14 +22,6 @@ void test2() {
 }
 
 void test3() {
-	//setlocale(LC_ALL, "chs");
-	//wchar_t wt[] = L"a中";
-	//wcout << wt << endl;
-  //cout << "sizeof(wt): " << sizeof(wt) << endl;
-
-  //wstring s1 = L"a中";
-  //cout << "s1.length(): " << s1.length() << s1.capacity() << endl;
-
 	char c1[] = "中";
 	cout << "sizeof(c1): " << sizeof(c1) << endl;
 	for (int i = 0; i < sizeof(c1); i++)
@@ -39,8 +31,37 @@ void test3() {
 	}
 }
 
+void test4() {
+	wchar_t s1[] = L"中";
+	//wcout << s1 << endl;
+  cout << "sizeof(s1): " << sizeof(s1) << endl;
+
+	for (int i = 0; i < sizeof(s1)/sizeof(wchar_t); i++)
+	{
+		cout << hex << s1[i] << endl;
+	}
+	
+  wstring s2 = L"中";
+	wcout << L"s2: " << s2 << endl;
+  cout << "s2.length(): " << s2.length() << endl;
+  cout << "s2.capacity(): " << s2.capacity() << endl;
+}
+
+int test5() {
+	std::wstring ws;
+	
+	// 输入
+	std::wcout << L"请输入宽字符串: ";
+	std::getline(std::wcin, ws);
+	
+	// 输出
+	std::wcout << L"你输入的是: " << ws << std::endl;
+	
+	return 0;
+}
+
 int main()
 {
-	test3();
+	test5();
 	return 0;
 }

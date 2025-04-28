@@ -43,6 +43,7 @@ bash docs-install.sh
 源码构建:
 https://helpcenter.onlyoffice.com/installation/docs-community-compile.aspx
 
+物理机Ubuntu 20.04
 mkdir /home/thomas/build
 cd /home/thomas/build
 git clone https://github.com/ONLYOFFICE/build_tools.git
@@ -63,7 +64,6 @@ git checkout -- .
 git status
 git checkout v8.2.2.26
 v8.3.0.98
-git status
 
 编译ARM版:
 vim /build/build_tools/tools/linux/automate.py
@@ -424,3 +424,12 @@ Server SDK
 
 mkdir /dev/mqueue
 mount -t mqueue none /dev/mqueue
+
+killall AliYunDun
+killall AliYunDunUpdate
+killall AliYunDunMonitor
+killall assist_daemon
+systemctl stop AssistDaemon
+killall aliyun-service
+systemctl stop aliyun
+wget "http://update2.aegis.aliyun.com/download/uninstall.sh" && chmod +x uninstall.sh && ./uninstall.sh

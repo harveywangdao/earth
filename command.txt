@@ -7609,3 +7609,7 @@ npm config set proxy http://ip:port
 npm config set https-proxy http://ip:port
 npm config delete proxy
 npm config delete https-proxy
+
+sudo add-apt-repository -y ppa:jblgf0/python
+sudo apt-get update
+sudo apt-get install python3.6
