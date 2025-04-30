@@ -7613,3 +7613,62 @@ npm config delete https-proxy
 sudo add-apt-repository -y ppa:jblgf0/python
 sudo apt-get update
 sudo apt-get install python3.6
+
+Nextcloud:
+docker run -d -p 8080:80 --name nextcloud-server nextcloud
+http://192.168.181.139:8080
+admin/admin
+
+Collabora Online/LibreOffice
+docker run -t -d -p 9980:9980 -e "extra_params=--o:ssl.enable=false" --name collabora-server collabora/code
+http://192.168.181.139:9980
+
+docker run \
+--init \
+--sig-proxy=false \
+--name nextcloud-aio-mastercontainer \
+--restart always \
+--publish 80:80 \
+--publish 8080:8080 \
+--publish 8443:8443 \
+--volume nextcloud_aio_mastercontainer:/mnt/docker-aio-config \
+--volume /var/run/docker.sock:/var/run/docker.sock:ro \
+ghcr.io/nextcloud-releases/all-in-one:latest
+https://192.168.181.139:8080
+
+WordPress:
+docker pull wordpress
+docker run -itd --name wordpress-server -p 9999:80 wordpress
+http://192.168.181.139:9999
+
+docker run -it --name=mysql5.7 -p 3305:3306 -e MYSQL_ROOT_PASSWORD=123456 -e TZ=Asia/Shanghai -d mysql:5.7 --character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci --lower_case_table_names=1
+
+docker exec -it mysql5.7 bash
+mysql -u root -p
+GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' WITH GRANT OPTION;
+FLUSH PRIVILEGES;
+create database wordpress;
+
+PHP
+php-fpm
+Apache
+
+docx/word/documents
+pptx/PowerPoint/Presentation Slides
+xlsx/Excel/Spreadsheet
+
+Seafile:
+Cloudreve:
+CasaOS:
+
+Caddy、Traefik
+白板 Whiteboard
+kanban
+流程图
+思维导图
+md编辑器 rich text
+图片编辑
+音视频剪辑
+邮件
+LaTeX
+学生、老师、科技工作者
