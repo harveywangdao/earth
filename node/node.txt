@@ -7,6 +7,7 @@ Acquire::http::proxy "http://192.168.79.47:10811";
 Acquire::https::proxy "http://192.168.79.47:10811";
 
 curl -fsSL https://deb.nodesource.com/setup_16.x | sudo -E bash - && sudo apt-get install -y nodejs
+curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash - && sudo apt-get install -y nodejs
 node -v
 npm -v
 #sudo apt-get install npm yarn -y
@@ -260,3 +261,44 @@ Date
 Array
 
 NaN
+
+React:
+sudo npm install -g create-react-app
+#sudo npm uninstall -g create-react-app
+sudo create-react-app my-app
+cd my-app
+npm start
+
+npx create-react-app my-app
+cd my-app
+npm start
+http://192.168.181.139:3000
+
+npx create-next-app@latest
+cd my-app
+npm run dev
+http://192.168.181.139:3000
+
+npm create vite@latest my-app -- --template react
+
+useState
+
+Next.js
+Remix
+Vue
+DOM
+Bootstrap
+Foundation
+jQuery
+AngularJS
+Tailwind CSS
+TypeScript
+小程序
+Electron
+ReactNative
+Flutter
+
+export default
+Vite
+Babel
+Webpack
