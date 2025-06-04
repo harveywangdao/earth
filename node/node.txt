@@ -203,7 +203,7 @@ npm install -g less
 lessc styles.less styles.css
 
 Babel:
-JavaScript编译器,将现代 JavaScript代码转换为向后兼容的JavaScript版本
+JavaScript编译器,将现代JavaScript代码转换为向后兼容的JavaScript版本
 
 npm install --global gulp-cli
 npm install --save-dev gulp
@@ -279,26 +279,54 @@ cd my-app
 npm run dev
 http://192.168.181.139:3000
 
+npx create-react-router@latest my-react-router-app
+cd my-react-router-app
+npm i
+npm run dev
+http://192.168.181.139:5173
+
 npm create vite@latest my-app -- --template react
 
 useState
 
+JavaScript
+HTML
+CSS
+Node.js
+TypeScript
+React
+Vue
+SCSS
+Vite
+
 Next.js
 Remix
-Vue
 DOM
 Bootstrap
 Foundation
 jQuery
-AngularJS
+Angular
 Tailwind CSS
-TypeScript
 小程序
 Electron
 ReactNative
 Flutter
-
-export default
-Vite
+AJAX
 Babel
 Webpack
+
+Tiptap:
+Integrate the Tiptap Editor
+Collaborative
+Comments
+History
+Conversion: DOCX/Markdown/PDF
+
+npm create vite@latest mytiptap -- --template react
+npm install @tiptap/react @tiptap/pm @tiptap/starter-kit
+npm install @tiptap/extension-color @tiptap/extension-list-item @tiptap/extension-text-style
+npm install -D sass-embedded
+
+npx @tiptap/cli init
+npx @tiptap/cli add simple-editor
+npm i @tiptap/react @tiptap/starter-kit @tiptap/extension-image @tiptap/extension-task-item @tiptap/extension-task-list @tiptap/extension-text-align @tiptap/extension-typography

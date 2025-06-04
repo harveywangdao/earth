@@ -7641,7 +7641,7 @@ Cloudreve:
 CasaOS:
 
 md编辑器/rich text
-白板/Whiteboard
+白板/whiteboard
 kanban
 流程图
 思维导图
@@ -7652,3 +7652,8 @@ LaTeX
 
 PDF:
 docker run -d --name stirling-pdf -p 8083:8080 -e DOCKER_ENABLE_SECURITY=false -e LANGS=en_GB docker.stirlingpdf.com/stirlingtools/stirling-pdf:latest
+
+docker run --detach --publish 9001:9001 etherpad/etherpad
+http://192.168.181.139:9001
+
+docker run -d -p 6806:6806 -v /home/thomas/Downloads/siyuan:/thomas b3log/siyuan --workspace=/thomas --accessAuthCode=123

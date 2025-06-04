@@ -182,6 +182,7 @@ vim documentserver/server/Common/config/default.json
 if (Ua && Ua.length > 5) {if (Ua.substring(0, 5) == "http:" && window.location.protocol == 'https:') {Ua = Ua.replace("http://", "https://");}};
 if (Va && Va.length > 5) {if (Va.substring(0, 5) == "http:" && window.location.protocol == 'https:') {Va = Va.replace("http://", "https://");}};
 if (Db && Db.length > 5) {if (Db.substring(0, 5) == "http:" && window.location.protocol == 'https:') {Db = Db.replace("http://", "https://");}};
+asc_ajax
 
 su - postgres -c "/usr/lib/postgresql/15/bin/pg_ctl start -D db -s -w"
 psql -h localhost -p 5437 -d onlyoffice -U postgres -f /var/www/onlyoffice/documentserver/server/schema/postgresql/createdb.sql
@@ -433,3 +434,14 @@ systemctl stop AssistDaemon
 killall aliyun-service
 systemctl stop aliyun
 wget "http://update2.aegis.aliyun.com/download/uninstall.sh" && chmod +x uninstall.sh && ./uninstall.sh
+
+Debian12 bookworm install node16
+curl -fsSL https://deb.nodesource.com/setup_16.x >> ./setup_16.x
+vim setup_16.x
+删除curl
+if ! apt-get install -y apt-transport-https ca-certificates gnupg; then
+./setup_16.x
+apt-get install -y nodejs
+npm install -g grunt-cli
+npm install -g pkg
+ln -s python3 /usr/bin/python
