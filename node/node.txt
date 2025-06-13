@@ -330,3 +330,6 @@ npm install -D sass-embedded
 npx @tiptap/cli init
 npx @tiptap/cli add simple-editor
 npm i @tiptap/react @tiptap/starter-kit @tiptap/extension-image @tiptap/extension-task-item @tiptap/extension-task-list @tiptap/extension-text-align @tiptap/extension-typography
+
+yarn config list
+yarn config set strict-ssl false -g

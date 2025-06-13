@@ -43,7 +43,7 @@ useTransition():
 
 Context:
 允许父组件向其下层无论多深的任何组件提供信息,而无需通过props显式传递
-createContext
+createContext 组件外调用
 useContext
 
 import { createContext } from 'react';
@@ -159,6 +159,72 @@ React Refs:
 React.createRef 类组件
 useRef 函数组件
 
+CSS:
+选择器
+p {color:red;}
+#id {text-align:center;color:red;}
+.center {text-align:center;}
+p.center {text-align:center;}
+.marked p{ } class="marked" 元素内的p元素指定一个样式
+div p {background-color:yellow;} div中的p
+div>p {background-color:yellow;} div中的第一级p
+div+p {background-color:yellow;} 相邻
+div~p {background-color:yellow;} 之后相邻
+p:first-child {color:blue;}
+[type] {border: 1px solid red;} 选择所有具有type属性的元素
+[type="text"] {background-color: yellow;}
+[class~="button"] {font-weight: bold;} 选择属性值中包含button的元素
+[lang|="en"] {color: green;} 选择所有lang属性是en或者以en-开头的元素
+[href^="https"] {text-decoration: none;} 选择所有href属性以https开头的链接
+[src$=".jpg"] {border: 2px solid blue;} 选择所有src属性以.jpg结尾的图片
+[title*="tutorial"] {font-style: italic;} 选择所有title属性中包含tutorial的元素
+
+外部样式表:
+<head>
+<link rel="stylesheet" type="text/css" href="mystyle.css">
+</head>
+内部样式表:
+<head>
+<style>
+p {margin-left:20px;}
+</style>
+</head>
+内联样式:
+<p style="color:sienna;margin-left:20px">这是一个段落。</p>
+
+颜色:
+#ff0000
+rgb(255,0,0)
+
+字体:
+
+Size:
+16px=1em
+deg角度
+
+布局:
+边距 margin 外边距
+边框 border
+填充 padding 内边距
+outline
+
+a:link {color:#000000;}      /* 未访问链接*/
+a:visited {color:#00FF00;}  /* 已访问链接 */
+a:hover {color:#FF00FF;}  /* 鼠标移动到链接上 */
+a:active {color:#0000FF;}  /* 鼠标点击时 */
+
+@media:
+@font-face
+{
+    font-family: myFirstFont;
+    src: url(sansation_light.woff);
+}
+@keyframes myfirst
+{
+    from {background: red;}
+    to {background: yellow;}
+}
+
 Tailwind CSS:
 npm install -D tailwindcss postcss autoprefixer
 npx tailwindcss init -p
@@ -167,7 +233,29 @@ postcss.config.js
 
 Sass:
 npm i sass
+$fontsize: 18px;
+!global
+@import filename;
+@mixin important-text {
+  color: red;
+  font-size: 25px;
+  font-weight: bold;
+  border: 1px solid blue;
+}
+@mixin bordered($color, $width) {
+  border: $width solid $color;
+}
+selector {
+  @include mixin-name;
+}
+@extend 继承
+.button-report  {
+  @extend .button-basic;
+  background-color: red;
+}
 
+cd jssrc/beszel/beszel
 make build
+make build-hub
 ./build/beszel_linux_amd64 serve --http "0.0.0.0:8090"
-./beszel-agent_linux_amd64 -key="ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHZGzM3jv7Qw6MKVQT6wsmMZG3skTseRd8PyMlKEd6Az" -listen=8564
+./build/beszel-agent_linux_amd64 -key="ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKZvCr2JRSVIaSfJoiQ97UmTmEEpdOsxKsQgo6B2YRJo" -listen=8564
