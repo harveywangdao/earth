@@ -262,33 +262,6 @@ Array
 
 NaN
 
-React:
-sudo npm install -g create-react-app
-#sudo npm uninstall -g create-react-app
-sudo create-react-app my-app
-cd my-app
-npm start
-
-npx create-react-app my-app
-cd my-app
-npm start
-http://192.168.181.139:3000
-
-npx create-next-app@latest
-cd my-app
-npm run dev
-http://192.168.181.139:3000
-
-npx create-react-router@latest my-react-router-app
-cd my-react-router-app
-npm i
-npm run dev
-http://192.168.181.139:5173
-
-npm create vite@latest my-app -- --template react
-
-useState
-
 JavaScript
 HTML
 CSS

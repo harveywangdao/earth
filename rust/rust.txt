@@ -1,0 +1,71 @@
+安装Rust:
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+#curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | RUSTUP_DIST_SERVER=https://rsproxy.cn RUSTUP_UPDATE_ROOT=https://rsproxy.cn/rustup sh -s -- -y --profile minimal
+
+export RUSTUP_DIST_SERVER=https://mirrors.ustc.edu.cn/rust-static
+export RUSTUP_UPDATE_ROOT=https://mirrors.ustc.edu.cn/rust-static/rustup
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+
+export RUSTUP_DIST_SERVER="https://rsproxy.cn"
+export RUSTUP_UPDATE_ROOT="https://rsproxy.cn/rustup"
+curl --proto '=https' --tlsv1.2 -sSf https://rsproxy.cn/rustup-init.sh | sh
+
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs > rust.sh
+chmod +x rust.sh
+RUSTUP_UPDATE_ROOT="https://mirrors.ustc.edu.cn/rust-static/rustup"
+export RUSTUP_DIST_SERVER=https://mirrors.tuna.tsinghua.edu.cn/rustup
+bash rust.sh
+
+#https://static.rust-lang.org/dist/2025-09-18/rustc-1.90.0-x86_64-unknown-linux-gnu.tar.xz
+
+source ~/.bashrc
+rustc -Vv
+cargo --version
+rustup --version
+
+rustup component add rust-analyzer
+rustup component add rustfmt
+rustup component add clippy
+rustup component add rust-docs
+
+cargo new hello_world
+cd hello_world
+cargo run
+cargo build
+cargo test
+
+rustc main.rs 
+
+rustup show profile
+rustup set profile default
+
+cargo install cargo-watch
+cargo install cargo-generate
+cargo install cargo-bloat
+
+/home/thomas/.rustup
+/home/thomas/.cargo
+/home/thomas/.cargo/bin
+/home/thomas/.profile
+/home/thomas/.bashrc
+
+rustup update
+rustup self uninstall
+
+vim ~/.cargo/config
+[source.crates-io]
+replace-with = 'rsproxy-sparse'
+[source.rsproxy]
+registry = "https://rsproxy.cn/crates.io-index"
+[source.rsproxy-sparse]
+registry = "sparse+https://rsproxy.cn/index/"
+[registries.rsproxy]
+index = "https://rsproxy.cn/crates.io-index"
+[net]
+git-fetch-with-cli = true
+
+~/.cargo/config.toml
+[source.crates-io]
+replace-with = 'mirror'
+[source.mirror]
+registry = "https://mirrors4.tuna.tsinghua.edu.cn/git/crates.io-index.git"

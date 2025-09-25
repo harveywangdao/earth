@@ -1084,9 +1084,14 @@ sudo apt-get install docker-ce docker-ce-cli containerd.io
 #curl -sSL https://get.docker.com/ | sh
 
 sudo mkdir -p /etc/systemd/system/docker.service.d
-sudo vim /etc/systemd/system/docker.service.d/http-proxy.conf
+sudo vim /etc/systemd/system/docker.service.d/proxy.conf
 [Service]
 Environment="HTTP_PROXY=socks5://ip:port" "HTTPS_PROXY=socks5://ip:port"
+
+[Service]
+Environment="HTTP_PROXY=http://192.168.79.229:20811/"
+Environment="HTTPS_PROXY=http://192.168.79.229:20811/"
+
 sudo systemctl daemon-reload
 sudo systemctl restart docker
 systemctl show --property=Environment docker
@@ -7392,7 +7397,7 @@ hexdump -C gbk1.txt
 systemctl list-dependencies nut-server
 
 磁盘io:
-iostat -m -x 1 100
+iostat -m -x 1 10000
 pidstat -d 1
 iotop -oP
 

@@ -44,26 +44,28 @@ bash docs-install.sh
 https://helpcenter.onlyoffice.com/installation/docs-community-compile.aspx
 
 物理机Ubuntu 20.04
+ARM 8core 16G
 mkdir /home/thomas/build
 cd /home/thomas/build
 git clone https://github.com/ONLYOFFICE/build_tools.git
-#git checkout v8.0.1.31
 #docker run -itd --cpus=3 --blkio-weight 800 -v $PWD:/build --name ubuntu01 ubuntu:16.04
 docker run -itd -v $PWD:/build --name ubuntu01 ubuntu:16.04
 docker run -itd -v $PWD:/build --name ubuntu01 ubuntu:18.04
-docker exec -it ubuntu01 bash
+docker run -itd -v $PWD:/build --name ubuntu02 ubuntu:20.04
+docker exec -it ubuntu02 bash
 cd /build/build_tools/tools/linux
 #rm -rf node_js_setup_14.x packages_complete
 apt-get update && apt-get install python git sudo vim tree -y
 ./automate.py server
 ./automate.py server --branch=v8.2.2.26
+./automate.py server --branch=v9.0.3.29
 ./automate.py server --branch=v8.2.2.26 --platform="linux_arm64"
+./automate.py server --branch=v9.0.3.29 --platform="linux_arm64"
 
-rm -rf *
 git checkout -- .
 git status
 git checkout v8.2.2.26
-v8.3.0.98
+git checkout v9.0.3.29
 
 编译ARM版:
 vim /build/build_tools/tools/linux/automate.py
@@ -75,6 +77,7 @@ apt install ninja-build clang -y
 #https://gn.googlesource.com/gn.git
 git clone https://github.com/wangzq0807/gn.git
 #python3 build/gen.py --allow-warning
+cd gn
 ./build/gen.py
 ninja -C out
 out/gn_unittests
@@ -103,8 +106,7 @@ vim /build/build_tools/make.py
 ls -l /usr/bin/python*
 cd /usr/bin
 rm -rf python
-ln -s python3.6 python
-#ln -s python2.7 python
+ln -s python3.8 python
 
 apt-get install optipng
 cp /usr/bin/optipng /build/web-apps/build/node_modules/optipng-bin/vendor/optipng
@@ -114,15 +116,6 @@ vim /build/server/Common/sources/constants.js
 exports.LICENSE_CONNECTIONS = 20
 vim /build/build_tools/tools/linux/automate.py
 build_tools_params = ["--update", "0"]
-
-vim /build/server/FileConverter/sources/convertermaster.js
-去掉cluster
-
-DE.ApplicationController.textConvertFormDownload
-DE.Controllers.Toolbar.textConvertFormDownload
-textConvertFormSave
-vim /build/web-apps/apps/documenteditor/main/app/controller/Toolbar.js
-false&&t.isOForm&&t.canDownload&&Common.UI.warning
 
 cd /home/thomas/build/build_tools/out/linux_64/onlyoffice/documentserver
 mv dictionaries dictionaries2
@@ -137,17 +130,15 @@ rm -rf web-apps/apps/common/main/resources/help
 
 cd /home/thomas/build/build_tools/out/linux_64/onlyoffice
 tar -zcvf documentserver.tar.gz documentserver
-tar -zcvf documentserver-example.tar.gz documentserver-example
-sftp thomas@47.86.50.125
+sftp thomas@47.253.255.13
 get /home/thomas/build/build_tools/out/linux_64/onlyoffice/documentserver.tar.gz ./
 get /home/thomas/build/build_tools/out/linux_arm64/onlyoffice/documentserver.tar.gz ./
-get /home/thomas/build/build_tools/out/linux_64/onlyoffice/documentserver-example.tar.gz ./
 
-mkdir -p /var/www/onlyoffice
-tar -zxvf documentserver.tar.gz -C /var/www/onlyoffice
-tar -zxvf documentserver-example.tar.gz -C /var/www/onlyoffice
-
-cd /build/build_tools/out/linux_64/onlyoffice/documentserver
+rsync -avzP documentserver.tar.gz rsync://thomas@192.168.79.27:873/sun/
+cd /volume1/@appstore/com.ugreen.office/onlyoffice
+cp /volume1/sun/documentserver.tar.gz ./
+tar -zxvf documentserver.tar.gz
+cd documentserver
 mkdir fonts
 LD_LIBRARY_PATH=${PWD}/server/FileConverter/bin server/tools/allfontsgen \
   --input="${PWD}/core-fonts" \
@@ -155,7 +146,7 @@ LD_LIBRARY_PATH=${PWD}/server/FileConverter/bin server/tools/allfontsgen \
   --allfonts="${PWD}/server/FileConverter/bin/AllFonts.js" \
   --images="${PWD}/sdkjs/common/Images" \
   --selection="${PWD}/server/FileConverter/bin/font_selection.bin" \
-  --output-web="${PWD}/fonts" \
+  --output-web='fonts' \
   --use-system="true"
 
 LD_LIBRARY_PATH=${PWD}/server/FileConverter/bin server/tools/allthemesgen \
@@ -282,119 +273,6 @@ mq 25672 5672 4369
 serv 3302
 onlyoffice unix socket
 
-map $http_host $this_host {
-        "" $host;
-        default $http_host;
-}
-map $http_x_forwarded_proto $the_scheme {
-        default $http_x_forwarded_proto;
-        "" $scheme;
-}
-map $http_x_forwarded_host $the_host {
-        default $http_x_forwarded_host;
-        "" $this_host;
-}
-
-upstream docservice {  
-  server localhost:8000 max_fails=0 fail_timeout=0s;
-}
-
-map $http_cloudfront_forwarded_proto:$http_x_forwarded_proto $the_scheme {
-     default $scheme;
-     "~^https?:.*" $http_cloudfront_forwarded_proto;
-     "~^:https?$" $http_x_forwarded_proto;
-}
-
-map $http_x_forwarded_prefix $the_prefix {
-    default $http_x_forwarded_prefix;
-}
-
-#welcome page
-rewrite ^/$ $the_scheme://$the_host$the_prefix/welcome/ redirect;
-
-#script caching protection
-rewrite ^(?<cache>\/web-apps\/apps\/(?!api\/).*)$ $the_scheme://$the_host$the_prefix/8.0.1-31$cache redirect;
-
-#disable caching for api.js
-location ~ ^(\/[\d]+\.[\d]+\.[\d]+[\.|-][\d]+)?\/(web-apps\/apps\/api\/documents\/api\.js)$ {
-  expires -1;
-gzip_static on;
-  alias  /var/www/onlyoffice/documentserver/$2;
-}
-
-#suppress logging the unsupported locale error in web-apps
-location ~ ^(\/[\d]+\.[\d]+\.[\d]+[\.|-][\d]+)?\/(web-apps)(\/.*\.json)$ {
-  expires 365d;
-  error_log /dev/null crit;
-gzip_static on;
-  alias /var/www/onlyoffice/documentserver/$2$3;
-}
-
-#suppress logging the unsupported locale error in plugins
-location ~ ^(\/[\d]+\.[\d]+\.[\d]+[\.|-][\d]+)?\/(sdkjs-plugins)(\/.*\.json)$ {
-  expires 365d;
-  error_log /dev/null crit;
-gzip_static on;
-  alias /var/www/onlyoffice/documentserver/$2$3;
-}
-
-location ~ ^(\/[\d]+\.[\d]+\.[\d]+[\.|-][\d]+)?\/(web-apps|sdkjs|sdkjs-plugins|fonts)(\/.*)$ {
-  expires 365d;
-gzip_static on;
-  alias /var/www/onlyoffice/documentserver/$2$3;
-}
-
-location ~* ^(\/cache\/files.*)(\/.*) {
-  alias /var/lib/onlyoffice/documentserver/App_Data$1;
-  add_header Content-Disposition "attachment; filename*=UTF-8''$arg_filename";
-
-  secure_link $arg_md5,$arg_expires;
-  secure_link_md5 "$secure_link_expires$uri$secure_link_secret";
-
-  if ($secure_link = "") {
-    return 403;
-  }
-
-  if ($secure_link = "0") {
-    return 410;
-  }
-}
-
-# Allow "/internal" interface only from 127.0.0.1
-# Don't comment out the section below for the security reason!
- location ~* ^(\/[\d]+\.[\d]+\.[\d]+[\.|-][\d]+)?\/(internal)(\/.*)$ {
-  allow 127.0.0.1;
-  deny all;
-  proxy_pass http://docservice/$2$3;
-}
-
-# Allow "/info" interface only from 127.0.0.1 by default
-# Comment out lines allow 127.0.0.1; and deny all; 
-# of below section to turn on the info page
-location ~* ^(\/[\d]+\.[\d]+\.[\d]+[\.|-][\d]+)?\/(info)(\/.*)$ {
-  allow 127.0.0.1;
-  deny all;
-  proxy_pass http://docservice/$2$3;
-}
-
-location / {
-  proxy_pass http://docservice;
-}
-
-location ~ ^(\/[\d]+\.[\d]+\.[\d]+[\.|-][\d]+)?(\/doc\/.*) {
-  proxy_pass http://docservice$2$is_args$args;
-  proxy_http_version 1.1;
-}
-
-location /8.0.1-31/ {
-  proxy_pass http://docservice/;
-}
-
-location ~ ^(\/[\d]+\.[\d]+\.[\d]+[\.|-][\d]+)?\/(dictionaries)(\/.*)$ {
-  expires 365d;
-  alias /var/www/onlyoffice/documentserver/$2$3;
-}
-
 var t=a.onerror;
 if(!a.WebgetBrowserUI){a.WebgetBrowserUI=function(){}}
 
@@ -445,3 +323,58 @@ apt-get install -y nodejs
 npm install -g grunt-cli
 npm install -g pkg
 ln -s python3 /usr/bin/python
+
+base.cmd_in_dir(server_dir + "/FileConverter", "pkg", [".", "-t", pkg_target, "--options", "heapsnapshot-signal=SIGUSR2,expose-gc,max-old-space-size=256", "-o", "converter"])
+
+后端修改:
+0.去掉限制
+vim /build/server/Common/sources/constants.js exports.LICENSE_CONNECTIONS = 20
+1、convertor变成一个进程
+vim /build/server/FileConverter/sources/convertermaster.js去掉cluster
+2、打开文档下载时直接拷贝，不把文件数据加载到内存
+3、redis替换rabbitmq
+4、编辑保存后第二次打开密码不对问题
+
+前端修改:
+1、docxf屏蔽弹窗 textConvertFormSave
+DE.ApplicationController.textConvertFormDownload
+DE.Controllers.Toolbar.textConvertFormDownload
+textConvertFormSave
+vim /build/web-apps/apps/documenteditor/main/app/controller/Toolbar.js
+false&&t.isOForm&&t.canDownload&&Common.UI.warning
+
+2、代理导致https丢失
+vim sdkjs/common/editorscommon.js type === "POST"
+3、屏蔽360极速浏览器弹窗 var t=a.onerror;if(!a.WebgetBrowserUI){a.WebgetBrowserUI=function(){}}a.onerror=
+
+pkg@6.6.0
+https://github.com/yao-pkg/pkg-fetch/releases/download/v3.5/node-v20.19.4-linux-x64
+https://github.com/yao-pkg/pkg-fetch/releases/download/v3.5/node-v20.19.4-linux-arm64
+{"tag":"v3.5","name":"node-v20.19.4-linux-x64"}
+mkdir ~/.pkg-cache/v3.5
+mv node-v20.19.4-linux-x64 ~/.pkg-cache/v3.5/fetched-v20.19.4-linux-x64
+
+apt-get remove nodejs
+rm -rf /usr/lib/node_modules
+cd /etc/apt/sources.list.d
+rm -rf nodesource*
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash - &&sudo apt-get install -y nodejs
+
+npm config set proxy http://192.168.79.229:20811
+npm config set https-proxy http://192.168.79.229:20811
+npm config list
+
+cd server
+rm -rf node_modules
+rm -rf DocService/node_modules
+rm -rf Common/node_modules
+rm -rf Metrics/node_modules
+rm -rf FileConverter/node_modules
+
+tar -zcvf sdkjs.tar.gz sdkjs
+tar -zcvf server.tar.gz server
+tar -zcvf web-apps.tar.gz web-apps
+rsync -avzP *.tar.gz rsync://thomas@192.168.79.27:873/sun/
+tar -zxvf sdkjs.tar.gz
+tar -zxvf server.tar.gz
+tar -zxvf web-apps.tar.gz

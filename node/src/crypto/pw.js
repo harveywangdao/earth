@@ -47,8 +47,17 @@ async function decryptPassword (password) {
   return Buffer.concat([decipher.update(encryptedData, 'binary'), decipher.final()]).toString();
 };
 
+let pw1
+let pw2
+
 async function testDecryptPassword() {
-  let str = await decryptPassword('db28:361be2123f2747db9439145cc7ac50a5f57b5e565ff79d15332bc9e35727bcdfd745f14e5edeb8d8f73a16e9b0a3fb36413c6d1ceda678b8759b28ce4c2b62d985c9eceba8cddd012d1b4fc9257197ec55879b399f88d6a1e705d52405e3eb7a2f3643897c38');
+  pw1 = '2a9b:f25cc35407fc90dd4cbc53e3219245ba651f7f100f407b43cc4e215f97b2cb257711d7002783ebe85b8b3b308589cdda3fd8a0511277cbfd7995588153036b832ae1b17c91ea43e4cf2fe23ca8575f67bca1c732abbe0f3595bb24836d66e283da8245251c'
+  pw2 = '91e9:2507a89674d657e35a1471f3c47e5f204faba776bd10a9cf763f3288c0c0a85f5993bba7b5564331271a20534290558573cac5122f6943f9b4f0cb03eb1ad4cd0fc3fd5fdf7bbf4639ea490aa6409f5aa93d3fc1e8bcfc65171021b70584ce5209ab2d6dfdcf2c9e3563ff'
+    
+  let str = await decryptPassword(pw1);
+  console.log(str);
+
+  str = await decryptPassword(pw2);
   console.log(str);
 }
 
