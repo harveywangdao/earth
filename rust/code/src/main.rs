@@ -473,5 +473,5 @@ fn test_closure() {
     let print_name = move || println!("Hello, {}!", name);
 
     call_closure(print_name);
-    call_closure(print_name);
+    //call_closure(print_name);
 }
