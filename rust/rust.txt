@@ -69,3 +69,7 @@ git-fetch-with-cli = true
 replace-with = 'mirror'
 [source.mirror]
 registry = "https://mirrors4.tuna.tsinghua.edu.cn/git/crates.io-index.git"
+
+tokio:
+tonic:
+actix-web:
