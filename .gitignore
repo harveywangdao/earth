@@ -16,3 +16,5 @@ c/app
 cpp/app
 
 .vscode
+
+rust/code/target
